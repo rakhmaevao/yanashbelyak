@@ -13,9 +13,10 @@ class NotRightPersonException(Exception):
 
 class Node:
     _DAY_IN_CENTURY = 360 * 100
-    _Y_STEP = 0.3
-    _HEIGHT = 0.3
-    _X_SCALE = 10
+    _Y_STEP = 0.1
+    _HEIGHT = 0.15
+    _X_SCALE = 7
+    _FONT_SIZE = '12'
 
     def __init__(self, y_pos):
         self._y_pos = y_pos * self._Y_STEP
@@ -46,6 +47,7 @@ class NoteNode(Node):
         return {'name': self._id,
                 'label': f'{self.__label}',
                 'shape': 'underline',
+                'fontsize': self._FONT_SIZE,
                 'pos': f'{self.__x_pos}, {self._y_pos}!'}
 
 
@@ -60,8 +62,9 @@ class FamilyNode(Node):
         return {'name': self._id,
                 'label': '',
                 'shape': 'circle',
-                'height': '0.15', 'width': '0.15',
+                'height': str(self._HEIGHT - self._Y_STEP), 'width': str(self._HEIGHT - self._Y_STEP),
                 'fixedsize': 'true',
+                'fontsize': self._FONT_SIZE,
                 'pos': f'{self.__x_pos}, {self._y_pos}!'}
 
 
@@ -90,6 +93,7 @@ class PersonNode(Node):
                 'shape': 'box',
                 'height': str(self.__height), 'width': str(self.__width),
                 'fixedsize': 'true',
+                'fontsize': self._FONT_SIZE,
                 'pos': f'{self.__x_pos}, {self._y_pos}!'}
 
 
