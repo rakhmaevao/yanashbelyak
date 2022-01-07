@@ -275,7 +275,8 @@ div.figure p.caption, figure p.caption { /* margin provided by figure */
 #content {
 	background: #fff;
 	margin-bottom: 2em;
-	overflow: hidden;
+	overflow-x: auto;
+	overflow-y: hidden;
 	padding: 20px 20px;
 	max-width: 760px;
 
