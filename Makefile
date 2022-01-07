@@ -75,5 +75,9 @@ github: publish
 	ghp-import -m "Generate Pelican site" -b $(GITHUB_PAGES_BRANCH) "$(OUTPUTDIR)"
 	git push origin $(GITHUB_PAGES_BRANCH)
 
+content_wraper:
+	python gramps_parser/tree_parser.py
+	"$(PELICAN)" content -t theme
 
-.PHONY: html help clean regenerate serve serve-global devserver publish github
+
+.PHONY: html help clean regenerate serve serve-global devserver publish github content_wraper

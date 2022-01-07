@@ -1,0 +1,4 @@
+loguru==0.5.3
+pelican==4.7.1
+graphviz==0.19.1
+singleton-decorator==1.0.0
