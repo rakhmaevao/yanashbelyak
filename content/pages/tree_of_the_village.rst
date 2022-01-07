@@ -5,5 +5,5 @@
 
 
 .. image:: |static|/images/tree.svg
-   :width: 4000 px
+
    
