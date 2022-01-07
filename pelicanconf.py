@@ -1,7 +1,7 @@
 AUTHOR = 'Александр Рахмаев'
 SITENAME = 'д. Янашбеляк'
 SITEURL = 'http://rahmaevao.github.io'
-
+OUTPUT_PATH = 'docs'
 PATH = 'content'
 
 TIMEZONE = 'Europe/Moscow'
