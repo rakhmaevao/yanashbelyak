@@ -11,8 +11,3 @@ SITEURL = 'http://rahmaevao.github.io'
 RELATIVE_URLS = False
 
 DELETE_OUTPUT_DIRECTORY = True
-
-# Following items are often useful when publishing
-
-#DISQUS_SITENAME = ""
-#GOOGLE_ANALYTICS = ""

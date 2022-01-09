@@ -1,6 +1,6 @@
 AUTHOR = 'Александр Рахмаев'
 SITENAME = 'д. Янашбеляк'
-SITEURL = 'http://rahmaevao.github.io'
+SITEURL = 'https://rahmaevao.github.io/yanashbelyak'
 OUTPUT_PATH = 'docs'
 PATH = 'content'
 
