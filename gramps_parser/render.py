@@ -5,10 +5,19 @@ import graphviz
 from db import Person, RelationType, Database, GrampsId, Family, Gender
 from datetime import datetime, date
 from loguru import logger
+import drawSvg as draw
 
 
 class NotRightPersonException(Exception):
     pass
+
+
+_DAY_IN_CENTURY = 360 * 100
+_Y_STEP = 3
+_X_SCALE = 0.01
+_FONT_SIZE = 12
+_HEIGHT = _FONT_SIZE * 1.2
+_LINE_WIDTH = 1
 
 
 class Node:
@@ -68,10 +77,13 @@ class FamilyNode(Node):
                 'pos': f'{self.__x_pos}, {self._y_pos}!'}
 
 
+_COLORS = {Gender.MALE: 'lightblue',
+           Gender.FEMALE: 'pink',
+           Gender.UNKNOWN: 'LightYellow'}
+
+
 class PersonNode(Node):
-    __COLORS = {Gender.MALE: 'lightblue',
-                Gender.FEMALE: 'pink',
-                Gender.UNKNOWN: 'LightYellow'}
+    # _
 
     def __init__(self, person: Person, y_pos: int):
         super().__init__(y_pos)
@@ -132,27 +144,34 @@ class Render:
     def __init__(self, db: Database):
         self.__db = db
         self.__unpined_person = copy.deepcopy(self.__db.persons)
-        self.__dot = graphviz.Digraph(format='svg', engine='neato',
-                                      graph_attr={'splines': 'line'}
-                                      )
-        self.__nodes, self.__edges = [], []
-        self.__ti = -1
+        self.__older_date = self.__get_older_person(self.__unpined_person).birth_day
+        self.__drawer = draw.Drawing(
+            (datetime.today().date() - self.__older_date).days * _X_SCALE,
+            (datetime.today().date() - self.__older_date).days * _X_SCALE
+        )
+        self.__vertical_index = -1
         while True:
-            self.__ti += 1
-            patriarch = self.__older_grandpa(self.__unpined_person)
-            if patriarch is None:
-                patriarch = self.__older_grandma(self.__unpined_person)
+            self.__vertical_index += 1
+
+            patriarch = self.__add_patriarch(self.__unpined_person, self.__vertical_index)
+            break
             if patriarch is None:
                 break
 
-            self.__ti += 1
-            self.__append_node(PersonNode(patriarch, self.__ti))
-
             self.__recursively_adding_person_to_the_right(patriarch)
+        #
+        # self.__add_decor()
+        # self.__to_dots()
+        self.__drawer.saveSvg('content/images/tree.svg')
 
-        self.__add_decor()
-        self.__to_dots()
-        self.__dot.render('content/images/tree')
+    def __add_patriarch(self, where: Dict[GrampsId, Person], vertical_index: int):
+        patriarch = self.__older_grandpa(where)
+        if patriarch is None:
+            patriarch = self.__older_grandma(where)
+        if patriarch is not None:
+            logger.info(f'Patriarchs of a new kind found: {patriarch}')
+            self.__add_unrelated_person(patriarch, vertical_index)
+        return patriarch
 
     def __add_decor(self):
         self.__add_hline(date(1800, 1, 1), label='1800')
@@ -282,6 +301,11 @@ class Render:
             self.__dot.edge(**edge.to_dot())
 
     @staticmethod
+    def __get_older_person(where: Dict[GrampsId, Person]) -> Person:
+        persons = [p for p in where.values()]
+        return min(persons, key=attrgetter('birth_day'))
+
+    @staticmethod
     def __older_grandpa(where: Dict[GrampsId, Person]) -> Person:
         mens = [p for p in where.values() if p.gender == Gender.MALE]
         if not mens:
@@ -314,3 +338,27 @@ class Render:
                     self.__db.families[relation.family_id]))
 
         return partners
+
+    def __add_unrelated_person(self, person: Person, y_pos: int):
+        self.__drawer.append(
+            draw.Rectangle(
+                x=self._compute_x_pos(person.birth_day),
+                y=(_HEIGHT + _Y_STEP) * y_pos,
+                width=person.days_of_life * _X_SCALE,
+                height=_HEIGHT,
+                stroke="black",
+                stroke_width=_LINE_WIDTH,
+                fill=_COLORS[person.gender]
+            )
+        )
+        self.__drawer.append(
+            draw.Text(
+                text=str(person),
+                fontSize=_FONT_SIZE,
+                x=self._compute_x_pos(person.birth_day),
+                y=(_HEIGHT + _Y_STEP) * y_pos + (_HEIGHT - _FONT_SIZE)
+            )
+        )
+
+    def _compute_x_pos(self, date_: date):
+        return (date_ - self.__older_date).days * _X_SCALE
