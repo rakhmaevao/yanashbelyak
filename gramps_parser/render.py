@@ -39,7 +39,7 @@ class Render:
             patriarch = self.__get_patriarch(self.__unpined_person, self.__vertical_index)
             if patriarch is None:
                 break
-            self.__add_unrelated_person(patriarch)
+            self.__add_person(patriarch)
 
             self.__recursively_adding_person_to_the_right(patriarch)
 
@@ -58,7 +58,7 @@ class Render:
         while True:
             new_person = self.__get_next_person(person)
             if new_person is not None:
-                self.__add_unrelated_person(new_person)
+                self.__add_person(new_person)
                 self.__recursively_adding_person_to_the_right(new_person)
             else:
                 break
@@ -157,12 +157,13 @@ class Render:
 
         return partners
 
-    def __add_unrelated_person(self, person: Person):
+    def __add_person(self, person: Person):
         self.__vertical_index += 1
+        y = (_HEIGHT + _Y_STEP) * self.__vertical_index
         self.__drawer.append(
             draw.Rectangle(
                 x=self._compute_x_pos(person.birth_day),
-                y=(_HEIGHT + _Y_STEP) * self.__vertical_index,
+                y=y,
                 width=person.days_of_life * _X_SCALE,
                 height=_HEIGHT,
                 stroke="black",
@@ -175,11 +176,32 @@ class Render:
                 text=str(person),
                 fontSize=_FONT_SIZE,
                 x=self._compute_x_pos(person.birth_day),
-                y=(_HEIGHT + _Y_STEP) * self.__vertical_index + (_HEIGHT - _FONT_SIZE)
+                y=y + (_HEIGHT - _FONT_SIZE)
             )
         )
         del self.__unpined_person[person.id]
         logger.info(f"Added {person}")
 
+        parental_family = self.__get_prenatal_family(person)
+        if parental_family is not None:
+            logger.info(f"Finded family for {person} {(self._compute_x_pos(person.birth_day), y + _HEIGHT / 2, self._compute_x_pos(parental_family.wedding_day), y + _HEIGHT / 2)}")
+            self.__drawer.append(
+                draw.Lines(
+                    self._compute_x_pos(person.birth_day), y + _HEIGHT / 2,
+                    self._compute_x_pos(parental_family.wedding_day), y + _HEIGHT / 2,
+                    self._compute_x_pos(parental_family.wedding_day), y - _Y_STEP,
+                    close=False,
+                    stroke="black",
+                    stroke_width=_LINE_WIDTH,
+                    fill='none'
+                )
+            )
+
     def _compute_x_pos(self, date_: date):
         return (date_ - self.__older_date).days * _X_SCALE
+
+    def __get_prenatal_family(self, person: Person) -> Optional[Family]:
+        for family in self.__db.families.values():
+            if person in family.children:
+                return family
+        return None
