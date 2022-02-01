@@ -14,7 +14,7 @@ class NotRightPersonException(Exception):
 
 
 _DAY_IN_CENTURY = 360 * 100
-_Y_STEP = 3
+_Y_SPACING = 6
 _X_SCALE = 0.01
 _FONT_SIZE = 12
 _HEIGHT = _FONT_SIZE * 1.2
@@ -34,8 +34,9 @@ class Render:
             (datetime.today().date() - self.__older_date).days * _X_SCALE,
             (datetime.today().date() - self.__older_date).days * _X_SCALE
         )
-        self.__vertical_index = -1
+        self.__vertical_index = -3
         while True:
+            self.__vertical_index += 2
             patriarch = self.__get_patriarch(self.__unpined_person, self.__vertical_index)
             if patriarch is None:
                 break
@@ -159,7 +160,7 @@ class Render:
 
     def __add_person(self, person: Person):
         self.__vertical_index += 1
-        y = (_HEIGHT + _Y_STEP) * self.__vertical_index
+        y = (_HEIGHT + _Y_SPACING) * self.__vertical_index
         self.__drawer.append(
             draw.Rectangle(
                 x=self._compute_x_pos(person.birth_day),
@@ -184,18 +185,30 @@ class Render:
 
         parental_family = self.__get_prenatal_family(person)
         if parental_family is not None:
-            logger.info(f"Finded family for {person} {(self._compute_x_pos(person.birth_day), y + _HEIGHT / 2, self._compute_x_pos(parental_family.wedding_day), y + _HEIGHT / 2)}")
+            logger.info(
+                f"Finded family for {person} {(self._compute_x_pos(person.birth_day), y + _HEIGHT / 2, self._compute_x_pos(parental_family.wedding_day), y + _HEIGHT / 2)}")
             self.__drawer.append(
                 draw.Lines(
                     self._compute_x_pos(person.birth_day), y + _HEIGHT / 2,
                     self._compute_x_pos(parental_family.wedding_day), y + _HEIGHT / 2,
-                    self._compute_x_pos(parental_family.wedding_day), y - _Y_STEP,
+                    self._compute_x_pos(parental_family.wedding_day), y - _Y_SPACING,
                     close=False,
                     stroke="black",
                     stroke_width=_LINE_WIDTH,
                     fill='none'
                 )
             )
+            if parental_family.is_full():
+                self.__drawer.append(
+                    draw.Lines(
+                        self._compute_x_pos(parental_family.wedding_day), y - _Y_SPACING,
+                        self._compute_x_pos(parental_family.wedding_day), y + _HEIGHT + _Y_SPACING,
+                        close=False,
+                        stroke="black",
+                        stroke_width=_LINE_WIDTH,
+                        fill='none'
+                    )
+                )
 
     def _compute_x_pos(self, date_: date):
         return (date_ - self.__older_date).days * _X_SCALE

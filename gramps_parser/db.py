@@ -135,6 +135,9 @@ class Family:
     def children(self) -> Set[Person]:
         return self.__children
 
+    def is_full(self) -> bool:
+        return self.father is not None and self.mother is not None
+
 
 class RelationType(Enum):
     MARRIAGE = 1
