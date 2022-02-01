@@ -267,7 +267,14 @@ class Database:
         for family_id, father_id, mother_id, person_id in relation_raw:
             if family_id not in families:
                 families[family_id] = Family(family_id)
-            if person_id == father_id or person_id == mother_id:
+            if person_id == father_id and mother_id is not None:
+                families[family_id].father = self.__persons[father_id]
+                families[family_id].mother = self.__persons[mother_id]
+                relations.add(Relation(father_id,
+                                       RelationType.MARRIAGE,
+                                       mother_id,
+                                       family_id))
+            elif person_id == mother_id and father_id is not None:
                 families[family_id].father = self.__persons[father_id]
                 families[family_id].mother = self.__persons[mother_id]
                 relations.add(Relation(father_id,

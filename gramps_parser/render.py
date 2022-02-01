@@ -64,19 +64,20 @@ class Render:
                 break
 
     def __get_next_person(self, person: Person) -> Optional[Person]:
+        child = self.__get_latest_child(person)
+        if child is not None:
+            return child
+
         partner = self.__get_oldest_partner(person)
         if partner is not None:
             return partner
-
-        child = self.__get_first_child(person)
-        if child is not None:
-            return child
 
         logger.info(f'There are no more next people for {person}')
 
         return None
 
-    def __get_first_child(self, person: Person):
+    def __get_latest_child(self, person: Person) -> Optional[Person]:
+        children = []
         for relation in self.__db.relations:
             if relation.type_of_relation != RelationType.BIRTH_FROM:
                 continue
@@ -84,7 +85,9 @@ class Render:
                 child = self.__unpined_person.get(relation.first_person_id)
                 if child is None:
                     continue
-                return child
+                children.append(child)
+        if children:
+            return max(children, key=attrgetter('birth_day'))
         return None
 
     def __get_oldest_partner(self, person: Person) -> Optional[Person]:
