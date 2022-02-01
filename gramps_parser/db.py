@@ -2,7 +2,7 @@ import pickle
 from enum import Enum
 from datetime import date, datetime, timedelta
 import sqlite3
-from typing import Tuple, List, Dict
+from typing import Tuple, List, Dict, Optional, Set
 from operator import attrgetter
 from singleton_decorator import singleton
 from loguru import logger
@@ -75,23 +75,35 @@ class Person:
         return f'{self.__full_name} ' \
                f'({self.__birth_day.year}-{r_year})'
 
+    def is_male(self):
+        return self.gender == Gender.MALE
+
+    def is_female(self):
+        return self.gender == Gender.FEMALE
+
+    def __eq__(self, other):
+        return self.id == other.id
+
+    def __hash__(self):
+        return hash(self.id)
+
 
 class Family:
-    def __init__(self, id):
-        self.__id = id
-        self.__father = None
-        self.__mother = None
-        self.__children = set()
+    def __init__(self, id: GrampsId):
+        self.__id = id  # type: GrampsId
+        self.__father = None  # type: Optional[Person]
+        self.__mother = None  # type: Optional[Person]
+        self.__children = set()  # type: Set[Person]
 
     def add_child(self, child: Person):
         self.__children.add(child)
 
     @property
-    def id(self):
+    def id(self) -> GrampsId:
         return self.__id
 
     @property
-    def father(self):
+    def father(self) -> Optional[Person]:
         return self.__father
 
     @father.setter
@@ -99,7 +111,7 @@ class Family:
         self.__father = value
 
     @property
-    def mother(self):
+    def mother(self) -> Optional[Person]:
         return self.__mother
 
     @mother.setter
@@ -107,7 +119,7 @@ class Family:
         self.__mother = value
 
     @property
-    def wedding_day(self):
+    def wedding_day(self) -> date:
         if self.__children:
             return min(self.__children,
                        key=attrgetter('birth_day')).birth_day
@@ -140,13 +152,8 @@ class Relation:
             return True
         return False
 
-    def __key(self):
-        return (
-            self.first_person_id, self.type_of_relation, self.other_person_id, self.family_id
-        )
-
     def __hash__(self):
-        return hash(self.__key())
+        return hash(self.family_id)
 
 
 class EventType(Enum):

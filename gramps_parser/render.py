@@ -64,7 +64,7 @@ class Render:
                 break
 
     def __get_next_person(self, person: Person) -> Optional[Person]:
-        child = self.__get_latest_child(person)
+        child = self.__get_latest_child_by_last_partner(person)
         if child is not None:
             return child
 
@@ -76,7 +76,9 @@ class Render:
 
         return None
 
-    def __get_latest_child(self, person: Person) -> Optional[Person]:
+    def __get_latest_child_by_last_partner(self, person: Person) -> Optional[Person]:
+        oldest_family = self.__get_oldest_family(person)
+
         children = []
         for relation in self.__db.relations:
             if relation.type_of_relation != RelationType.BIRTH_FROM:
@@ -94,6 +96,20 @@ class Render:
         partners = sorted(self.__get_partners(person, self.__unpined_person), key=attrgetter('birth_day'))
         if partners:
             return partners[-1]
+        return None
+
+    def __get_oldest_family(self, person: Person) -> Optional[Family]:
+        partner = self.__get_oldest_partner(person)
+        if partner is None:
+            return None
+
+        for family in self.__db.families.values():
+            if person.is_male():
+                if family.father == person and family.mother == partner:
+                    return family
+            if person.is_female():
+                if family.father == partner and family.mother == person:
+                    return family
         return None
 
     @staticmethod
