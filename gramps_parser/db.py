@@ -82,6 +82,8 @@ class Person:
         return self.gender == Gender.FEMALE
 
     def __eq__(self, other):
+        if other is None:
+            return False
         return self.id == other.id
 
     def __hash__(self):
@@ -128,6 +130,10 @@ class Family:
             parents = [self.__father, self.__mother]
             youngest = min((p.birth_day for p in parents if p is not None))
             return youngest + timedelta(days=majority)
+
+    @property
+    def children(self) -> Set[Person]:
+        return self.__children
 
 
 class RelationType(Enum):

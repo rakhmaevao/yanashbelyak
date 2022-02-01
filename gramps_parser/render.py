@@ -78,6 +78,14 @@ class Render:
 
     def __get_latest_child_by_last_partner(self, person: Person) -> Optional[Person]:
         oldest_family = self.__get_oldest_family(person)
+        if oldest_family is not None and oldest_family.children:
+            un_children = []
+            for child in oldest_family.children:
+                un_child = self.__unpined_person.get(child.id, None)
+                if un_child is not None:
+                    un_children.append(un_child)
+            if un_children:
+                return max(un_children, key=attrgetter("birth_day"))
 
         children = []
         for relation in self.__db.relations:
