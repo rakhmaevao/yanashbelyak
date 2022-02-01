@@ -5,7 +5,7 @@ import graphviz
 from db import Person, RelationType, Database, GrampsId, Family, Gender
 from datetime import datetime, date
 from loguru import logger
-import drawSvg as draw
+import drawSvg
 from operator import attrgetter
 
 
@@ -25,18 +25,26 @@ _COLORS = {Gender.MALE: 'lightblue',
            Gender.UNKNOWN: 'LightYellow'}
 
 
+def draw(db):
+    """
+    Так как размер изображения в drawsvg должен быть строго задан,
+    то я рисую граф сначала на листе нулевого размера.
+    После чего зная размер итогового изображения, повторяю рисование
+    в новых границах.
+    """
+    size = Render(db).get_size()
+    Render(db, size)
+
+
 class Render:
-    def __init__(self, db: Database):
+    def __init__(self, db: Database, size: Tuple[float, float] = (0.0, 0.0)):
         self.__db = db
         self.__unpined_person = copy.deepcopy(self.__db.persons)  # type: Dict[GrampsId, Person]
         self.__older_date = self.__get_older_person(self.__unpined_person).birth_day
-        self.__drawer = draw.Drawing(
-            (datetime.today().date() - self.__older_date).days * _X_SCALE,
-            (datetime.today().date() - self.__older_date).days * _X_SCALE
-        )
-        self.__vertical_index = -3
+        self.__drawer = drawSvg.Drawing(*size)
+        self.__vertical_index = -1
         while True:
-            self.__vertical_index += 2
+            self.__vertical_index += 1
             patriarch = self.__get_patriarch(self.__unpined_person, self.__vertical_index)
             if patriarch is None:
                 break
@@ -44,7 +52,14 @@ class Render:
 
             self.__recursively_adding_person_to_the_right(patriarch)
 
-        self.__drawer.saveSvg('content/images/tree.svg')
+        if size != (0.0, 0.0):
+            self.__drawer.saveSvg('content/images/tree.svg')
+
+    def get_size(self) -> Tuple[float, float]:
+        return (
+            (datetime.today().date() - self.__older_date).days * _X_SCALE,
+            (_HEIGHT + _Y_SPACING) * self.__vertical_index
+        )
 
     def __get_patriarch(self, where: Dict[GrampsId, Person], vertical_index: int):
         patriarch = self.__older_grandpa(where)
@@ -162,7 +177,7 @@ class Render:
         self.__vertical_index += 1
         y = (_HEIGHT + _Y_SPACING) * self.__vertical_index
         self.__drawer.append(
-            draw.Rectangle(
+            drawSvg.Rectangle(
                 x=self._compute_x_pos(person.birth_day),
                 y=y,
                 width=person.days_of_life * _X_SCALE,
@@ -173,7 +188,7 @@ class Render:
             )
         )
         self.__drawer.append(
-            draw.Text(
+            drawSvg.Text(
                 text=str(person),
                 fontSize=_FONT_SIZE,
                 x=self._compute_x_pos(person.birth_day),
@@ -183,12 +198,12 @@ class Render:
         del self.__unpined_person[person.id]
         logger.info(f"Added {person}")
 
-        parental_family = self.__get_prenatal_family(person)
+        parental_family = self.__get_parental_family(person)
         if parental_family is not None:
             logger.info(
                 f"Finded family for {person} {(self._compute_x_pos(person.birth_day), y + _HEIGHT / 2, self._compute_x_pos(parental_family.wedding_day), y + _HEIGHT / 2)}")
             self.__drawer.append(
-                draw.Lines(
+                drawSvg.Lines(
                     self._compute_x_pos(person.birth_day), y + _HEIGHT / 2,
                     self._compute_x_pos(parental_family.wedding_day), y + _HEIGHT / 2,
                     self._compute_x_pos(parental_family.wedding_day), y - _Y_SPACING,
@@ -200,7 +215,7 @@ class Render:
             )
             if parental_family.is_full():
                 self.__drawer.append(
-                    draw.Lines(
+                    drawSvg.Lines(
                         self._compute_x_pos(parental_family.wedding_day), y - _Y_SPACING,
                         self._compute_x_pos(parental_family.wedding_day), y + _HEIGHT + _Y_SPACING,
                         close=False,
@@ -213,7 +228,7 @@ class Render:
     def _compute_x_pos(self, date_: date):
         return (date_ - self.__older_date).days * _X_SCALE
 
-    def __get_prenatal_family(self, person: Person) -> Optional[Family]:
+    def __get_parental_family(self, person: Person) -> Optional[Family]:
         for family in self.__db.families.values():
             if person in family.children:
                 return family
