@@ -1,11 +1,12 @@
 import copy
 from operator import attrgetter
-from typing import List, Tuple, Dict
+from typing import List, Tuple, Dict, Optional
 import graphviz
 from db import Person, RelationType, Database, GrampsId, Family, Gender
 from datetime import datetime, date
 from loguru import logger
 import drawSvg as draw
+from operator import attrgetter
 
 
 class NotRightPersonException(Exception):
@@ -143,7 +144,7 @@ class Edge:
 class Render:
     def __init__(self, db: Database):
         self.__db = db
-        self.__unpined_person = copy.deepcopy(self.__db.persons)
+        self.__unpined_person = copy.deepcopy(self.__db.persons)  #type: Dict[GrampsId, Person]
         self.__older_date = self.__get_older_person(self.__unpined_person).birth_day
         self.__drawer = draw.Drawing(
             (datetime.today().date() - self.__older_date).days * _X_SCALE,
@@ -154,11 +155,14 @@ class Render:
         self.__vertical_index += 1
 
         patriarch = self.__add_patriarch(self.__unpined_person, self.__vertical_index)
-        new_person = self.__add_person_to_the_right(patriarch)
+        new_person = self.__get_next_person(patriarch)
+        self.__add_unrelated_person(new_person)
+        new_person = self.__get_next_person(patriarch)
+        self.__add_unrelated_person(new_person)
         # if patriarch is None:
         #     break
 
-            # self.__recursively_adding_person_to_the_right(patriarch)
+        # self.__recursively_adding_person_to_the_right(patriarch)
         #
         # self.__add_decor()
         # self.__to_dots()
@@ -170,7 +174,7 @@ class Render:
             patriarch = self.__older_grandma(where)
         if patriarch is not None:
             logger.info(f'Patriarchs of a new kind found: {patriarch}')
-            self.__add_unrelated_person(patriarch, vertical_index)
+            self.__add_unrelated_person(patriarch)
         return patriarch
 
     def __add_decor(self):
@@ -192,7 +196,7 @@ class Render:
         logger.info(f'Searching the person on the right for {person}')
         while True:
             try:
-                new_person = self.__add_person_to_the_right(person)
+                new_person = self.__get_next_person(person)
             except NotRightPersonException:
                 break
             else:
@@ -208,40 +212,18 @@ class Render:
             if isinstance(node, PersonNode):
                 del self.__unpined_person[node.id]
 
-    def __add_person_to_the_right(self, person: Person) -> \
-            Tuple[Person, int]:
-        while True:
-            ret_node = self.__add_first_partner(person)
-            if ret_node is not None:
-                break
+    def __get_next_person(self, person: Person) -> Person:
+        partner = self.__get_oldest_partner(person)
+        if partner is not None:
+            return partner
 
-            ret_node = self.__add_first_child(person)
-            if ret_node is not None:
-                break
-
-            logger.info(f'There are no more people on the right of {person}')
-
-            raise NotRightPersonException()
-
-        self.__append_node(ret_node)
-        logger.info(f'Found the person on the right: {ret_node.person}')
-        return ret_node.person
-
-    def __add_first_child(self, person: Person):
-        child, family = self.__get_first_child(person)
+        child = self.__get_first_child(person)
         if child is not None:
-            self.__ti += 1
-            self.__append_node(FamilyNode(family, self.__ti))
-            self.__append_edge(Edge(person.id,
-                                    RelationType.MARRIAGE,
-                                    family.id))
-            self.__ti += 1
-            node = PersonNode(child, self.__ti)
-            self.__append_edge(Edge(child.id,
-                                    RelationType.BIRTH_FROM,
-                                    family.id))
-            return node
-        return None
+            return child
+
+        logger.info(f'There are no more people on the right of {person}')
+
+        raise NotRightPersonException()
 
     def __append_edge(self, edge: Edge):
         found = False
@@ -259,9 +241,8 @@ class Render:
                 child = self.__unpined_person.get(relation.first_person_id)
                 if child is None:
                     continue
-                return child, self.__db.families[relation.family_id]
-
-        return None, None
+                return child
+        return None
 
     def __get_father(self, person: Person) -> \
             Tuple[Person, Family]:
@@ -278,27 +259,11 @@ class Render:
 
         return None, None
 
-    def __add_first_partner(self, person: Person):
-        ret_node = None
-        partners = self.__get_partners(person, self.__unpined_person)
+    def __get_oldest_partner(self, person: Person) -> Optional[Person]:
+        partners = sorted(self.__get_partners(person, self.__unpined_person), key=attrgetter('birth_day'))
         if partners:
-            partner, family = partners[0]
-            self.__vertical_index += 1
-            self.__append_node(FamilyNode(family, self.__vertical_index))
-            self.__append_edge(
-                Edge(person.id, RelationType.MARRIAGE, family.id))
-            self.__vertical_index += 1
-            ret_node = PersonNode(partner, self.__vertical_index)
-            self.__append_edge(Edge(partner.id,
-                                    RelationType.MARRIAGE,
-                                    family.id))
-        return ret_node
-
-    def __to_dots(self):
-        for node in self.__nodes:
-            self.__dot.node(**node.to_dot())
-        for edge in self.__edges:
-            self.__dot.edge(**edge.to_dot())
+            return partners[-1]
+        return None
 
     @staticmethod
     def __get_older_person(where: Dict[GrampsId, Person]) -> Person:
@@ -320,7 +285,7 @@ class Render:
         return min(womens, key=attrgetter('birth_day'))
 
     def __get_partners(self, person: Person, where: Dict[GrampsId, Person]) \
-            -> List[Tuple[Person, Family]]:
+            -> List[Person]:
         partners = []
         for relation in self.__db.relations:
             if relation.type_of_relation != RelationType.MARRIAGE:
@@ -333,17 +298,16 @@ class Render:
                 partner = where.get(relation.first_person_id)
 
             if partner is not None:
-                partners.append((
-                    partner,
-                    self.__db.families[relation.family_id]))
+                partners.append(partner)
 
         return partners
 
-    def __add_unrelated_person(self, person: Person, y_pos: int):
+    def __add_unrelated_person(self, person: Person):
+        self.__vertical_index += 1
         self.__drawer.append(
             draw.Rectangle(
                 x=self._compute_x_pos(person.birth_day),
-                y=(_HEIGHT + _Y_STEP) * y_pos,
+                y=(_HEIGHT + _Y_STEP) * self.__vertical_index,
                 width=person.days_of_life * _X_SCALE,
                 height=_HEIGHT,
                 stroke="black",
@@ -356,9 +320,11 @@ class Render:
                 text=str(person),
                 fontSize=_FONT_SIZE,
                 x=self._compute_x_pos(person.birth_day),
-                y=(_HEIGHT + _Y_STEP) * y_pos + (_HEIGHT - _FONT_SIZE)
+                y=(_HEIGHT + _Y_STEP) * self.__vertical_index + (_HEIGHT - _FONT_SIZE)
             )
         )
+        del self.__unpined_person[person.id]
+        logger.info(f"Added {person}")
 
     def _compute_x_pos(self, date_: date):
         return (date_ - self.__older_date).days * _X_SCALE

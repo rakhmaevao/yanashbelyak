@@ -175,7 +175,7 @@ class Database:
         return self.__families
 
     @property
-    def persons(self):
+    def persons(self) -> Dict[GrampsId, Person]:
         return self.__persons
 
     def __get_persons(self) -> Dict[GrampsId, Person]:
