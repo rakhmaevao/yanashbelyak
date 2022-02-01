@@ -150,15 +150,15 @@ class Render:
             (datetime.today().date() - self.__older_date).days * _X_SCALE
         )
         self.__vertical_index = -1
-        while True:
-            self.__vertical_index += 1
+        # while True:
+        self.__vertical_index += 1
 
-            patriarch = self.__add_patriarch(self.__unpined_person, self.__vertical_index)
-            break
-            if patriarch is None:
-                break
+        patriarch = self.__add_patriarch(self.__unpined_person, self.__vertical_index)
+        new_person = self.__add_person_to_the_right(patriarch)
+        # if patriarch is None:
+        #     break
 
-            self.__recursively_adding_person_to_the_right(patriarch)
+            # self.__recursively_adding_person_to_the_right(patriarch)
         #
         # self.__add_decor()
         # self.__to_dots()
@@ -211,11 +211,11 @@ class Render:
     def __add_person_to_the_right(self, person: Person) -> \
             Tuple[Person, int]:
         while True:
-            ret_node = self.__add_first_child(person)
+            ret_node = self.__add_first_partner(person)
             if ret_node is not None:
                 break
 
-            ret_node = self.__add_first_partner(person)
+            ret_node = self.__add_first_child(person)
             if ret_node is not None:
                 break
 
@@ -283,12 +283,12 @@ class Render:
         partners = self.__get_partners(person, self.__unpined_person)
         if partners:
             partner, family = partners[0]
-            self.__ti += 1
-            self.__append_node(FamilyNode(family, self.__ti))
+            self.__vertical_index += 1
+            self.__append_node(FamilyNode(family, self.__vertical_index))
             self.__append_edge(
                 Edge(person.id, RelationType.MARRIAGE, family.id))
-            self.__ti += 1
-            ret_node = PersonNode(partner, self.__ti)
+            self.__vertical_index += 1
+            ret_node = PersonNode(partner, self.__vertical_index)
             self.__append_edge(Edge(partner.id,
                                     RelationType.MARRIAGE,
                                     family.id))
@@ -320,7 +320,7 @@ class Render:
         return min(womens, key=attrgetter('birth_day'))
 
     def __get_partners(self, person: Person, where: Dict[GrampsId, Person]) \
-            -> List[Tuple[Family, Person]]:
+            -> List[Tuple[Person, Family]]:
         partners = []
         for relation in self.__db.relations:
             if relation.type_of_relation != RelationType.MARRIAGE:

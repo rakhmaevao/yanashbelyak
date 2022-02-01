@@ -132,6 +132,22 @@ class Relation:
         self.other_person_id = GrampsId(other_person_id)
         self.family_id = GrampsId(family_id)
 
+    def __eq__(self, other):
+        if self.first_person_id == other.first_person_id and \
+                self.type_of_relation == other.type_of_relation and \
+                self.other_person_id == other.other_person_id and \
+                self.family_id == other.family_id:
+            return True
+        return False
+
+    def __key(self):
+        return (
+            self.first_person_id, self.type_of_relation, self.other_person_id, self.family_id
+        )
+
+    def __hash__(self):
+        return hash(self.__key())
+
 
 class EventType(Enum):
     BIRTH = 12
@@ -245,40 +261,33 @@ class Database:
             f') '
             f'JOIN person ON person.handle = person_handle '
         )
-        relations = []
+        relations = set()
         families = dict()
         relation_raw = self.__cur.fetchall()
         for family_id, father_id, mother_id, person_id in relation_raw:
             if family_id not in families:
                 families[family_id] = Family(family_id)
-            if person_id == father_id and mother_id is not None:
+            if person_id == father_id or person_id == mother_id:
                 families[family_id].father = self.__persons[father_id]
                 families[family_id].mother = self.__persons[mother_id]
-                relations.append(Relation(father_id,
-                                          RelationType.MARRIAGE,
-                                          mother_id,
-                                          family_id))
-            elif person_id == mother_id and father_id is not None:
-                families[family_id].father = self.__persons[father_id]
-                families[family_id].mother = self.__persons[mother_id]
-                relations.append(Relation(father_id,
-                                          RelationType.MARRIAGE,
-                                          mother_id,
-                                          family_id))
+                relations.add(Relation(father_id,
+                                       RelationType.MARRIAGE,
+                                       mother_id,
+                                       family_id))
             elif person_id != father_id and person_id != mother_id:
                 if father_id is not None:
                     families[family_id].father = self.__persons[father_id]
                     families[family_id].add_child(self.__persons[person_id])
-                    relations.append(Relation(person_id,
-                                              RelationType.BIRTH_FROM,
-                                              father_id,
-                                              family_id))
+                    relations.add(Relation(person_id,
+                                           RelationType.BIRTH_FROM,
+                                           father_id,
+                                           family_id))
                 elif mother_id is not None:
                     families[family_id].mother = self.__persons[mother_id]
                     families[family_id].add_child(self.__persons[person_id])
-                    relations.append(Relation(person_id,
-                                              RelationType.BIRTH_FROM,
-                                              mother_id,
-                                              family_id))
+                    relations.add(Relation(person_id,
+                                           RelationType.BIRTH_FROM,
+                                           mother_id,
+                                           family_id))
 
         return relations, families
