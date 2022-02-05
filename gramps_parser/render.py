@@ -65,10 +65,21 @@ class Render:
                         [self.__nodes[family.father.id].y_pos, self.__nodes[family.mother.id].y_pos])
                     lower_y += _HEIGHT
                 else:
-                    ys = [self.__nodes[p.id].y_pos for p in family.children]
-                    ys.append(self.__nodes[family.parents[0].id].y_pos)
-                    top_y = max(ys) + _HEIGHT / 2
-                    lower_y = min(ys) + _HEIGHT
+                    single_parent = family.parents[0]
+                    nodes = [self.__nodes[p.id] for p in family.children]
+                    nodes.append(self.__nodes[single_parent.id])
+                    top_node = max(nodes, key=attrgetter("y_pos"))
+                    lower_node = min(nodes, key=attrgetter("y_pos"))
+
+                    if top_node.person == single_parent:
+                        top_y = top_node.y_pos
+                    else:
+                        top_y = top_node.y_pos + _HEIGHT / 2
+
+                    if lower_node.person == single_parent:
+                        lower_y = lower_node.y_pos + _HEIGHT
+                    else:
+                        lower_y = lower_node.y_pos + _HEIGHT / 2
 
                 self.__draw_objects.append(
                     drawSvg.Lines(
