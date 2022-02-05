@@ -68,6 +68,14 @@ class Person:
     def gender(self):
         return self.__gender
 
+    @property
+    def y_pos(self) -> Optional[float]:
+        return self.__y_pos
+
+    @y_pos.setter
+    def y_pos(self, value: float):
+        self.__y_pos = value
+
     def __str__(self):
         r_year = 'н. в.'
         if self.__death_day is not None:
@@ -135,6 +143,9 @@ class Family:
     def children(self) -> Set[Person]:
         return self.__children
 
+    def is_full(self) -> bool:
+        return self.father is not None and self.mother is not None
+
 
 class RelationType(Enum):
     MARRIAGE = 1
@@ -184,7 +195,7 @@ class Database:
         return self.__relations
 
     @property
-    def families(self):
+    def families(self) -> Dict[GrampsId, Family]:
         return self.__families
 
     @property
@@ -247,7 +258,7 @@ class Database:
             logger.error(f'{message} for raw_date {raw_date}')
             raise ValueError(message)
 
-    def __get_relationship(self) -> Tuple[List[Relation], List[Family]]:
+    def __get_relationship(self) -> Tuple[Set[Relation], Dict[GrampsId, Family]]:
 
         self.__cur.execute(
 
@@ -278,6 +289,7 @@ class Database:
         families = dict()
         relation_raw = self.__cur.fetchall()
         for family_id, father_id, mother_id, person_id in relation_raw:
+            family_id = GrampsId(family_id)
             if family_id not in families:
                 families[family_id] = Family(family_id)
             if person_id == father_id and mother_id is not None:

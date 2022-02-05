@@ -1,7 +1,6 @@
 import copy
 from operator import attrgetter
 from typing import List, Tuple, Dict, Optional
-import graphviz
 from db import Person, RelationType, Database, GrampsId, Family, Gender
 from datetime import datetime, date
 from loguru import logger
@@ -25,12 +24,27 @@ _COLORS = {Gender.MALE: 'lightblue',
            Gender.UNKNOWN: 'LightYellow'}
 
 
+class Node:
+    def __init__(self, person: Person, y_pos: float):
+        self.__person = person
+        self.__y_pos = y_pos
+
+    @property
+    def person(self):
+        return self.__person
+
+    @property
+    def y_pos(self):
+        return self.__y_pos
+
+
 class Render:
     def __init__(self, db: Database):
         self.__db = db
         self.__unpined_person = copy.deepcopy(self.__db.persons)  # type: Dict[GrampsId, Person]
         self.__older_date = self.__get_older_person(self.__unpined_person).birth_day
 
+        self.__nodes = []  # type: List[Node]
         self.__draw_objects = []
         self.__vertical_index = -1
         while True:
@@ -43,6 +57,21 @@ class Render:
             self.__recursively_adding_person_to_the_right(patriarch)
 
         draw_svg = drawSvg.Drawing(*self.get_size())
+
+        for family in self.__db.families.values():
+            if family.is_full():
+                lower_partner, top_partner = sorted([family.father, family.mother], key=attrgetter("y_pos"))
+                self.__draw_objects.append(
+                    drawSvg.Lines(
+                        self._compute_x_pos(family.wedding_day), lower_partner.y_pos + _HEIGHT,
+                        self._compute_x_pos(family.wedding_day), top_partner.y_pos - _HEIGHT,
+                        close=False,
+                        stroke="black",
+                        stroke_width=_LINE_WIDTH,
+                        fill='none'
+                    )
+                )
+
         [draw_svg.append(obj) for obj in self.__draw_objects]
         draw_svg.saveSvg('../content/images/tree.svg')
 
@@ -203,6 +232,7 @@ class Render:
                     fill='none'
                 )
             )
+        person.y_pos = y
 
     def _compute_x_pos(self, date_: date):
         return (date_ - self.__older_date).days * _X_SCALE
