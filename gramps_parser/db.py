@@ -68,14 +68,6 @@ class Person:
     def gender(self):
         return self.__gender
 
-    @property
-    def y_pos(self) -> Optional[float]:
-        return self.__y_pos
-
-    @y_pos.setter
-    def y_pos(self, value: float):
-        self.__y_pos = value
-
     def __str__(self):
         r_year = 'н. в.'
         if self.__death_day is not None:
@@ -119,6 +111,10 @@ class Family:
     @father.setter
     def father(self, value: Person):
         self.__father = value
+
+    @property
+    def parents(self) -> Tuple[Optional[Person], Optional[Person]]:
+        return self.__father, self.__mother
 
     @property
     def mother(self) -> Optional[Person]:

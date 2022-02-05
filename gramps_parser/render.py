@@ -44,12 +44,12 @@ class Render:
         self.__unpined_person = copy.deepcopy(self.__db.persons)  # type: Dict[GrampsId, Person]
         self.__older_date = self.__get_older_person(self.__unpined_person).birth_day
 
-        self.__nodes = []  # type: List[Node]
-        self.__draw_objects = []
+        self.__nodes = dict()  # type: Dict[GrampsId, Node]
+        self.__draw_objects = []  # type: List[drawSvg.DrawingElement]
         self.__vertical_index = -1
         while True:
             self.__vertical_index += 1
-            patriarch = self.__get_patriarch(self.__unpined_person, self.__vertical_index)
+            patriarch = self.__get_patriarch(self.__unpined_person)
             if patriarch is None:
                 break
             self.__add_person(patriarch)
@@ -59,12 +59,21 @@ class Render:
         draw_svg = drawSvg.Drawing(*self.get_size())
 
         for family in self.__db.families.values():
-            if family.is_full():
-                lower_partner, top_partner = sorted([family.father, family.mother], key=attrgetter("y_pos"))
+            if len(family.children) != 0 or family.is_full():
+                if family.is_full():
+                    lower_y, top_y = sorted(
+                        [self.__nodes[family.father.id].y_pos, self.__nodes[family.mother.id].y_pos])
+                    lower_y += _HEIGHT
+                else:
+                    ys = [self.__nodes[p.id].y_pos for p in family.children]
+                    ys.append(self.__nodes[family.parents[0].id].y_pos)
+                    top_y = max(ys) + _HEIGHT / 2
+                    lower_y = min(ys) + _HEIGHT
+
                 self.__draw_objects.append(
                     drawSvg.Lines(
-                        self._compute_x_pos(family.wedding_day), lower_partner.y_pos + _HEIGHT,
-                        self._compute_x_pos(family.wedding_day), top_partner.y_pos - _HEIGHT,
+                        self._compute_x_pos(family.wedding_day), lower_y,
+                        self._compute_x_pos(family.wedding_day), top_y,
                         close=False,
                         stroke="black",
                         stroke_width=_LINE_WIDTH,
@@ -81,7 +90,7 @@ class Render:
             (_HEIGHT + _Y_SPACING) * self.__vertical_index
         )
 
-    def __get_patriarch(self, where: Dict[GrampsId, Person], vertical_index: int):
+    def __get_patriarch(self, where: Dict[GrampsId, Person]):
         patriarch = self.__older_grandpa(where)
         if patriarch is None:
             patriarch = self.__older_grandma(where)
@@ -232,7 +241,7 @@ class Render:
                     fill='none'
                 )
             )
-        person.y_pos = y
+        self.__nodes[person.id] = Node(person, y)
 
     def _compute_x_pos(self, date_: date):
         return (date_ - self.__older_date).days * _X_SCALE
