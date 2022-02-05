@@ -25,23 +25,13 @@ _COLORS = {Gender.MALE: 'lightblue',
            Gender.UNKNOWN: 'LightYellow'}
 
 
-def draw(db):
-    """
-    Так как размер изображения в drawsvg должен быть строго задан,
-    то я рисую граф сначала на листе нулевого размера.
-    После чего зная размер итогового изображения, повторяю рисование
-    в новых границах.
-    """
-    size = Render(db).get_size()
-    Render(db, size)
-
-
 class Render:
-    def __init__(self, db: Database, size: Tuple[float, float] = (0.0, 0.0)):
+    def __init__(self, db: Database):
         self.__db = db
         self.__unpined_person = copy.deepcopy(self.__db.persons)  # type: Dict[GrampsId, Person]
         self.__older_date = self.__get_older_person(self.__unpined_person).birth_day
-        self.__drawer = drawSvg.Drawing(*size)
+
+        self.__draw_objects = []
         self.__vertical_index = -1
         while True:
             self.__vertical_index += 1
@@ -52,8 +42,9 @@ class Render:
 
             self.__recursively_adding_person_to_the_right(patriarch)
 
-        if size != (0.0, 0.0):
-            self.__drawer.saveSvg('content/images/tree.svg')
+        draw_svg = drawSvg.Drawing(*self.get_size())
+        [draw_svg.append(obj) for obj in self.__draw_objects]
+        draw_svg.saveSvg('content/images/tree.svg')
 
     def get_size(self) -> Tuple[float, float]:
         return (
@@ -176,7 +167,7 @@ class Render:
     def __add_person(self, person: Person):
         self.__vertical_index += 1
         y = (_HEIGHT + _Y_SPACING) * self.__vertical_index
-        self.__drawer.append(
+        self.__draw_objects.append(
             drawSvg.Rectangle(
                 x=self._compute_x_pos(person.birth_day),
                 y=y,
@@ -187,7 +178,7 @@ class Render:
                 fill=_COLORS[person.gender]
             )
         )
-        self.__drawer.append(
+        self.__draw_objects.append(
             drawSvg.Text(
                 text=str(person),
                 fontSize=_FONT_SIZE,
@@ -202,7 +193,7 @@ class Render:
         if parental_family is not None:
             logger.info(
                 f"Finded family for {person} {(self._compute_x_pos(person.birth_day), y + _HEIGHT / 2, self._compute_x_pos(parental_family.wedding_day), y + _HEIGHT / 2)}")
-            self.__drawer.append(
+            self.__draw_objects.append(
                 drawSvg.Lines(
                     self._compute_x_pos(person.birth_day), y + _HEIGHT / 2,
                     self._compute_x_pos(parental_family.wedding_day), y + _HEIGHT / 2,
@@ -214,7 +205,7 @@ class Render:
                 )
             )
             if parental_family.is_full():
-                self.__drawer.append(
+                self.__draw_objects.append(
                     drawSvg.Lines(
                         self._compute_x_pos(parental_family.wedding_day), y - _Y_SPACING,
                         self._compute_x_pos(parental_family.wedding_day), y + _HEIGHT + _Y_SPACING,
