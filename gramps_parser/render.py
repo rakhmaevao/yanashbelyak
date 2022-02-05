@@ -44,7 +44,7 @@ class Render:
 
         draw_svg = drawSvg.Drawing(*self.get_size())
         [draw_svg.append(obj) for obj in self.__draw_objects]
-        draw_svg.saveSvg('content/images/tree.svg')
+        draw_svg.saveSvg('../content/images/tree.svg')
 
     def get_size(self) -> Tuple[float, float]:
         return (
@@ -197,24 +197,12 @@ class Render:
                 drawSvg.Lines(
                     self._compute_x_pos(person.birth_day), y + _HEIGHT / 2,
                     self._compute_x_pos(parental_family.wedding_day), y + _HEIGHT / 2,
-                    self._compute_x_pos(parental_family.wedding_day), y - _Y_SPACING,
                     close=False,
                     stroke="black",
                     stroke_width=_LINE_WIDTH,
                     fill='none'
                 )
             )
-            if parental_family.is_full():
-                self.__draw_objects.append(
-                    drawSvg.Lines(
-                        self._compute_x_pos(parental_family.wedding_day), y - _Y_SPACING,
-                        self._compute_x_pos(parental_family.wedding_day), y + _HEIGHT + _Y_SPACING,
-                        close=False,
-                        stroke="black",
-                        stroke_width=_LINE_WIDTH,
-                        fill='none'
-                    )
-                )
 
     def _compute_x_pos(self, date_: date):
         return (date_ - self.__older_date).days * _X_SCALE

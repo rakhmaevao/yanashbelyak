@@ -124,7 +124,7 @@ class Family:
     def wedding_day(self) -> date:
         if self.__children:
             return min(self.__children,
-                       key=attrgetter('birth_day')).birth_day
+                       key=attrgetter('birth_day')).birth_day - timedelta(weeks=40)
         else:
             majority = 360 * 18
             parents = [self.__father, self.__mother]
@@ -134,9 +134,6 @@ class Family:
     @property
     def children(self) -> Set[Person]:
         return self.__children
-
-    def is_full(self) -> bool:
-        return self.father is not None and self.mother is not None
 
 
 class RelationType(Enum):
