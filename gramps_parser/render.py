@@ -58,8 +58,14 @@ class Render:
 
             self.__recursively_adding_person_to_the_right(patriarch)
 
-        draw_svg = drawSvg.Drawing(*self.get_size())
+        draw_svg = drawSvg.Drawing(*self.__get_size())
 
+        self.__add_family_lines()
+
+        [draw_svg.append(obj) for obj in self.__draw_objects]
+        draw_svg.saveSvg('../content/images/tree.svg')
+
+    def __add_family_lines(self):
         for family in self.__db.families.values():
             if len(family.children) != 0 or family.is_full():
                 nodes = [self.__nodes[p.id] for p in family.children] + [self.__nodes[parent.id] for parent in list(family.parents)]
@@ -111,10 +117,7 @@ class Render:
                     )
                 )
 
-        [draw_svg.append(obj) for obj in self.__draw_objects]
-        draw_svg.saveSvg('../content/images/tree.svg')
-
-    def get_size(self) -> Tuple[float, float]:
+    def __get_size(self) -> Tuple[float, float]:
         return (
             (datetime.today().date() - self.__older_date).days * _X_SCALE,
             (_HEIGHT + _Y_SPACING) * self.__vertical_index
