@@ -21,6 +21,7 @@ _LINE_WIDTH = 0.8
 _TRIANGLE_HEIGHT = 4
 _TRIANGLE_WEIGHT = 4
 _DASH_WEIGHT = 20
+_X_OFFSET = _HEIGHT
 
 _COLORS = {Gender.MALE: 'lightblue',
            Gender.FEMALE: 'pink',
@@ -185,7 +186,7 @@ class Render:
 
     def __get_size(self) -> Tuple[float, float]:
         return (
-            (datetime.today().date() - self.__older_date).days * _X_SCALE,
+            (datetime.today().date() - self.__older_date).days * _X_SCALE + _X_OFFSET * 10,
             (_HEIGHT + _Y_SPACING) * (self.__vertical_index + 2)
         )
 
@@ -343,7 +344,7 @@ class Render:
         self.__nodes[person.id] = Node(person, y)
 
     def _compute_x_pos(self, date_: date):
-        return (date_ - self.__older_date).days * _X_SCALE
+        return (date_ - self.__older_date).days * _X_SCALE + _X_OFFSET
 
     def __get_parental_family(self, person: Person) -> Optional[Family]:
         for family in self.__db.families.values():
