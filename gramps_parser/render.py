@@ -20,6 +20,7 @@ _HEIGHT = _FONT_SIZE * 1.2
 _LINE_WIDTH = 0.8
 _TRIANGLE_HEIGHT = 4
 _TRIANGLE_WEIGHT = 4
+_DASH_WEIGHT = 20
 
 _COLORS = {Gender.MALE: 'lightblue',
            Gender.FEMALE: 'pink',
@@ -60,7 +61,10 @@ class Render:
 
         family_lines = self.__create_family_lines()
 
+        background = self.__create_background()
+
         draw_svg = drawSvg.Drawing(*self.__get_size())
+        [draw_svg.append(obj) for obj in background]
         [draw_svg.append(obj) for obj in family_lines]
         [draw_svg.append(obj) for obj in self.__draw_objects]
         draw_svg.saveSvg('../content/images/tree.svg')
@@ -91,6 +95,42 @@ class Render:
             )
         else:
             raise ValueError(f'Unknown direction: {direction}')
+
+    def __create_time_slice(self, lable: str, date: date, date_view: bool) -> List[drawSvg.DrawingElement]:
+        x = self._compute_x_pos(date)
+        y_max = (_HEIGHT + _Y_SPACING) * self.__vertical_index
+        y_min = _HEIGHT
+        ret_objects = [
+            drawSvg.Lines(
+                x - _DASH_WEIGHT / 2, y_min,
+                x + _DASH_WEIGHT / 2, y_min,
+                x, y_min,
+                x, y_max,
+                x + _DASH_WEIGHT / 2, y_max,
+                x - _DASH_WEIGHT / 2, y_max,
+                close=False,
+                stroke="gray",
+                stroke_width=_LINE_WIDTH,
+                fill='none'
+            ),
+            drawSvg.Text(
+                text=lable,
+                fontSize=_FONT_SIZE,
+                x=x - _FONT_SIZE * 0.7 * len(lable) / 2,
+                y=y_max + _HEIGHT + _Y_SPACING / 2
+            ),
+        ]
+        if date_view:
+            ret_objects.append(
+                drawSvg.Text(text=str(date), fontSize=_FONT_SIZE, x=x - _FONT_SIZE * 2.5, y=y_max + _Y_SPACING / 2)
+            )
+        return ret_objects
+
+    def __create_background(self) -> List[drawSvg.DrawingElement]:
+        background = []
+        background += self.__create_time_slice("ВОВ", date(1941, 6, 22), date_view=False)
+        background += self.__create_time_slice("", date(1945, 5, 9), date_view=False)
+        return background
 
     def __create_family_lines(self):
         family_lines = []
@@ -142,7 +182,7 @@ class Render:
     def __get_size(self) -> Tuple[float, float]:
         return (
             (datetime.today().date() - self.__older_date).days * _X_SCALE,
-            (_HEIGHT + _Y_SPACING) * self.__vertical_index
+            (_HEIGHT + _Y_SPACING) * (self.__vertical_index + 2)
         )
 
     def __get_patriarch(self, where: Dict[GrampsId, Person]):
