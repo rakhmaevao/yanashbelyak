@@ -17,7 +17,7 @@ _Y_SPACING = 6
 _X_SCALE = 0.01
 _FONT_SIZE = 12
 _HEIGHT = _FONT_SIZE * 1.2
-_LINE_WIDTH = 1
+_LINE_WIDTH = 0.8
 _TRIANGLE_HEIGHT = 4
 _TRIANGLE_WEIGHT = 4
 
@@ -58,10 +58,10 @@ class Render:
 
             self.__recursively_adding_person_to_the_right(patriarch)
 
+        family_lines = self.__create_family_lines()
+
         draw_svg = drawSvg.Drawing(*self.__get_size())
-
-        self.__add_family_lines()
-
+        [draw_svg.append(obj) for obj in family_lines]
         [draw_svg.append(obj) for obj in self.__draw_objects]
         draw_svg.saveSvg('../content/images/tree.svg')
 
@@ -92,7 +92,8 @@ class Render:
         else:
             raise ValueError(f'Unknown direction: {direction}')
 
-    def __add_family_lines(self):
+    def __create_family_lines(self):
+        family_lines = []
         for family in self.__db.families.values():
             if len(family.children) != 0 or family.is_full():
                 nodes = [self.__nodes[p.id] for p in family.children] + \
@@ -106,19 +107,19 @@ class Render:
                     if node.person in family.parents:
                         if node.person == top_node.person:
                             top_y = node.y_pos
-                            self.__draw_objects.append(
+                            family_lines.append(
                                 self.__get_triangular(top_y, x_pos, "down")
                             )
                         elif node.person == lower_node.person:
                             lower_y = node.y_pos + _HEIGHT
-                            self.__draw_objects.append(
+                            family_lines.append(
                                 self.__get_triangular(lower_y, x_pos, "up")
                             )
                         else:
-                            self.__draw_objects.append(
+                            family_lines.append(
                                 self.__get_triangular(node.y_pos, x_pos, "down")
                             )
-                            self.__draw_objects.append(
+                            family_lines.append(
                                 self.__get_triangular(node.y_pos + _HEIGHT, x_pos, "up")
                             )
                     else:
@@ -127,7 +128,7 @@ class Render:
                         elif node.person == lower_node.person:
                             lower_y = node.y_pos + _HEIGHT / 2
 
-                self.__draw_objects.append(
+                family_lines.append(
                     drawSvg.Lines(
                         x_pos, lower_y, x_pos, top_y,
                         close=False,
@@ -136,6 +137,7 @@ class Render:
                         fill='none'
                     )
                 )
+        return family_lines
 
     def __get_size(self) -> Tuple[float, float]:
         return (
