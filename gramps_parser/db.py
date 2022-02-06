@@ -1,7 +1,9 @@
 import pickle
+import random
 from enum import Enum
 from datetime import date, datetime, timedelta
 import sqlite3
+from functools import cached_property
 from typing import Tuple, List, Dict, Optional, Set
 from operator import attrgetter
 from singleton_decorator import singleton
@@ -124,11 +126,12 @@ class Family:
     def mother(self, value: Person):
         self.__mother = value
 
-    @property
+    @cached_property
     def wedding_day(self) -> date:
         if self.__children:
-            return min(self.__children,
-                       key=attrgetter('birth_day')).birth_day - timedelta(weeks=40)
+            return min(self.__children, key=attrgetter('birth_day')).birth_day - \
+                   timedelta(weeks=40) - \
+                   timedelta(weeks=random.randint(a=0, b=500))
         else:
             majority = 360 * 18
             parents = [self.__father, self.__mother]
