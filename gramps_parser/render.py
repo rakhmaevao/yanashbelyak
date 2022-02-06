@@ -18,6 +18,8 @@ _X_SCALE = 0.01
 _FONT_SIZE = 12
 _HEIGHT = _FONT_SIZE * 1.2
 _LINE_WIDTH = 1
+_TRIANGLE_HEIGHT = 4
+_TRIANGLE_WEIGHT = 4
 
 _COLORS = {Gender.MALE: 'lightblue',
            Gender.FEMALE: 'pink',
@@ -66,11 +68,35 @@ class Render:
 
                 if top_node.person in family.parents:
                     top_y = top_node.y_pos
+                    self.__draw_objects.append(
+                        drawSvg.Lines(
+                            self._compute_x_pos(family.wedding_day) - _TRIANGLE_WEIGHT / 2, top_node.y_pos,
+                            self._compute_x_pos(family.wedding_day) + _TRIANGLE_WEIGHT / 2, top_node.y_pos,
+                            self._compute_x_pos(family.wedding_day), top_node.y_pos - _TRIANGLE_HEIGHT,
+                            self._compute_x_pos(family.wedding_day) - _TRIANGLE_WEIGHT / 2, top_node.y_pos,
+                            close=False,
+                            stroke="black",
+                            stroke_width=_LINE_WIDTH,
+                            fill='none'
+                        )
+                    )
                 else:
                     top_y = top_node.y_pos + _HEIGHT / 2
 
                 if lower_node.person in family.parents:
                     lower_y = lower_node.y_pos + _HEIGHT
+                    self.__draw_objects.append(
+                        drawSvg.Lines(
+                            self._compute_x_pos(family.wedding_day) - _TRIANGLE_WEIGHT / 2, lower_y,
+                            self._compute_x_pos(family.wedding_day) + _TRIANGLE_WEIGHT / 2, lower_y,
+                            self._compute_x_pos(family.wedding_day), lower_y + _TRIANGLE_HEIGHT,
+                            self._compute_x_pos(family.wedding_day) - _TRIANGLE_WEIGHT / 2, lower_y,
+                            close=False,
+                            stroke="black",
+                            stroke_width=_LINE_WIDTH,
+                            fill='none'
+                        )
+                    )
                 else:
                     lower_y = lower_node.y_pos + _HEIGHT / 2
 
