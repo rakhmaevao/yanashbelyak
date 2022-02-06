@@ -1,5 +1,4 @@
 import copy
-from operator import attrgetter
 from typing import List, Tuple, Dict, Optional
 from db import Person, RelationType, Database, GrampsId, Family, Gender
 from datetime import datetime, date
@@ -329,8 +328,6 @@ class Render:
 
         parental_family = self.__get_parental_family(person)
         if parental_family is not None:
-            logger.info(
-                f"Finded family for {person} {(self._compute_x_pos(person.birth_day), y + _HEIGHT / 2, self._compute_x_pos(parental_family.wedding_day), y + _HEIGHT / 2)}")
             self.__draw_objects.append(
                 drawSvg.Lines(
                     self._compute_x_pos(person.birth_day), y + _HEIGHT / 2,
