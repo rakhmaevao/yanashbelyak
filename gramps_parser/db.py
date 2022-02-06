@@ -1,8 +1,10 @@
 import pickle
+import random
 from enum import Enum
 from datetime import date, datetime, timedelta
 import sqlite3
-from typing import Tuple, List, Dict
+from functools import cached_property
+from typing import Tuple, List, Dict, Optional, Set
 from operator import attrgetter
 from singleton_decorator import singleton
 from loguru import logger
@@ -75,23 +77,37 @@ class Person:
         return f'{self.__full_name} ' \
                f'({self.__birth_day.year}-{r_year})'
 
+    def is_male(self):
+        return self.gender == Gender.MALE
+
+    def is_female(self):
+        return self.gender == Gender.FEMALE
+
+    def __eq__(self, other):
+        if other is None:
+            return False
+        return self.id == other.id
+
+    def __hash__(self):
+        return hash(self.id)
+
 
 class Family:
-    def __init__(self, id):
-        self.__id = id
-        self.__father = None
-        self.__mother = None
-        self.__children = set()
+    def __init__(self, id: GrampsId):
+        self.__id = id  # type: GrampsId
+        self.__father = None  # type: Optional[Person]
+        self.__mother = None  # type: Optional[Person]
+        self.__children = set()  # type: Set[Person]
 
     def add_child(self, child: Person):
         self.__children.add(child)
 
     @property
-    def id(self):
+    def id(self) -> GrampsId:
         return self.__id
 
     @property
-    def father(self):
+    def father(self) -> Optional[Person]:
         return self.__father
 
     @father.setter
@@ -99,23 +115,35 @@ class Family:
         self.__father = value
 
     @property
-    def mother(self):
+    def parents(self) -> Set[Person]:
+        return set([person for person in [self.__father, self.__mother] if person is not None])
+
+    @property
+    def mother(self) -> Optional[Person]:
         return self.__mother
 
     @mother.setter
     def mother(self, value: Person):
         self.__mother = value
 
-    @property
-    def wedding_day(self):
+    @cached_property
+    def wedding_day(self) -> date:
         if self.__children:
-            return min(self.__children,
-                       key=attrgetter('birth_day')).birth_day
+            return min(self.__children, key=attrgetter('birth_day')).birth_day - \
+                   timedelta(weeks=40) - \
+                   timedelta(weeks=random.randint(a=0, b=500))
         else:
             majority = 360 * 18
             parents = [self.__father, self.__mother]
             youngest = min((p.birth_day for p in parents if p is not None))
             return youngest + timedelta(days=majority)
+
+    @property
+    def children(self) -> Set[Person]:
+        return self.__children
+
+    def is_full(self) -> bool:
+        return self.father is not None and self.mother is not None
 
 
 class RelationType(Enum):
@@ -131,6 +159,17 @@ class Relation:
         self.type_of_relation = type_of_relation
         self.other_person_id = GrampsId(other_person_id)
         self.family_id = GrampsId(family_id)
+
+    def __eq__(self, other):
+        if self.first_person_id == other.first_person_id and \
+                self.type_of_relation == other.type_of_relation and \
+                self.other_person_id == other.other_person_id and \
+                self.family_id == other.family_id:
+            return True
+        return False
+
+    def __hash__(self):
+        return hash(self.family_id)
 
 
 class EventType(Enum):
@@ -155,11 +194,11 @@ class Database:
         return self.__relations
 
     @property
-    def families(self):
+    def families(self) -> Dict[GrampsId, Family]:
         return self.__families
 
     @property
-    def persons(self):
+    def persons(self) -> Dict[GrampsId, Person]:
         return self.__persons
 
     def __get_persons(self) -> Dict[GrampsId, Person]:
@@ -218,7 +257,7 @@ class Database:
             logger.error(f'{message} for raw_date {raw_date}')
             raise ValueError(message)
 
-    def __get_relationship(self) -> Tuple[List[Relation], List[Family]]:
+    def __get_relationship(self) -> Tuple[Set[Relation], Dict[GrampsId, Family]]:
 
         self.__cur.execute(
 
@@ -245,40 +284,41 @@ class Database:
             f') '
             f'JOIN person ON person.handle = person_handle '
         )
-        relations = []
+        relations = set()
         families = dict()
         relation_raw = self.__cur.fetchall()
         for family_id, father_id, mother_id, person_id in relation_raw:
+            family_id = GrampsId(family_id)
             if family_id not in families:
                 families[family_id] = Family(family_id)
             if person_id == father_id and mother_id is not None:
                 families[family_id].father = self.__persons[father_id]
                 families[family_id].mother = self.__persons[mother_id]
-                relations.append(Relation(father_id,
-                                          RelationType.MARRIAGE,
-                                          mother_id,
-                                          family_id))
+                relations.add(Relation(father_id,
+                                       RelationType.MARRIAGE,
+                                       mother_id,
+                                       family_id))
             elif person_id == mother_id and father_id is not None:
                 families[family_id].father = self.__persons[father_id]
                 families[family_id].mother = self.__persons[mother_id]
-                relations.append(Relation(father_id,
-                                          RelationType.MARRIAGE,
-                                          mother_id,
-                                          family_id))
+                relations.add(Relation(father_id,
+                                       RelationType.MARRIAGE,
+                                       mother_id,
+                                       family_id))
             elif person_id != father_id and person_id != mother_id:
                 if father_id is not None:
                     families[family_id].father = self.__persons[father_id]
                     families[family_id].add_child(self.__persons[person_id])
-                    relations.append(Relation(person_id,
-                                              RelationType.BIRTH_FROM,
-                                              father_id,
-                                              family_id))
+                    relations.add(Relation(person_id,
+                                           RelationType.BIRTH_FROM,
+                                           father_id,
+                                           family_id))
                 elif mother_id is not None:
                     families[family_id].mother = self.__persons[mother_id]
                     families[family_id].add_child(self.__persons[person_id])
-                    relations.append(Relation(person_id,
-                                              RelationType.BIRTH_FROM,
-                                              mother_id,
-                                              family_id))
+                    relations.add(Relation(person_id,
+                                           RelationType.BIRTH_FROM,
+                                           mother_id,
+                                           family_id))
 
         return relations, families

@@ -1,238 +1,237 @@
 import copy
-from operator import attrgetter
-from typing import List, Tuple, Dict
-import graphviz
+from typing import List, Tuple, Dict, Optional
 from db import Person, RelationType, Database, GrampsId, Family, Gender
 from datetime import datetime, date
 from loguru import logger
+import drawSvg
+from operator import attrgetter
 
 
 class NotRightPersonException(Exception):
     pass
 
 
+_DAY_IN_CENTURY = 360 * 100
+_Y_SPACING = 6
+_X_SCALE = 0.01
+_FONT_SIZE = 12
+_HEIGHT = _FONT_SIZE * 1.2
+_LINE_WIDTH = 0.8
+_TRIANGLE_HEIGHT = 4
+_TRIANGLE_WEIGHT = 4
+_DASH_WEIGHT = 20
+_X_OFFSET = _HEIGHT
+
+_COLORS = {Gender.MALE: 'lightblue',
+           Gender.FEMALE: 'pink',
+           Gender.UNKNOWN: 'LightYellow'}
+
+
 class Node:
-    _DAY_IN_CENTURY = 360 * 100
-    _Y_STEP = 0.1
-    _HEIGHT = 0.15
-    _X_SCALE = 7
-    _FONT_SIZE = '12'
-
-    def __init__(self, y_pos):
-        self._y_pos = y_pos * self._Y_STEP
-        self._id = None
-
-    def __eq__(self, other):
-        if self._id == other._id:
-            return True
-        return False
-
-    def _compute_x_pos(self, date: date):
-        dt = (date - datetime.now().date()).days
-        return self._X_SCALE * dt / self._DAY_IN_CENTURY
-
-    @property
-    def id(self):
-        return self._id
-
-
-class NoteNode(Node):
-    def __init__(self, y_pos, date, label):
-        super().__init__(y_pos)
-        self._id = label + str(y_pos)
-        self.__label = label
-        self.__x_pos = self._compute_x_pos(date)
-
-    def to_dot(self):
-        return {'name': self._id,
-                'label': f'{self.__label}',
-                'shape': 'underline',
-                'fontsize': self._FONT_SIZE,
-                'pos': f'{self.__x_pos}, {self._y_pos}!'}
-
-
-class FamilyNode(Node):
-
-    def __init__(self, family: Family, y_pos: int):
-        super().__init__(y_pos)
-        self._id = family.id
-        self.__x_pos = self._compute_x_pos(family.wedding_day)
-
-    def to_dot(self):
-        return {'name': self._id,
-                'label': '',
-                'shape': 'circle',
-                'height': str(self._HEIGHT - self._Y_STEP), 'width': str(self._HEIGHT - self._Y_STEP),
-                'fixedsize': 'true',
-                'fontsize': self._FONT_SIZE,
-                'pos': f'{self.__x_pos}, {self._y_pos}!'}
-
-
-class PersonNode(Node):
-    __COLORS = {Gender.MALE: 'lightblue',
-                Gender.FEMALE: 'pink',
-                Gender.UNKNOWN: 'LightYellow'}
-
-    def __init__(self, person: Person, y_pos: int):
-        super().__init__(y_pos)
-        self._id = person.id
+    def __init__(self, person: Person, y_pos: float):
         self.__person = person
-        self.__height = self._HEIGHT
-        self.__width = self._X_SCALE * person.days_of_life / self._DAY_IN_CENTURY
-        self.__x_pos = self._compute_x_pos(person.mid_life)
+        self.__y_pos = y_pos
 
     @property
-    def person(self) -> Person:
+    def person(self):
         return self.__person
 
-    def to_dot(self):
-        return {'name': self._id,
-                'label': str(self.__person),
-                'style': 'filled',
-                'fillcolor': self.__COLORS[self.__person.gender],
-                'shape': 'box',
-                'height': str(self.__height), 'width': str(self.__width),
-                'fixedsize': 'true',
-                'fontsize': self._FONT_SIZE,
-                'pos': f'{self.__x_pos}, {self._y_pos}!'}
-
-
-class Edge:
-    def __init__(self, first: GrampsId,
-                 type_of_relation: RelationType,
-                 other: GrampsId):
-
-        self.__first_item_id = first
-        self.__other_item_id = other
-
-        if type_of_relation == RelationType.BIRTH_FROM:
-            self.__arrow = 'vee'
-        elif type_of_relation == RelationType.MARRIAGE:
-            self.__arrow = 'none'
-        elif type_of_relation == RelationType.SIMPLE:
-            self.__arrow = 'none'
-        else:
-            raise ValueError(f'Unknown relation type: '
-                             f'{type_of_relation}')
-
-    def __eq__(self, other):
-        if self.__first_item_id == other.__first_item_id \
-                and self.__other_item_id == other.__other_item_id:
-            return True
-        return False
-
-    def to_dot(self):
-        return {'tail_name': str(self.__other_item_id),
-                'head_name': str(self.__first_item_id),
-                'arrowhead': self.__arrow,
-                }
+    @property
+    def y_pos(self):
+        return self.__y_pos
 
 
 class Render:
-    def __init__(self, db: Database):
+    def __init__(self, db: Database, output_path: str):
         self.__db = db
-        self.__unpined_person = copy.deepcopy(self.__db.persons)
-        self.__dot = graphviz.Digraph(format='svg', engine='neato',
-                                      graph_attr={'splines': 'line'}
-                                      )
-        self.__nodes, self.__edges = [], []
-        self.__ti = -1
+        self.__unpined_person = copy.deepcopy(self.__db.persons)  # type: Dict[GrampsId, Person]
+        self.__older_date = self.__get_older_person(self.__unpined_person).birth_day
+
+        self.__nodes = dict()  # type: Dict[GrampsId, Node]
+        self.__draw_objects = []  # type: List[drawSvg.DrawingElement]
+        self.__vertical_index = -1
         while True:
-            self.__ti += 1
-            patriarch = self.__older_grandpa(self.__unpined_person)
-            if patriarch is None:
-                patriarch = self.__older_grandma(self.__unpined_person)
+            self.__vertical_index += 1
+            patriarch = self.__get_patriarch(self.__unpined_person)
             if patriarch is None:
                 break
-
-            self.__ti += 1
-            self.__append_node(PersonNode(patriarch, self.__ti))
+            self.__add_person(patriarch)
 
             self.__recursively_adding_person_to_the_right(patriarch)
 
-        self.__add_decor()
-        self.__to_dots()
-        self.__dot.render('content/images/tree')
+        family_lines = self.__create_family_lines()
 
-    def __add_decor(self):
-        self.__add_hline(date(1800, 1, 1), label='1800')
-        self.__add_hline(date(1900, 1, 1), label='1900')
-        self.__add_hline(date(1941, 6, 22), label='ВОВ')
-        self.__add_hline(date(1945, 5, 9), label='')
-        self.__add_hline(date(2000, 1, 1), label='2000')
-        self.__add_hline(date(2000, 1, 1), label='2000')
+        background = self.__create_background()
 
-    def __add_hline(self, date: date, label: str):
-        n1 = NoteNode(-2, date, label)
-        n2 = NoteNode(self.__ti + 2, date, label)
-        self.__append_node(n1)
-        self.__append_node(n2)
-        self.__append_edge(Edge(n1.id, RelationType.SIMPLE, n2.id))
+        draw_svg = drawSvg.Drawing(*self.__get_size())
+        [draw_svg.append(obj) for obj in background]
+        [draw_svg.append(obj) for obj in family_lines]
+        [draw_svg.append(obj) for obj in self.__draw_objects]
+        draw_svg.saveSvg(output_path)
+
+    @staticmethod
+    def __get_triangular(y: float, x: float, direction: str) -> drawSvg.Lines:
+        if direction == "down":
+            return drawSvg.Lines(
+                x - _TRIANGLE_WEIGHT / 2, y,
+                x + _TRIANGLE_WEIGHT / 2, y,
+                x, y - _TRIANGLE_HEIGHT,
+                x - _TRIANGLE_WEIGHT / 2, y,
+                close=False,
+                stroke="black",
+                stroke_width=_LINE_WIDTH,
+                fill='none'
+            )
+        elif direction == "up":
+            return drawSvg.Lines(
+                x - _TRIANGLE_WEIGHT / 2, y,
+                x + _TRIANGLE_WEIGHT / 2, y,
+                x, y + _TRIANGLE_HEIGHT,
+                x - _TRIANGLE_WEIGHT / 2, y,
+                close=False,
+                stroke="black",
+                stroke_width=_LINE_WIDTH,
+                fill='none'
+            )
+        else:
+            raise ValueError(f'Unknown direction: {direction}')
+
+    def __create_time_slice(self, label: str, date: date, date_view: bool) -> List[drawSvg.DrawingElement]:
+        x = self._compute_x_pos(date)
+        y_max = (_HEIGHT + _Y_SPACING) * self.__vertical_index
+        y_min = _HEIGHT
+        ret_objects = [
+            drawSvg.Lines(
+                x - _DASH_WEIGHT / 2, y_min,
+                x + _DASH_WEIGHT / 2, y_min,
+                x, y_min,
+                x, y_max,
+                x + _DASH_WEIGHT / 2, y_max,
+                x - _DASH_WEIGHT / 2, y_max,
+                close=False,
+                stroke="gray",
+                stroke_width=_LINE_WIDTH,
+                fill='none'
+            )
+        ]
+        if date_view:
+            ret_objects.append(
+                drawSvg.Text(text=str(date.year), fontSize=_FONT_SIZE, x=x - _FONT_SIZE * 1, y=y_max + _Y_SPACING / 2)
+            )
+        else:
+            label_weight = _FONT_SIZE * 0.7 * len(label)
+            ret_objects.append(
+                drawSvg.Text(text=label, fontSize=_FONT_SIZE, x=x - label_weight / 2, y=y_max + _Y_SPACING / 2)
+            )
+        return ret_objects
+
+    def __create_background(self) -> List[drawSvg.DrawingElement]:
+        background = []
+        background += self.__create_time_slice("", date(1800, 1, 1), date_view=True)
+        background += self.__create_time_slice("", date(1900, 1, 1), date_view=True)
+
+        background += self.__create_time_slice("ВОВ", date(1941, 6, 22), date_view=False)
+        background += self.__create_time_slice("", date(1945, 5, 9), date_view=False)
+
+        background += self.__create_time_slice("", date(2000, 1, 1), date_view=True)
+        return background
+
+    def __create_family_lines(self):
+        family_lines = []
+        for family in self.__db.families.values():
+            if len(family.children) != 0 or family.is_full():
+                nodes = [self.__nodes[p.id] for p in family.children] + \
+                        [self.__nodes[parent.id] for parent in list(family.parents)]
+                top_node = max(nodes, key=attrgetter("y_pos"))
+                lower_node = min(nodes, key=attrgetter("y_pos"))
+                top_y = None
+                lower_y = None
+                x_pos = self._compute_x_pos(family.wedding_day)
+                for node in nodes:
+                    if node.person in family.parents:
+                        if node.person == top_node.person:
+                            top_y = node.y_pos
+                            family_lines.append(
+                                self.__get_triangular(top_y, x_pos, "down")
+                            )
+                        elif node.person == lower_node.person:
+                            lower_y = node.y_pos + _HEIGHT
+                            family_lines.append(
+                                self.__get_triangular(lower_y, x_pos, "up")
+                            )
+                        else:
+                            family_lines.append(
+                                self.__get_triangular(node.y_pos, x_pos, "down")
+                            )
+                            family_lines.append(
+                                self.__get_triangular(node.y_pos + _HEIGHT, x_pos, "up")
+                            )
+                    else:
+                        if node.person == top_node.person:
+                            top_y = node.y_pos + _HEIGHT / 2
+                        elif node.person == lower_node.person:
+                            lower_y = node.y_pos + _HEIGHT / 2
+
+                family_lines.append(
+                    drawSvg.Lines(
+                        x_pos, lower_y, x_pos, top_y,
+                        close=False,
+                        stroke="black",
+                        stroke_width=_LINE_WIDTH,
+                        fill='none'
+                    )
+                )
+        return family_lines
+
+    def __get_size(self) -> Tuple[float, float]:
+        return (
+            (datetime.today().date() - self.__older_date).days * _X_SCALE + _X_OFFSET * 10,
+            (_HEIGHT + _Y_SPACING) * (self.__vertical_index + 2)
+        )
+
+    def __get_patriarch(self, where: Dict[GrampsId, Person]):
+        patriarch = self.__older_grandpa(where)
+        if patriarch is None:
+            patriarch = self.__older_grandma(where)
+        if patriarch is not None:
+            logger.info(f'Patriarchs of a new kind found: {patriarch}')
+        return patriarch
 
     def __recursively_adding_person_to_the_right(self, person: Person):
-        logger.info(f'Searching the person on the right for {person}')
+        logger.info(f'Searching the next person for {person}')
         while True:
-            try:
-                new_person = self.__add_person_to_the_right(person)
-            except NotRightPersonException:
-                break
-            else:
+            new_person = self.__get_next_person(person)
+            if new_person is not None:
+                self.__add_person(new_person)
                 self.__recursively_adding_person_to_the_right(new_person)
-
-    def __append_node(self, node: Node):
-        found = False
-        for n in self.__nodes:
-            if n == node:
-                found = True
-        if not found:
-            self.__nodes.append(node)
-            if isinstance(node, PersonNode):
-                del self.__unpined_person[node.id]
-
-    def __add_person_to_the_right(self, person: Person) -> \
-            Tuple[Person, int]:
-        while True:
-            ret_node = self.__add_first_child(person)
-            if ret_node is not None:
+            else:
                 break
 
-            ret_node = self.__add_first_partner(person)
-            if ret_node is not None:
-                break
-
-            logger.info(f'There are no more people on the right of {person}')
-
-            raise NotRightPersonException()
-
-        self.__append_node(ret_node)
-        logger.info(f'Found the person on the right: {ret_node.person}')
-        return ret_node.person
-
-    def __add_first_child(self, person: Person):
-        child, family = self.__get_first_child(person)
+    def __get_next_person(self, person: Person) -> Optional[Person]:
+        child = self.__get_latest_child_by_last_partner(person)
         if child is not None:
-            self.__ti += 1
-            self.__append_node(FamilyNode(family, self.__ti))
-            self.__append_edge(Edge(person.id,
-                                    RelationType.MARRIAGE,
-                                    family.id))
-            self.__ti += 1
-            node = PersonNode(child, self.__ti)
-            self.__append_edge(Edge(child.id,
-                                    RelationType.BIRTH_FROM,
-                                    family.id))
-            return node
+            return child
+
+        partner = self.__get_oldest_partner(person)
+        if partner is not None:
+            return partner
+
+        logger.info(f'There are no more next people for {person}')
+
         return None
 
-    def __append_edge(self, edge: Edge):
-        found = False
-        for e in self.__edges:
-            if e == edge:
-                found = True
-        if not found:
-            self.__edges.append(edge)
+    def __get_latest_child_by_last_partner(self, person: Person) -> Optional[Person]:
+        oldest_family = self.__get_oldest_family(person)
+        if oldest_family is not None and oldest_family.children:
+            un_children = []
+            for child in oldest_family.children:
+                un_child = self.__unpined_person.get(child.id, None)
+                if un_child is not None:
+                    un_children.append(un_child)
+            if un_children:
+                return max(un_children, key=attrgetter("birth_day"))
 
-    def __get_first_child(self, person: Person):
+        children = []
         for relation in self.__db.relations:
             if relation.type_of_relation != RelationType.BIRTH_FROM:
                 continue
@@ -240,63 +239,52 @@ class Render:
                 child = self.__unpined_person.get(relation.first_person_id)
                 if child is None:
                     continue
-                return child, self.__db.families[relation.family_id]
+                children.append(child)
+        if children:
+            return max(children, key=attrgetter('birth_day'))
+        return None
 
-        return None, None
-
-    def __get_father(self, person: Person) -> \
-            Tuple[Person, Family]:
-
-        for relation in self.__db.relations:
-            if relation.type_of_relation != RelationType.BIRTH_FROM:
-                continue
-            if person.id == relation.first_person_id:
-                parent = self.__unpined_person.get(relation.other_person_id)
-                if parent is None:
-                    continue
-                if parent.gender == Gender.MALE:
-                    return parent, self.__db.families[relation.family_id]
-
-        return None, None
-
-    def __add_first_partner(self, person: Person):
-        ret_node = None
-        partners = self.__get_partners(person, self.__unpined_person)
+    def __get_oldest_partner(self, person: Person) -> Optional[Person]:
+        partners = sorted(self.__get_partners(person, self.__unpined_person), key=attrgetter('birth_day'))
         if partners:
-            partner, family = partners[0]
-            self.__ti += 1
-            self.__append_node(FamilyNode(family, self.__ti))
-            self.__append_edge(
-                Edge(person.id, RelationType.MARRIAGE, family.id))
-            self.__ti += 1
-            ret_node = PersonNode(partner, self.__ti)
-            self.__append_edge(Edge(partner.id,
-                                    RelationType.MARRIAGE,
-                                    family.id))
-        return ret_node
+            return partners[-1]
+        return None
 
-    def __to_dots(self):
-        for node in self.__nodes:
-            self.__dot.node(**node.to_dot())
-        for edge in self.__edges:
-            self.__dot.edge(**edge.to_dot())
+    def __get_oldest_family(self, person: Person) -> Optional[Family]:
+        partner = self.__get_oldest_partner(person)
+        if partner is None:
+            return None
+
+        for family in self.__db.families.values():
+            if person.is_male():
+                if family.father == person and family.mother == partner:
+                    return family
+            if person.is_female():
+                if family.father == partner and family.mother == person:
+                    return family
+        return None
 
     @staticmethod
-    def __older_grandpa(where: Dict[GrampsId, Person]) -> Person:
+    def __get_older_person(where: Dict[GrampsId, Person]) -> Person:
+        persons = [p for p in where.values()]
+        return min(persons, key=attrgetter('birth_day'))
+
+    @staticmethod
+    def __older_grandpa(where: Dict[GrampsId, Person]) -> Optional[Person]:
         mens = [p for p in where.values() if p.gender == Gender.MALE]
         if not mens:
             return None
         return min(mens, key=attrgetter('birth_day'))
 
     @staticmethod
-    def __older_grandma(where: Dict[GrampsId, Person]) -> Person:
+    def __older_grandma(where: Dict[GrampsId, Person]) -> Optional[Person]:
         womens = [p for p in where.values() if p.gender == Gender.FEMALE]
         if not womens:
             return None
         return min(womens, key=attrgetter('birth_day'))
 
     def __get_partners(self, person: Person, where: Dict[GrampsId, Person]) \
-            -> List[Tuple[Family, Person]]:
+            -> List[Person]:
         partners = []
         for relation in self.__db.relations:
             if relation.type_of_relation != RelationType.MARRIAGE:
@@ -309,8 +297,54 @@ class Render:
                 partner = where.get(relation.first_person_id)
 
             if partner is not None:
-                partners.append((
-                    partner,
-                    self.__db.families[relation.family_id]))
+                partners.append(partner)
 
         return partners
+
+    def __add_person(self, person: Person):
+        self.__vertical_index += 1
+        y = (_HEIGHT + _Y_SPACING) * self.__vertical_index
+        self.__draw_objects.append(
+            drawSvg.Rectangle(
+                x=self._compute_x_pos(person.birth_day),
+                y=y,
+                width=person.days_of_life * _X_SCALE,
+                height=_HEIGHT,
+                stroke="black",
+                stroke_width=_LINE_WIDTH,
+                fill=_COLORS[person.gender]
+            )
+        )
+        self.__draw_objects.append(
+            drawSvg.Text(
+                text=str(person),
+                fontSize=_FONT_SIZE,
+                x=self._compute_x_pos(person.birth_day),
+                y=y + (_HEIGHT - _FONT_SIZE)
+            )
+        )
+        del self.__unpined_person[person.id]
+        logger.info(f"Added {person}")
+
+        parental_family = self.__get_parental_family(person)
+        if parental_family is not None:
+            self.__draw_objects.append(
+                drawSvg.Lines(
+                    self._compute_x_pos(person.birth_day), y + _HEIGHT / 2,
+                    self._compute_x_pos(parental_family.wedding_day), y + _HEIGHT / 2,
+                    close=False,
+                    stroke="black",
+                    stroke_width=_LINE_WIDTH,
+                    fill='none'
+                )
+            )
+        self.__nodes[person.id] = Node(person, y)
+
+    def _compute_x_pos(self, date_: date):
+        return (date_ - self.__older_date).days * _X_SCALE + _X_OFFSET
+
+    def __get_parental_family(self, person: Person) -> Optional[Family]:
+        for family in self.__db.families.values():
+            if person in family.children:
+                return family
+        return None
