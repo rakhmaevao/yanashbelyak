@@ -65,51 +65,71 @@ class Render:
         [draw_svg.append(obj) for obj in self.__draw_objects]
         draw_svg.saveSvg('../content/images/tree.svg')
 
+    @staticmethod
+    def __get_triangular(y: float, x: float, direction: str) -> drawSvg.Lines:
+        if direction == "down":
+            return drawSvg.Lines(
+                x - _TRIANGLE_WEIGHT / 2, y,
+                x + _TRIANGLE_WEIGHT / 2, y,
+                x, y - _TRIANGLE_HEIGHT,
+                x - _TRIANGLE_WEIGHT / 2, y,
+                close=False,
+                stroke="black",
+                stroke_width=_LINE_WIDTH,
+                fill='none'
+            )
+        elif direction == "up":
+            return drawSvg.Lines(
+                x - _TRIANGLE_WEIGHT / 2, y,
+                x + _TRIANGLE_WEIGHT / 2, y,
+                x, y + _TRIANGLE_HEIGHT,
+                x - _TRIANGLE_WEIGHT / 2, y,
+                close=False,
+                stroke="black",
+                stroke_width=_LINE_WIDTH,
+                fill='none'
+            )
+        else:
+            raise ValueError(f'Unknown direction: {direction}')
+
     def __add_family_lines(self):
         for family in self.__db.families.values():
             if len(family.children) != 0 or family.is_full():
-                nodes = [self.__nodes[p.id] for p in family.children] + [self.__nodes[parent.id] for parent in list(family.parents)]
+                nodes = [self.__nodes[p.id] for p in family.children] + \
+                        [self.__nodes[parent.id] for parent in list(family.parents)]
                 top_node = max(nodes, key=attrgetter("y_pos"))
                 lower_node = min(nodes, key=attrgetter("y_pos"))
-
-                if top_node.person in family.parents:
-                    top_y = top_node.y_pos
-                    self.__draw_objects.append(
-                        drawSvg.Lines(
-                            self._compute_x_pos(family.wedding_day) - _TRIANGLE_WEIGHT / 2, top_node.y_pos,
-                            self._compute_x_pos(family.wedding_day) + _TRIANGLE_WEIGHT / 2, top_node.y_pos,
-                            self._compute_x_pos(family.wedding_day), top_node.y_pos - _TRIANGLE_HEIGHT,
-                            self._compute_x_pos(family.wedding_day) - _TRIANGLE_WEIGHT / 2, top_node.y_pos,
-                            close=False,
-                            stroke="black",
-                            stroke_width=_LINE_WIDTH,
-                            fill='none'
-                        )
-                    )
-                else:
-                    top_y = top_node.y_pos + _HEIGHT / 2
-
-                if lower_node.person in family.parents:
-                    lower_y = lower_node.y_pos + _HEIGHT
-                    self.__draw_objects.append(
-                        drawSvg.Lines(
-                            self._compute_x_pos(family.wedding_day) - _TRIANGLE_WEIGHT / 2, lower_y,
-                            self._compute_x_pos(family.wedding_day) + _TRIANGLE_WEIGHT / 2, lower_y,
-                            self._compute_x_pos(family.wedding_day), lower_y + _TRIANGLE_HEIGHT,
-                            self._compute_x_pos(family.wedding_day) - _TRIANGLE_WEIGHT / 2, lower_y,
-                            close=False,
-                            stroke="black",
-                            stroke_width=_LINE_WIDTH,
-                            fill='none'
-                        )
-                    )
-                else:
-                    lower_y = lower_node.y_pos + _HEIGHT / 2
+                top_y = None
+                lower_y = None
+                x_pos = self._compute_x_pos(family.wedding_day)
+                for node in nodes:
+                    if node.person in family.parents:
+                        if node.person == top_node.person:
+                            top_y = node.y_pos
+                            self.__draw_objects.append(
+                                self.__get_triangular(top_y, x_pos, "down")
+                            )
+                        elif node.person == lower_node.person:
+                            lower_y = node.y_pos + _HEIGHT
+                            self.__draw_objects.append(
+                                self.__get_triangular(lower_y, x_pos, "up")
+                            )
+                        else:
+                            self.__draw_objects.append(
+                                self.__get_triangular(node.y_pos, x_pos, "down")
+                            )
+                            self.__draw_objects.append(
+                                self.__get_triangular(node.y_pos + _HEIGHT, x_pos, "up")
+                            )
+                    else:
+                        if node.person == top_node.person:
+                            top_y = node.y_pos + _HEIGHT / 2
+                        elif node.person == lower_node.person:
+                            lower_y = node.y_pos + _HEIGHT / 2
 
                 self.__draw_objects.append(
                     drawSvg.Lines(
-                        self._compute_x_pos(family.wedding_day), lower_y,
-                        self._compute_x_pos(family.wedding_day), top_y,
+                        x_pos, lower_y, x_pos, top_y,
                         close=False,
                         stroke="black",
                         stroke_width=_LINE_WIDTH,
