@@ -96,7 +96,7 @@ class Render:
         else:
             raise ValueError(f'Unknown direction: {direction}')
 
-    def __create_time_slice(self, lable: str, date: date, date_view: bool) -> List[drawSvg.DrawingElement]:
+    def __create_time_slice(self, label: str, date: date, date_view: bool) -> List[drawSvg.DrawingElement]:
         x = self._compute_x_pos(date)
         y_max = (_HEIGHT + _Y_SPACING) * self.__vertical_index
         y_min = _HEIGHT
@@ -112,24 +112,28 @@ class Render:
                 stroke="gray",
                 stroke_width=_LINE_WIDTH,
                 fill='none'
-            ),
-            drawSvg.Text(
-                text=lable,
-                fontSize=_FONT_SIZE,
-                x=x - _FONT_SIZE * 0.7 * len(lable) / 2,
-                y=y_max + _HEIGHT + _Y_SPACING / 2
-            ),
+            )
         ]
         if date_view:
             ret_objects.append(
-                drawSvg.Text(text=str(date), fontSize=_FONT_SIZE, x=x - _FONT_SIZE * 2.5, y=y_max + _Y_SPACING / 2)
+                drawSvg.Text(text=str(date.year), fontSize=_FONT_SIZE, x=x - _FONT_SIZE * 1, y=y_max + _Y_SPACING / 2)
+            )
+        else:
+            label_weight = _FONT_SIZE * 0.7 * len(label)
+            ret_objects.append(
+                drawSvg.Text(text=label, fontSize=_FONT_SIZE, x=x - label_weight / 2, y=y_max + _Y_SPACING / 2)
             )
         return ret_objects
 
     def __create_background(self) -> List[drawSvg.DrawingElement]:
         background = []
+        background += self.__create_time_slice("", date(1800, 1, 1), date_view=True)
+        background += self.__create_time_slice("", date(1900, 1, 1), date_view=True)
+
         background += self.__create_time_slice("ВОВ", date(1941, 6, 22), date_view=False)
         background += self.__create_time_slice("", date(1945, 5, 9), date_view=False)
+
+        background += self.__create_time_slice("", date(2000, 1, 1), date_view=True)
         return background
 
     def __create_family_lines(self):
