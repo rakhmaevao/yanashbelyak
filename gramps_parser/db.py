@@ -113,8 +113,8 @@ class Family:
         self.__father = value
 
     @property
-    def parents(self) -> Tuple[Optional[Person], Optional[Person]]:
-        return self.__father, self.__mother
+    def parents(self) -> Set[Person]:
+        return set([person for person in [self.__father, self.__mother] if person is not None])
 
     @property
     def mother(self) -> Optional[Person]:

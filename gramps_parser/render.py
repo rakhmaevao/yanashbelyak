@@ -60,26 +60,19 @@ class Render:
 
         for family in self.__db.families.values():
             if len(family.children) != 0 or family.is_full():
-                if family.is_full():
-                    lower_y, top_y = sorted(
-                        [self.__nodes[family.father.id].y_pos, self.__nodes[family.mother.id].y_pos])
-                    lower_y += _HEIGHT
+                nodes = [self.__nodes[p.id] for p in family.children] + [self.__nodes[parent.id] for parent in list(family.parents)]
+                top_node = max(nodes, key=attrgetter("y_pos"))
+                lower_node = min(nodes, key=attrgetter("y_pos"))
+
+                if top_node.person in family.parents:
+                    top_y = top_node.y_pos
                 else:
-                    single_parent = family.parents[0]
-                    nodes = [self.__nodes[p.id] for p in family.children]
-                    nodes.append(self.__nodes[single_parent.id])
-                    top_node = max(nodes, key=attrgetter("y_pos"))
-                    lower_node = min(nodes, key=attrgetter("y_pos"))
+                    top_y = top_node.y_pos + _HEIGHT / 2
 
-                    if top_node.person == single_parent:
-                        top_y = top_node.y_pos
-                    else:
-                        top_y = top_node.y_pos + _HEIGHT / 2
-
-                    if lower_node.person == single_parent:
-                        lower_y = lower_node.y_pos + _HEIGHT
-                    else:
-                        lower_y = lower_node.y_pos + _HEIGHT / 2
+                if lower_node.person in family.parents:
+                    lower_y = lower_node.y_pos + _HEIGHT
+                else:
+                    lower_y = lower_node.y_pos + _HEIGHT / 2
 
                 self.__draw_objects.append(
                     drawSvg.Lines(
