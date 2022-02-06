@@ -42,7 +42,7 @@ class Node:
 
 
 class Render:
-    def __init__(self, db: Database):
+    def __init__(self, db: Database, output_path: str):
         self.__db = db
         self.__unpined_person = copy.deepcopy(self.__db.persons)  # type: Dict[GrampsId, Person]
         self.__older_date = self.__get_older_person(self.__unpined_person).birth_day
@@ -67,7 +67,7 @@ class Render:
         [draw_svg.append(obj) for obj in background]
         [draw_svg.append(obj) for obj in family_lines]
         [draw_svg.append(obj) for obj in self.__draw_objects]
-        draw_svg.saveSvg('../content/images/tree.svg')
+        draw_svg.saveSvg(output_path)
 
     @staticmethod
     def __get_triangular(y: float, x: float, direction: str) -> drawSvg.Lines:
