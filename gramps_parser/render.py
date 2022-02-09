@@ -127,6 +127,7 @@ class Render:
 
     def __create_background(self) -> List[drawSvg.DrawingElement]:
         background = []
+        background += self.__create_time_slice("", date(1700, 1, 1), date_view=True)
         background += self.__create_time_slice("", date(1800, 1, 1), date_view=True)
         background += self.__create_time_slice("", date(1900, 1, 1), date_view=True)
 
