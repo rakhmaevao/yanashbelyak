@@ -172,6 +172,22 @@ class Relation:
         return hash(self.family_id)
 
 
+class Note:
+    def __init__(self, blob_data: bytes):
+        fff = pickle.loads(blob_data)
+        handle, gramps_id, (content, _), _, _, _, _, is_private = pickle.loads(blob_data)
+        self.__content = content
+        self.__id = GrampsId(gramps_id)
+
+    @property
+    def id(self) -> GrampsId:
+        return self.__id
+
+    @property
+    def content(self) -> str:
+        return self.__content
+
+
 class EventType(Enum):
     BIRTH = 12
     DEATH = 13
@@ -185,6 +201,8 @@ class Database:
         self.__cur = conn.cursor()
 
         self.__persons = self.__get_persons()  # type: Dict[GrampsId, Person]
+
+        self.__notes = self.__get_notes()  # type: Dict[GrampsId, Note]
 
         self.__relations, self.__families = self.__get_relationship()
         pass
@@ -256,6 +274,15 @@ class Database:
         except ValueError as message:
             logger.error(f'{message} for raw_date {raw_date}')
             raise ValueError(message)
+
+    def __get_notes(self) -> Dict[GrampsId, Note]:
+        notes = dict()
+        self.__cur.execute(f'SELECT note.gramps_id, note.blob_data FROM note')
+        notes_raw = self.__cur.fetchall()
+        for id, blob_data in notes_raw:
+            note = Note(blob_data)
+            notes[id] = note
+        return notes
 
     def __get_relationship(self) -> Tuple[Set[Relation], Dict[GrampsId, Family]]:
 
