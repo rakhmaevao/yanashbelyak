@@ -5,6 +5,9 @@ from datetime import datetime, date
 from loguru import logger
 import drawSvg
 from operator import attrgetter
+import xml.etree.ElementTree as ET
+
+SITEURL = 'https://rahmaevao.github.io/yanashbelyak'
 
 
 class NotRightPersonException(Exception):
@@ -47,6 +50,8 @@ class Render:
         self.__unpined_person = copy.deepcopy(self.__db.persons)  # type: Dict[GrampsId, Person]
         self.__older_date = self.__get_older_person(self.__unpined_person).birth_day
 
+        self.__person_x_pos = dict()  # type: Dict[str, GrampsId]
+
         self.__nodes = dict()  # type: Dict[GrampsId, Node]
         self.__draw_objects = []  # type: List[drawSvg.DrawingElement]
         self.__vertical_index = -1
@@ -68,6 +73,7 @@ class Render:
         [draw_svg.append(obj) for obj in family_lines]
         [draw_svg.append(obj) for obj in self.__draw_objects]
         draw_svg.saveSvg(output_path)
+        self.__rewrite_svg_with_hyperlink(output_path)
 
     @staticmethod
     def __get_triangular(y: float, x: float, direction: str) -> drawSvg.Lines:
@@ -302,12 +308,17 @@ class Render:
 
         return partners
 
+    def __add_person_x_position(self, id: GrampsId, x: float):
+        self.__person_x_pos[str(x)] = id
+
     def __add_person(self, person: Person):
         self.__vertical_index += 1
         y = (_HEIGHT + _Y_SPACING) * self.__vertical_index
+        x = self._compute_x_pos(person.birth_day)
+        self.__add_person_x_position(person.id, x)
         self.__draw_objects.append(
             drawSvg.Rectangle(
-                x=self._compute_x_pos(person.birth_day),
+                x=x,
                 y=y,
                 width=person.days_of_life * _X_SCALE,
                 height=_HEIGHT,
@@ -320,7 +331,7 @@ class Render:
             drawSvg.Text(
                 text=str(person),
                 fontSize=_FONT_SIZE,
-                x=self._compute_x_pos(person.birth_day),
+                x=x,
                 y=y + (_HEIGHT - _FONT_SIZE)
             )
         )
@@ -331,7 +342,7 @@ class Render:
         if parental_family is not None:
             self.__draw_objects.append(
                 drawSvg.Lines(
-                    self._compute_x_pos(person.birth_day), y + _HEIGHT / 2,
+                    x, y + _HEIGHT / 2,
                     self._compute_x_pos(parental_family.wedding_day), y + _HEIGHT / 2,
                     close=False,
                     stroke="black",
@@ -341,7 +352,7 @@ class Render:
             )
         self.__nodes[person.id] = Node(person, y)
 
-    def _compute_x_pos(self, date_: date):
+    def _compute_x_pos(self, date_: date) -> float:
         return (date_ - self.__older_date).days * _X_SCALE + _X_OFFSET
 
     def __get_parental_family(self, person: Person) -> Optional[Family]:
@@ -349,3 +360,27 @@ class Render:
             if person in family.children:
                 return family
         return None
+
+    def __rewrite_svg_with_hyperlink(self, path: str):
+        """
+        DrawSvg не умеет в гиперссылки, поэтому уже готовый файл изменяется. В нем ищется прямуогльник персоны с
+        заданной х координатой и добавляется html тег <a>
+        """
+        f = open(path, 'r')
+        new_strings = []
+        for line in f:
+            new_string = ''
+            if line.find('<rect') != -1:
+                tree = ET.ElementTree(ET.fromstring(line))
+
+                x = tree.getroot().attrib['x']
+                person_id = self.__person_x_pos[x]
+                new_string = f'<a href="{SITEURL}/{person_id}.html">{line}</a>'
+            else:
+                new_string = line
+            new_strings.append(new_string)
+        f.close()
+
+        with open(path, 'w') as file:
+            for s in new_strings:
+                file.write(s)

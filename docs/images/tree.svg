@@ -5,27 +5,44 @@
 </defs>
 <path d="M-726.08,-14.399999999999999 L-706.08,-14.399999999999999 L-716.08,-14.399999999999999 L-716.08,-102.0 L-706.08,-102.0 L-726.08,-102.0" stroke="gray" stroke-width="0.8" fill="none" />
 <text x="-728.08" y="-105.0" font-size="12" dy="0em">1700</text>
-<path d="M-360.84000000000003,-14.399999999999999 L-340.84000000000003,-14.399999999999999 L-350.84000000000003,-14.399999999999999 L-350.84000000000003,-102.0 L-340.84000000000003,-102.0 L-360.84000000000003,-102.0" stroke="gray" stroke-width="0.8" fill="none" />
-<text x="-362.84000000000003" y="-105.0" font-size="12" dy="0em">1800</text>
-<path d="M4.399999999999999,-14.399999999999999 L24.4,-14.399999999999999 L14.399999999999999,-14.399999999999999 L14.399999999999999,-102.0 L24.4,-102.0 L4.399999999999999,-102.0" stroke="gray" stroke-width="0.8" fill="none" />
-<text x="2.3999999999999986" y="-105.0" font-size="12" dy="0em">1900</text>
-<path d="M155.87,-14.399999999999999 L175.87,-14.399999999999999 L165.87,-14.399999999999999 L165.87,-102.0 L175.87,-102.0 L155.87,-102.0" stroke="gray" stroke-width="0.8" fill="none" />
-<text x="153.27" y="-105.0" font-size="12" dy="0em">ВОВ</text>
-<path d="M170.04000000000002,-14.399999999999999 L190.04000000000002,-14.399999999999999 L180.04000000000002,-14.399999999999999 L180.04000000000002,-102.0 L190.04000000000002,-102.0 L170.04000000000002,-102.0" stroke="gray" stroke-width="0.8" fill="none" />
-<text x="180.04000000000002" y="-105.0" font-size="12" dy="0em"></text>
-<path d="M369.64,-14.399999999999999 L389.64,-14.399999999999999 L379.64,-14.399999999999999 L379.64,-102.0 L389.64,-102.0 L369.64,-102.0" stroke="gray" stroke-width="0.8" fill="none" />
-<text x="367.64" y="-105.0" font-size="12" dy="0em">2000</text>
-<path d="M90.12,-34.8 L94.12,-34.8 L92.12,-38.8 L90.12,-34.8" stroke="black" stroke-width="0.8" fill="none" />
-<path d="M90.12,-81.6 L94.12,-81.6 L92.12,-77.6 L90.12,-81.6" stroke="black" stroke-width="0.8" fill="none" />
-<path d="M92.12,-34.8 L92.12,-81.6" stroke="black" stroke-width="0.8" fill="none" />
-<rect x="14.399999999999999" y="-34.8" width="292.0" height="14.399999999999999" stroke="black" stroke-width="0.8" fill="lightblue" />
-<text x="14.399999999999999" y="-22.799999999999997" font-size="12" dy="0em">Некто  (1900-н. в.)</text>
-<rect x="160.49" y="-55.199999999999996" width="292.0" height="14.399999999999999" stroke="black" stroke-width="0.8" fill="pink" />
-<text x="160.49" y="-43.199999999999996" font-size="12" dy="0em">Дочь  (1940-н. в.)</text>
-<path d="M160.49,-48.0 L92.12,-48.0" stroke="black" stroke-width="0.8" fill="none" />
-<rect x="123.97" y="-75.6" width="292.0" height="14.399999999999999" stroke="black" stroke-width="0.8" fill="lightblue" />
-<text x="123.97" y="-63.599999999999994" font-size="12" dy="0em">Сын  (1930-н. в.)</text>
-<path d="M123.97,-68.39999999999999 L92.12,-68.39999999999999" stroke="black" stroke-width="0.8" fill="none" />
-<rect x="50.92" y="-96.0" width="292.0" height="14.399999999999999" stroke="black" stroke-width="0.8" fill="pink" />
-<text x="50.92" y="-84.0" font-size="12" dy="0em">Нектонья  (1910-н. в.)</text>
+<path d="M-360.84000000000003,-14.399999999999999 L-340.84000000000003,-14.399999999999999 L-350.84000000000003,-14.399999999999999 L-350.84000000000003,-102.0 L-340.84000000000003,-102.0 L-360.84000000000003,-102.0"
+      stroke="gray" stroke-width="0.8" fill="none"/>
+    <text x="-362.84000000000003" y="-105.0" font-size="12" dy="0em">1800</text>
+    <path d="M4.399999999999999,-14.399999999999999 L24.4,-14.399999999999999 L14.399999999999999,-14.399999999999999 L14.399999999999999,-102.0 L24.4,-102.0 L4.399999999999999,-102.0"
+          stroke="gray" stroke-width="0.8" fill="none"/>
+    <text x="2.3999999999999986" y="-105.0" font-size="12" dy="0em">1900</text>
+    <path d="M155.87,-14.399999999999999 L175.87,-14.399999999999999 L165.87,-14.399999999999999 L165.87,-102.0 L175.87,-102.0 L155.87,-102.0"
+          stroke="gray" stroke-width="0.8" fill="none"/>
+    <text x="153.27" y="-105.0" font-size="12" dy="0em">ВОВ</text>
+    <path d="M170.04000000000002,-14.399999999999999 L190.04000000000002,-14.399999999999999 L180.04000000000002,-14.399999999999999 L180.04000000000002,-102.0 L190.04000000000002,-102.0 L170.04000000000002,-102.0"
+          stroke="gray" stroke-width="0.8" fill="none"/>
+    <text x="180.04000000000002" y="-105.0" font-size="12" dy="0em"></text>
+    <path d="M369.64,-14.399999999999999 L389.64,-14.399999999999999 L379.64,-14.399999999999999 L379.64,-102.0 L389.64,-102.0 L369.64,-102.0"
+          stroke="gray" stroke-width="0.8" fill="none"/>
+    <text x="367.64" y="-105.0" font-size="12" dy="0em">2000</text>
+    <path d="M108.81,-81.6 L112.81,-81.6 L110.81,-77.6 L108.81,-81.6" stroke="black" stroke-width="0.8" fill="none"/>
+    <path d="M108.81,-34.8 L112.81,-34.8 L110.81,-38.8 L108.81,-34.8" stroke="black" stroke-width="0.8" fill="none"/>
+    <path d="M110.81,-34.8 L110.81,-81.6" stroke="black" stroke-width="0.8" fill="none"/>
+    <a href="https://rahmaevao.github.io/yanashbelyak/I0000.html">
+        <rect x="14.399999999999999" y="-34.8" width="292.0" height="14.399999999999999" stroke="black"
+              stroke-width="0.8" fill="lightblue"/>
+    </a>
+    <text x="14.399999999999999" y="-22.799999999999997" font-size="12" dy="0em">Некто (1900-н. в.)</text>
+    <a href="https://rahmaevao.github.io/yanashbelyak/I0003.html">
+        <rect x="160.49" y="-55.199999999999996" width="292.0" height="14.399999999999999" stroke="black"
+              stroke-width="0.8" fill="pink"/>
+    </a>
+    <text x="160.49" y="-43.199999999999996" font-size="12" dy="0em">Дочь (1940-н. в.)</text>
+    <path d="M160.49,-48.0 L110.81,-48.0" stroke="black" stroke-width="0.8" fill="none"/>
+    <a href="https://rahmaevao.github.io/yanashbelyak/I0002.html">
+        <rect x="123.97" y="-75.6" width="292.0" height="14.399999999999999" stroke="black" stroke-width="0.8"
+              fill="lightblue"/>
+    </a>
+    <text x="123.97" y="-63.599999999999994" font-size="12" dy="0em">Сын (1930-н. в.)</text>
+    <path d="M123.97,-68.39999999999999 L110.81,-68.39999999999999" stroke="black" stroke-width="0.8" fill="none"/>
+    <a href="https://rahmaevao.github.io/yanashbelyak/I0001.html">
+        <rect x="50.92" y="-96.0" width="292.0" height="14.399999999999999" stroke="black" stroke-width="0.8"
+              fill="pink"/>
+    </a>
+    <text x="50.92" y="-84.0" font-size="12" dy="0em">Нектонья (1910-н. в.)</text>
 </svg>
