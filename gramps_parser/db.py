@@ -14,6 +14,21 @@ class GrampsId(str):
     pass
 
 
+class Note:
+    def __init__(self, blob_data: bytes):
+        handle, gramps_id, (content, _), _, _, _, _, is_private = pickle.loads(blob_data)
+        self.__content = content
+        self.__id = GrampsId(gramps_id)
+
+    @property
+    def id(self) -> GrampsId:
+        return self.__id
+
+    @property
+    def content(self) -> str:
+        return self.__content
+
+
 class Gender(Enum):
     FEMALE = 0
     MALE = 1
@@ -30,6 +45,10 @@ class Person:
         self.__birth_day = birth_day
         self.__death_day = death_day
         self.__gender = gender
+        self.__notes = set()  # type: Set[Note]
+
+    def add_note(self, note: Note):
+        self.__notes.add(note)
 
     @property
     def id(self) -> GrampsId:
@@ -69,6 +88,10 @@ class Person:
     @property
     def gender(self):
         return self.__gender
+
+    @property
+    def notes(self):
+        return self.__notes
 
     def __str__(self):
         r_year = 'н. в.'
@@ -186,6 +209,10 @@ class Database:
 
         self.__persons = self.__get_persons()  # type: Dict[GrampsId, Person]
 
+        self.__notes = self.__get_notes()  # type: Dict[GrampsId, Note]
+
+        self.__add_notes_to_person()
+
         self.__relations, self.__families = self.__get_relationship()
         pass
 
@@ -256,6 +283,25 @@ class Database:
         except ValueError as message:
             logger.error(f'{message} for raw_date {raw_date}')
             raise ValueError(message)
+
+    def __get_notes(self) -> Dict[GrampsId, Note]:
+        notes = dict()
+        self.__cur.execute(f'SELECT note.gramps_id, note.blob_data FROM note')
+        notes_raw = self.__cur.fetchall()
+        for id, blob_data in notes_raw:
+            note = Note(blob_data)
+            notes[id] = note
+        return notes
+
+    def __add_notes_to_person(self) -> None:
+        self.__cur.execute(
+            f'SELECT person.gramps_id AS person_id, note.gramps_id AS note_id '
+            'FROM reference JOIN person ON person.handle = reference.obj_handle '
+            'JOIN note ON note.handle = reference.ref_handle '
+            'WHERE reference.ref_class = "Note"; '
+        )
+        for person_id, note_id in self.__cur.fetchall():
+            self.__persons[person_id].add_note(self.__notes[note_id])
 
     def __get_relationship(self) -> Tuple[Set[Relation], Dict[GrampsId, Family]]:
 
