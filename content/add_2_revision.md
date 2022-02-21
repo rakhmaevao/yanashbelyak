@@ -3,7 +3,7 @@ Date: 2022-02-21 13:12
 Modified: 2022-02-21 13:12
 Category: Статьи
 Tags: Документы, Новости
-Slug: add_3_and_4_revision
+Slug: add_2_revision
 Authors: Александр Рахмаев
 Summary: Семен Михайлов любезно поделился копиями.
 
