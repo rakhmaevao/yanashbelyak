@@ -13,8 +13,8 @@ if __name__ == '__main__':
 
 
     if 'content' in set(os.listdir()):
-        output_path = "content/images/tree.svg"
+        content_dir = "content"
     else:
-        output_path = "../content/images/tree.svg"
-    Render(db, output_path)
-    Biographer(db)
+        content_dir = "../content"
+    Render(db, f'{content_dir}/images/tree.svg')
+    Biographer(db, content_dir)

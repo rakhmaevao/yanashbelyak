@@ -36,13 +36,12 @@ class Article:
 
 
 class Biographer:
-    def __init__(self, db: Database):
+    def __init__(self, db: Database, content_dir: str):
         self.__db = db
 
         for person in self.__db.persons.values():
             article = self.__crate_article_from_person(person)
-            logger.info(str(article))
-            article.export_to_file('content/persons')
+            article.export_to_file(f'{content_dir}/persons')
 
     @staticmethod
     def __crate_article_from_person(person: Person):
