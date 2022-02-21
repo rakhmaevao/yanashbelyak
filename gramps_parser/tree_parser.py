@@ -1,8 +1,8 @@
 from render import Render
 from db import Database
+from biographer import Biographer
 from loguru import logger
 import os
-
 
 if __name__ == '__main__':
     logger.info('Start')
@@ -10,9 +10,9 @@ if __name__ == '__main__':
     # db = Database('/home/rahmaevao/.gramps/grampsdb/61ee61ab')  # Тест
     logger.info('The database has been read')
 
-
     if 'content' in set(os.listdir()):
-        output_path = "content/images/tree.svg"
+        content_dir = "content"
     else:
-        output_path = "../content/images/tree.svg"
-    Render(db, output_path)
+        content_dir = "../content"
+    Render(db, f'{content_dir}/images/tree.svg')
+    Biographer(db, content_dir)

@@ -90,7 +90,7 @@ class Person:
         return self.__gender
 
     @property
-    def notes(self):
+    def notes(self) -> Set[Note]:
         return self.__notes
 
     def __str__(self):
