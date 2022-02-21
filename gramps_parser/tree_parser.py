@@ -1,5 +1,6 @@
 from render import Render
 from db import Database
+from biographer import Biographer
 from loguru import logger
 import os
 
@@ -16,3 +17,4 @@ if __name__ == '__main__':
     else:
         output_path = "../content/images/tree.svg"
     Render(db, output_path)
+    Biographer(db)
