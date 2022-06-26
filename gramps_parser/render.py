@@ -4,6 +4,7 @@ from db import Person, RelationType, Database, GrampsId, Family, Gender
 from datetime import datetime, date
 from loguru import logger
 import drawSvg
+from pathlib import Path
 from operator import attrgetter
 import xml.etree.ElementTree as ET
 
@@ -47,6 +48,8 @@ class Node:
 class Render:
     def __init__(self, db: Database, output_path: str):
         self.__db = db
+        Path(output_path).parent.mkdir(parents=True, exist_ok=True)
+
         self.__unpined_person = copy.deepcopy(self.__db.persons)  # type: Dict[GrampsId, Person]
         self.__older_date = self.__get_older_person(self.__unpined_person).birth_day
 
