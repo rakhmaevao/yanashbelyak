@@ -36,16 +36,16 @@ class Gender(Enum):
 
 
 class Person:
-    __MEAN_LIFETIME = 80
+    __MAX_LIFETIME_Y = 100
 
     def __init__(self, id: GrampsId, full_name: str,
                  birth_day: date, death_day: date, gender: Gender):
         self.__gramps_id = GrampsId(id)
-        self.__full_name = full_name
-        self.__birth_day = birth_day
-        self.__death_day = death_day
-        self.__gender = gender
-        self.__notes = set()  # type: Set[Note]
+        self.__full_name: str = full_name
+        self.__birth_day: date = birth_day
+        self.__death_day: date = death_day
+        self.__gender: Gender = gender
+        self.__notes: Set[Note] = set()
 
     def add_note(self, note: Note):
         self.__notes.add(note)
@@ -60,18 +60,14 @@ class Person:
 
     @property
     def birth_day(self) -> date:
-        if self.__birth_day is None:
-            MEAN_LIFETIME = timedelta(days=365 * 75)
-            if self.__death_day is None:
-                return (datetime.today() - MEAN_LIFETIME).date()
-            return self.__death_day - MEAN_LIFETIME
         return self.__birth_day
+
 
     @property
     def death_day(self):
         if self.__death_day is None:
             return self.__birth_day + \
-                   timedelta(days=365 * self.__MEAN_LIFETIME)
+                   timedelta(days=365 * self.__MAX_LIFETIME_Y)
         else:
             return self.__death_day
 
@@ -94,11 +90,14 @@ class Person:
         return self.__notes
 
     def __str__(self):
-        r_year = 'н. в.'
-        if self.__death_day is not None:
-            r_year = self.death_day.year
+        
+        if self.death_day > date.today():
+            right_year = 'н. в.'
+        else:
+            right_year = self.death_day.year
+
         return f'{self.__full_name} ' \
-               f'({self.__birth_day.year}-{r_year})'
+               f'({self.__birth_day.year}-{right_year})'
 
     def is_male(self):
         return self.gender == Gender.MALE
