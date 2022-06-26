@@ -202,9 +202,9 @@ class EventType(Enum):
 
 @singleton
 class Database:
-    def __init__(self, path=r'/home/rahmaevao/.gramps/grampsdb/61d89dd1'):
+    def __init__(self):
 
-        conn = sqlite3.connect(path + '/sqlite.db')
+        conn = sqlite3.connect('sqlite.db')
         self.__cur = conn.cursor()
 
         self.__persons = self.__get_persons()  # type: Dict[GrampsId, Person]

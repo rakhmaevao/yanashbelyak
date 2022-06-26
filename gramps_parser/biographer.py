@@ -1,6 +1,6 @@
 from typing import List
 from loguru import logger
-
+from pathlib import Path
 from db import Person, Database
 
 
@@ -23,8 +23,8 @@ class Article:
             f'Slug: {self.__slug}\n'
             f'{self.__main_content}')
 
-    def export_to_file(self, path):
-        with open(f'{path}/{self.__slug}.md', 'w') as file:
+    def export_to_file(self, parent_path: Path):
+        with open(f'{parent_path}/{self.__slug}.md', 'w') as file:
             file.write(str(self))
 
     @staticmethod
@@ -38,10 +38,13 @@ class Article:
 class Biographer:
     def __init__(self, db: Database, content_dir: str):
         self.__db = db
+        
+        persons_dir = Path(f'{content_dir}/persons')
+        persons_dir.mkdir(parents=True, exist_ok=True)
 
         for person in self.__db.persons.values():
             article = self.__crate_article_from_person(person)
-            article.export_to_file(f'{content_dir}/persons')
+            article.export_to_file(persons_dir)
 
     @staticmethod
     def __crate_article_from_person(person: Person):
