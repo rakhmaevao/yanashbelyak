@@ -75,7 +75,7 @@ class Render:
         [draw_svg.append(obj) for obj in family_lines]
         [draw_svg.append(obj) for obj in self.__draw_objects]
         draw_svg.saveSvg(output_path)
-        self.__rewrite_svg_with_hyperlink(output_path)
+        # self.__rewrite_svg_with_hyperlink(output_path)
 
     @staticmethod
     def __get_triangular(y: float, x: float, direction: str) -> drawSvg.Lines:
@@ -331,6 +331,15 @@ class Render:
                 fontSize=_FONT_SIZE,
                 x=x,
                 y=y + (_HEIGHT - _FONT_SIZE)
+            )
+        )
+        self.__draw_objects.append(
+            drawSvg.Text(
+                text=person.id,
+                fontSize=_FONT_SIZE,
+                x=x,
+                y=y + (_HEIGHT - _FONT_SIZE),
+                style="fill-opacity:0"
             )
         )
         self.__person_id_by_label[str(person)] = person.id
