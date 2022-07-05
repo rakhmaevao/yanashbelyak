@@ -53,10 +53,9 @@ class Render:
         self.__unpined_person = copy.deepcopy(self.__db.persons)  # type: Dict[GrampsId, Person]
         self.__older_date = self.__get_older_person(self.__unpined_person).birth_day
 
-        self.__person_x_pos = dict()  # type: Dict[str, GrampsId]
-
         self.__nodes = dict()  # type: Dict[GrampsId, Node]
         self.__draw_objects = []  # type: List[drawSvg.DrawingElement]
+        self.__person_id_by_label: Dict[str, GrampsId] = {}
         self.__vertical_index = -1
         while True:
             self.__vertical_index += 1
@@ -311,14 +310,10 @@ class Render:
 
         return partners
 
-    def __add_person_x_position(self, id: GrampsId, x: float):
-        self.__person_x_pos[str(x)] = id
-
     def __add_person(self, person: Person):
         self.__vertical_index += 1
         y = (_HEIGHT + _Y_SPACING) * self.__vertical_index
         x = self._compute_x_pos(person.birth_day)
-        self.__add_person_x_position(person.id, x)
         self.__draw_objects.append(
             drawSvg.Rectangle(
                 x=x,
@@ -338,6 +333,7 @@ class Render:
                 y=y + (_HEIGHT - _FONT_SIZE)
             )
         )
+        self.__person_id_by_label[str(person)] = person.id
         del self.__unpined_person[person.id]
         logger.info(f"Added {person}")
 
@@ -366,18 +362,20 @@ class Render:
 
     def __rewrite_svg_with_hyperlink(self, path: str):
         """
-        DrawSvg не умеет в гиперссылки, поэтому уже готовый файл изменяется. В нем ищется прямуогльник персоны с
+        DrawSvg не умеет в гиперссылки, поэтому уже готовый файл изменяется.
+        В нем ищется текстовой блок с label персоны с
         заданной х координатой и добавляется html тег <a>
         """
         f = open(path, 'r')
         new_strings = []
         for line in f:
             new_string = ''
-            if line.find('<rect') != -1:
+            if line.find('<text') != -1:
                 tree = ET.ElementTree(ET.fromstring(line))
-
-                x = tree.getroot().attrib['x']
-                person_id = self.__person_x_pos[x]
+                person_id = self.__person_id_by_label.get(tree.getroot().text, None)
+                if person_id is None:
+                    new_strings.append(line)
+                    continue
                 new_string = f'<a href="{SITEURL}/{person_id}.html">{line}</a>'
             else:
                 new_string = line
