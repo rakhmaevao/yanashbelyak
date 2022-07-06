@@ -1,5 +1,5 @@
 import copy
-from typing import List, Tuple, Dict, Optional
+from typing import List, NamedTuple, Tuple, Dict, Optional
 from db import Person, RelationType, Database, GrampsId, Family, Gender
 from datetime import datetime, date
 from loguru import logger
@@ -53,10 +53,9 @@ class Render:
         self.__unpined_person = copy.deepcopy(self.__db.persons)  # type: Dict[GrampsId, Person]
         self.__older_date = self.__get_older_person(self.__unpined_person).birth_day
 
-        self.__person_x_pos = dict()  # type: Dict[str, GrampsId]
-
         self.__nodes = dict()  # type: Dict[GrampsId, Node]
         self.__draw_objects = []  # type: List[drawSvg.DrawingElement]
+        self.__person_id_by_label: Dict[str, GrampsId] = {}
         self.__vertical_index = -1
         while True:
             self.__vertical_index += 1
@@ -311,14 +310,10 @@ class Render:
 
         return partners
 
-    def __add_person_x_position(self, id: GrampsId, x: float):
-        self.__person_x_pos[str(x)] = id
-
     def __add_person(self, person: Person):
         self.__vertical_index += 1
         y = (_HEIGHT + _Y_SPACING) * self.__vertical_index
         x = self._compute_x_pos(person.birth_day)
-        self.__add_person_x_position(person.id, x)
         self.__draw_objects.append(
             drawSvg.Rectangle(
                 x=x,
@@ -338,6 +333,16 @@ class Render:
                 y=y + (_HEIGHT - _FONT_SIZE)
             )
         )
+        self.__draw_objects.append(
+            drawSvg.Text(
+                text=person.id,
+                fontSize=_FONT_SIZE,
+                x=x,
+                y=y + (_HEIGHT - _FONT_SIZE),
+                style="fill-opacity:0"
+            )
+        )
+        self.__person_id_by_label[str(person)] = person.id
         del self.__unpined_person[person.id]
         logger.info(f"Added {person}")
 
@@ -366,24 +371,44 @@ class Render:
 
     def __rewrite_svg_with_hyperlink(self, path: str):
         """
-        DrawSvg не умеет в гиперссылки, поэтому уже готовый файл изменяется. В нем ищется прямуогльник персоны с
-        заданной х координатой и добавляется html тег <a>
+        DrawSvg не умеет в гиперссылки, поэтому уже готовый файл изменяется.
+        В нем ищется скрытый текстовый блок с id персоны.
+        Из него берется его координата. По этой же координате находится и label персоны.
+        Блок label персоны дополняется гиперссылкой на страницу персоны.
         """
+        clean_svg = []  # Массив строк svg файла без невидимых строк с id персон
+        person_id_by_coordinates: Dict[Coordinates, GrampsId] = {}
         f = open(path, 'r')
-        new_strings = []
         for line in f:
-            new_string = ''
-            if line.find('<rect') != -1:
-                tree = ET.ElementTree(ET.fromstring(line))
-
-                x = tree.getroot().attrib['x']
-                person_id = self.__person_x_pos[x]
-                new_string = f'<a href="{SITEURL}/{person_id}.html">{line}</a>'
-            else:
-                new_string = line
-            new_strings.append(new_string)
+            if line.find('<text') != -1:
+                svg_struct = ET.ElementTree(ET.fromstring(line)).getroot()
+                coordinates = Coordinates(svg_struct.attrib["x"], svg_struct.attrib["y"])
+                person: Person | None = self.__db.persons.get(svg_struct.text, None)
+                if person is not None:
+                    person_id_by_coordinates[coordinates] = person.id
+                    continue
+            clean_svg.append(line)   
         f.close()
+
+        new_strings = []
+        for line in clean_svg:
+            if line.find('<text') != -1:
+                svg_struct = ET.ElementTree(ET.fromstring(line)).getroot()
+                coordinates = Coordinates(svg_struct.attrib["x"], svg_struct.attrib["y"])
+
+                person_id: GrampsId | None = person_id_by_coordinates.get(coordinates, None)
+                if person_id is not None:
+                    new_strings.append(f'<a href="{SITEURL}/{person_id}.html">{line}</a>')
+                    continue
+
+            new_strings.append(line)
 
         with open(path, 'w') as file:
             for s in new_strings:
                 file.write(s)
+
+
+class Coordinates(NamedTuple):
+    """Класс, хранящий координаты svg элемента"""
+    x: str
+    y: str

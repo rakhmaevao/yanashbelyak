@@ -52,6 +52,8 @@ html:
 
 clean:
 	[ ! -d "$(OUTPUTDIR)" ] || rm -rf "$(OUTPUTDIR)"
+	rm -f content/persons/*
+	rm -f content/images/tree.svg
 
 regenerate:
 	"$(PELICAN)" -r "$(INPUTDIR)" -o "$(OUTPUTDIR)" -s "$(CONFFILE)" $(PELICANOPTS)
@@ -78,6 +80,7 @@ github: publish
 content_wraper:
 	python gramps_parser/tree_parser.py
 	"$(PELICAN)" content -t theme
+
 
 
 .PHONY: html help clean regenerate serve serve-global devserver publish github content_wraper
