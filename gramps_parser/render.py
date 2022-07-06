@@ -1,5 +1,5 @@
 import copy
-from typing import List, Tuple, Dict, Optional
+from typing import List, NamedTuple, Tuple, Dict, Optional
 from db import Person, RelationType, Database, GrampsId, Family, Gender
 from datetime import datetime, date
 from loguru import logger
@@ -75,7 +75,7 @@ class Render:
         [draw_svg.append(obj) for obj in family_lines]
         [draw_svg.append(obj) for obj in self.__draw_objects]
         draw_svg.saveSvg(output_path)
-        # self.__rewrite_svg_with_hyperlink(output_path)
+        self.__rewrite_svg_with_hyperlink(output_path)
 
     @staticmethod
     def __get_triangular(y: float, x: float, direction: str) -> drawSvg.Lines:
@@ -372,25 +372,43 @@ class Render:
     def __rewrite_svg_with_hyperlink(self, path: str):
         """
         DrawSvg не умеет в гиперссылки, поэтому уже готовый файл изменяется.
-        В нем ищется текстовой блок с label персоны с
-        заданной х координатой и добавляется html тег <a>
+        В нем ищется скрытый текстовый блок с id персоны.
+        Из него берется его координата. По этой же координате находится и label персоны.
+        Блок label персоны дополняется гиперссылкой на страницу персоны.
         """
+        clean_svg = []  # Массив строк svg файла без невидимых строк с id персон
+        person_id_by_coordinates: Dict[Coordinates, GrampsId] = {}
         f = open(path, 'r')
-        new_strings = []
         for line in f:
-            new_string = ''
             if line.find('<text') != -1:
-                tree = ET.ElementTree(ET.fromstring(line))
-                person_id = self.__person_id_by_label.get(tree.getroot().text, None)
-                if person_id is None:
-                    new_strings.append(line)
+                svg_struct = ET.ElementTree(ET.fromstring(line)).getroot()
+                coordinates = Coordinates(svg_struct.attrib["x"], svg_struct.attrib["y"])
+                person: Person | None = self.__db.persons.get(svg_struct.text, None)
+                if person is not None:
+                    person_id_by_coordinates[coordinates] = person.id
                     continue
-                new_string = f'<a href="{SITEURL}/{person_id}.html">{line}</a>'
-            else:
-                new_string = line
-            new_strings.append(new_string)
+            clean_svg.append(line)   
         f.close()
+
+        new_strings = []
+        for line in clean_svg:
+            if line.find('<text') != -1:
+                svg_struct = ET.ElementTree(ET.fromstring(line)).getroot()
+                coordinates = Coordinates(svg_struct.attrib["x"], svg_struct.attrib["y"])
+
+                person_id: GrampsId | None = person_id_by_coordinates.get(coordinates, None)
+                if person_id is not None:
+                    new_strings.append(f'<a href="{SITEURL}/{person_id}.html">{line}</a>')
+                    continue
+
+            new_strings.append(line)
 
         with open(path, 'w') as file:
             for s in new_strings:
                 file.write(s)
+
+
+class Coordinates(NamedTuple):
+    """Класс, хранящий координаты svg элемента"""
+    x: str
+    y: str
