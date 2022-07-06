@@ -81,6 +81,9 @@ content_wraper:
 	python gramps_parser/tree_parser.py
 	"$(PELICAN)" content -t theme
 
+format:
+	isort .
+	black .
 
 
 .PHONY: html help clean regenerate serve serve-global devserver publish github content_wraper

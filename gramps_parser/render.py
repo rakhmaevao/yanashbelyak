@@ -1,14 +1,15 @@
 import copy
-from typing import List, NamedTuple, Tuple, Dict, Optional
-from db import Person, RelationType, Database, GrampsId, Family, Gender
-from datetime import datetime, date
-from loguru import logger
-import drawSvg
-from pathlib import Path
-from operator import attrgetter
 import xml.etree.ElementTree as ET
+from datetime import date, datetime
+from operator import attrgetter
+from pathlib import Path
+from typing import Dict, List, NamedTuple, Optional, Tuple
 
-SITEURL = 'https://rahmaevao.github.io/yanashbelyak'
+import drawSvg
+from db import Database, Family, Gender, GrampsId, Person, RelationType
+from loguru import logger
+
+SITEURL = "https://rahmaevao.github.io/yanashbelyak"
 
 
 class NotRightPersonException(Exception):
@@ -26,9 +27,11 @@ _TRIANGLE_WEIGHT = 4
 _DASH_WEIGHT = 20
 _X_OFFSET = _HEIGHT
 
-_COLORS = {Gender.MALE: 'lightblue',
-           Gender.FEMALE: 'pink',
-           Gender.UNKNOWN: 'LightYellow'}
+_COLORS = {
+    Gender.MALE: "lightblue",
+    Gender.FEMALE: "pink",
+    Gender.UNKNOWN: "LightYellow",
+}
 
 
 class Node:
@@ -50,7 +53,9 @@ class Render:
         self.__db = db
         Path(output_path).parent.mkdir(parents=True, exist_ok=True)
 
-        self.__unpined_person = copy.deepcopy(self.__db.persons)  # type: Dict[GrampsId, Person]
+        self.__unpined_person = copy.deepcopy(
+            self.__db.persons
+        )  # type: Dict[GrampsId, Person]
         self.__older_date = self.__get_older_person(self.__unpined_person).birth_day
 
         self.__nodes = dict()  # type: Dict[GrampsId, Node]
@@ -81,55 +86,81 @@ class Render:
     def __get_triangular(y: float, x: float, direction: str) -> drawSvg.Lines:
         if direction == "down":
             return drawSvg.Lines(
-                x - _TRIANGLE_WEIGHT / 2, y,
-                x + _TRIANGLE_WEIGHT / 2, y,
-                x, y - _TRIANGLE_HEIGHT,
-                x - _TRIANGLE_WEIGHT / 2, y,
+                x - _TRIANGLE_WEIGHT / 2,
+                y,
+                x + _TRIANGLE_WEIGHT / 2,
+                y,
+                x,
+                y - _TRIANGLE_HEIGHT,
+                x - _TRIANGLE_WEIGHT / 2,
+                y,
                 close=False,
                 stroke="black",
                 stroke_width=_LINE_WIDTH,
-                fill='none'
+                fill="none",
             )
         elif direction == "up":
             return drawSvg.Lines(
-                x - _TRIANGLE_WEIGHT / 2, y,
-                x + _TRIANGLE_WEIGHT / 2, y,
-                x, y + _TRIANGLE_HEIGHT,
-                x - _TRIANGLE_WEIGHT / 2, y,
+                x - _TRIANGLE_WEIGHT / 2,
+                y,
+                x + _TRIANGLE_WEIGHT / 2,
+                y,
+                x,
+                y + _TRIANGLE_HEIGHT,
+                x - _TRIANGLE_WEIGHT / 2,
+                y,
                 close=False,
                 stroke="black",
                 stroke_width=_LINE_WIDTH,
-                fill='none'
+                fill="none",
             )
         else:
-            raise ValueError(f'Unknown direction: {direction}')
+            raise ValueError(f"Unknown direction: {direction}")
 
-    def __create_time_slice(self, label: str, date: date, date_view: bool) -> List[drawSvg.DrawingElement]:
+    def __create_time_slice(
+        self, label: str, date: date, date_view: bool
+    ) -> List[drawSvg.DrawingElement]:
         x = self._compute_x_pos(date)
         y_max = (_HEIGHT + _Y_SPACING) * self.__vertical_index
         y_min = _HEIGHT
         ret_objects = [
             drawSvg.Lines(
-                x - _DASH_WEIGHT / 2, y_min,
-                x + _DASH_WEIGHT / 2, y_min,
-                x, y_min,
-                x, y_max,
-                x + _DASH_WEIGHT / 2, y_max,
-                x - _DASH_WEIGHT / 2, y_max,
+                x - _DASH_WEIGHT / 2,
+                y_min,
+                x + _DASH_WEIGHT / 2,
+                y_min,
+                x,
+                y_min,
+                x,
+                y_max,
+                x + _DASH_WEIGHT / 2,
+                y_max,
+                x - _DASH_WEIGHT / 2,
+                y_max,
                 close=False,
                 stroke="gray",
                 stroke_width=_LINE_WIDTH,
-                fill='none'
+                fill="none",
             )
         ]
         if date_view:
             ret_objects.append(
-                drawSvg.Text(text=str(date.year), fontSize=_FONT_SIZE, x=x - _FONT_SIZE * 1, y=y_max + _Y_SPACING / 2)
+                drawSvg.Text(
+                    text=str(date.year),
+                    fontSize=_FONT_SIZE,
+                    x=x - _FONT_SIZE * 1,
+                    y=y_max + _Y_SPACING / 2,
+                )
             )
         else:
             label_weight = _FONT_SIZE * 0.7 * len(label)
             ret_objects.append(
-                drawSvg.Text(text=label, fontSize=_FONT_SIZE, x=x - label_weight / 2, y=y_max + _Y_SPACING / 2)
+                drawSvg.Text(
+                    text=label,
+                    fontSize=_FONT_SIZE,
+                    x=x - label_weight / 2,
+                    y=y_max + _Y_SPACING / 2,
+                )
             )
         return ret_objects
 
@@ -139,7 +170,9 @@ class Render:
         background += self.__create_time_slice("", date(1800, 1, 1), date_view=True)
         background += self.__create_time_slice("", date(1900, 1, 1), date_view=True)
 
-        background += self.__create_time_slice("ВОВ", date(1941, 6, 22), date_view=False)
+        background += self.__create_time_slice(
+            "ВОВ", date(1941, 6, 22), date_view=False
+        )
         background += self.__create_time_slice("", date(1945, 5, 9), date_view=False)
 
         background += self.__create_time_slice("", date(2000, 1, 1), date_view=True)
@@ -149,8 +182,9 @@ class Render:
         family_lines = []
         for family in self.__db.families.values():
             if len(family.children) != 0 or family.is_full():
-                nodes = [self.__nodes[p.id] for p in family.children] + \
-                        [self.__nodes[parent.id] for parent in list(family.parents)]
+                nodes = [self.__nodes[p.id] for p in family.children] + [
+                    self.__nodes[parent.id] for parent in list(family.parents)
+                ]
                 top_node = max(nodes, key=attrgetter("y_pos"))
                 lower_node = min(nodes, key=attrgetter("y_pos"))
                 top_y = None
@@ -183,19 +217,23 @@ class Render:
 
                 family_lines.append(
                     drawSvg.Lines(
-                        x_pos, lower_y, x_pos, top_y,
+                        x_pos,
+                        lower_y,
+                        x_pos,
+                        top_y,
                         close=False,
                         stroke="black",
                         stroke_width=_LINE_WIDTH,
-                        fill='none'
+                        fill="none",
                     )
                 )
         return family_lines
 
     def __get_size(self) -> Tuple[float, float]:
         return (
-            (datetime.today().date() - self.__older_date).days * _X_SCALE + _X_OFFSET * 10,
-            (_HEIGHT + _Y_SPACING) * (self.__vertical_index + 2)
+            (datetime.today().date() - self.__older_date).days * _X_SCALE
+            + _X_OFFSET * 10,
+            (_HEIGHT + _Y_SPACING) * (self.__vertical_index + 2),
         )
 
     def __get_patriarch(self, where: Dict[GrampsId, Person]):
@@ -203,11 +241,11 @@ class Render:
         if patriarch is None:
             patriarch = self.__older_grandma(where)
         if patriarch is not None:
-            logger.info(f'Patriarchs of a new kind found: {patriarch}')
+            logger.info(f"Patriarchs of a new kind found: {patriarch}")
         return patriarch
 
     def __recursively_adding_person_to_the_right(self, person: Person):
-        logger.info(f'Searching the next person for {person}')
+        logger.info(f"Searching the next person for {person}")
         while True:
             new_person = self.__get_next_person(person)
             if new_person is not None:
@@ -225,7 +263,7 @@ class Render:
         if partner is not None:
             return partner
 
-        logger.info(f'There are no more next people for {person}')
+        logger.info(f"There are no more next people for {person}")
 
         return None
 
@@ -250,11 +288,14 @@ class Render:
                     continue
                 children.append(child)
         if children:
-            return max(children, key=attrgetter('birth_day'))
+            return max(children, key=attrgetter("birth_day"))
         return None
 
     def __get_oldest_partner(self, person: Person) -> Optional[Person]:
-        partners = sorted(self.__get_partners(person, self.__unpined_person), key=attrgetter('birth_day'))
+        partners = sorted(
+            self.__get_partners(person, self.__unpined_person),
+            key=attrgetter("birth_day"),
+        )
         if partners:
             return partners[-1]
         return None
@@ -276,24 +317,25 @@ class Render:
     @staticmethod
     def __get_older_person(where: Dict[GrampsId, Person]) -> Person:
         persons = [p for p in where.values()]
-        return min(persons, key=attrgetter('birth_day'))
+        return min(persons, key=attrgetter("birth_day"))
 
     @staticmethod
     def __older_grandpa(where: Dict[GrampsId, Person]) -> Optional[Person]:
         mens = [p for p in where.values() if p.gender == Gender.MALE]
         if not mens:
             return None
-        return min(mens, key=attrgetter('birth_day'))
+        return min(mens, key=attrgetter("birth_day"))
 
     @staticmethod
     def __older_grandma(where: Dict[GrampsId, Person]) -> Optional[Person]:
         womens = [p for p in where.values() if p.gender == Gender.FEMALE]
         if not womens:
             return None
-        return min(womens, key=attrgetter('birth_day'))
+        return min(womens, key=attrgetter("birth_day"))
 
-    def __get_partners(self, person: Person, where: Dict[GrampsId, Person]) \
-            -> List[Person]:
+    def __get_partners(
+        self, person: Person, where: Dict[GrampsId, Person]
+    ) -> List[Person]:
         partners = []
         for relation in self.__db.relations:
             if relation.type_of_relation != RelationType.MARRIAGE:
@@ -322,15 +364,12 @@ class Render:
                 height=_HEIGHT,
                 stroke="black",
                 stroke_width=_LINE_WIDTH,
-                fill=_COLORS[person.gender]
+                fill=_COLORS[person.gender],
             )
         )
         self.__draw_objects.append(
             drawSvg.Text(
-                text=str(person),
-                fontSize=_FONT_SIZE,
-                x=x,
-                y=y + (_HEIGHT - _FONT_SIZE)
+                text=str(person), fontSize=_FONT_SIZE, x=x, y=y + (_HEIGHT - _FONT_SIZE)
             )
         )
         self.__draw_objects.append(
@@ -339,7 +378,7 @@ class Render:
                 fontSize=_FONT_SIZE,
                 x=x,
                 y=y + (_HEIGHT - _FONT_SIZE),
-                style="fill-opacity:0"
+                style="fill-opacity:0",
             )
         )
         self.__person_id_by_label[str(person)] = person.id
@@ -350,12 +389,14 @@ class Render:
         if parental_family is not None:
             self.__draw_objects.append(
                 drawSvg.Lines(
-                    x, y + _HEIGHT / 2,
-                    self._compute_x_pos(parental_family.wedding_day), y + _HEIGHT / 2,
+                    x,
+                    y + _HEIGHT / 2,
+                    self._compute_x_pos(parental_family.wedding_day),
+                    y + _HEIGHT / 2,
                     close=False,
                     stroke="black",
                     stroke_width=_LINE_WIDTH,
-                    fill='none'
+                    fill="none",
                 )
             )
         self.__nodes[person.id] = Node(person, y)
@@ -378,37 +419,46 @@ class Render:
         """
         clean_svg = []  # Массив строк svg файла без невидимых строк с id персон
         person_id_by_coordinates: Dict[Coordinates, GrampsId] = {}
-        f = open(path, 'r')
+        f = open(path, "r")
         for line in f:
-            if line.find('<text') != -1:
+            if line.find("<text") != -1:
                 svg_struct = ET.ElementTree(ET.fromstring(line)).getroot()
-                coordinates = Coordinates(svg_struct.attrib["x"], svg_struct.attrib["y"])
+                coordinates = Coordinates(
+                    svg_struct.attrib["x"], svg_struct.attrib["y"]
+                )
                 person: Person | None = self.__db.persons.get(svg_struct.text, None)
                 if person is not None:
                     person_id_by_coordinates[coordinates] = person.id
                     continue
-            clean_svg.append(line)   
+            clean_svg.append(line)
         f.close()
 
         new_strings = []
         for line in clean_svg:
-            if line.find('<text') != -1:
+            if line.find("<text") != -1:
                 svg_struct = ET.ElementTree(ET.fromstring(line)).getroot()
-                coordinates = Coordinates(svg_struct.attrib["x"], svg_struct.attrib["y"])
+                coordinates = Coordinates(
+                    svg_struct.attrib["x"], svg_struct.attrib["y"]
+                )
 
-                person_id: GrampsId | None = person_id_by_coordinates.get(coordinates, None)
+                person_id: GrampsId | None = person_id_by_coordinates.get(
+                    coordinates, None
+                )
                 if person_id is not None:
-                    new_strings.append(f'<a href="{SITEURL}/{person_id}.html">{line}</a>')
+                    new_strings.append(
+                        f'<a href="{SITEURL}/{person_id}.html">{line}</a>'
+                    )
                     continue
 
             new_strings.append(line)
 
-        with open(path, 'w') as file:
+        with open(path, "w") as file:
             for s in new_strings:
                 file.write(s)
 
 
 class Coordinates(NamedTuple):
     """Класс, хранящий координаты svg элемента"""
+
     x: str
     y: str

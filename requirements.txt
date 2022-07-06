@@ -1,5 +1,7 @@
-loguru==0.5.3
+loguru
 pelican==4.7.1
 singleton-decorator==1.0.0
 Markdown==3.3.6
 drawSvg==1.8.3
+black
+isort
