@@ -24,3 +24,8 @@ make content_wraper
 ```
 
 ## Как публиковать?
+
+Выполни команду:
+```
+make github
+```

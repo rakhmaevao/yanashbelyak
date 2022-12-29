@@ -1,6 +1,5 @@
 AUTHOR = "Александр Рахмаев"
 SITENAME = "д. Янашбеляк"
-# SITEURL = "https://rahmaevao.github.io/yanashbelyak"
 SITEURL = "http://127.0.0.1:8000"
 OUTPUT_PATH = "docs"
 PATH = "content"
