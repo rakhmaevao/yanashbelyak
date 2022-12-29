@@ -12,15 +12,15 @@ pip install -r requirements.txt
 
 ## Как разрабатывать?
 
-Запуск pelican в режиме debug:
+Запуск dev server, который пересобирается при изменении контента:
 
 ```
-pelican --listen
+make devserver
 ```
 
 Чтобы сгенерировать контент:
 ```
-make content_wraper
+make content
 ```
 
 ## Как публиковать?
