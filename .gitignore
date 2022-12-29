@@ -7,5 +7,4 @@
 /content/persons
 *.db
 /gramps_parser/__pycache__
-/docs/*
-!/docs/theme/
+/docs
