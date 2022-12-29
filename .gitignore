@@ -1,9 +1,0 @@
-/.vscode
-/venv
-/__pycache__
-/.idea
-/content/images/tree
-/content/images/tree.svg
-/content/persons
-*.db
-/gramps_parser/__pycache__
