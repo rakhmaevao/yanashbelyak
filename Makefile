@@ -78,7 +78,7 @@ github: publish
 	git push origin $(GITHUB_PAGES_BRANCH)
 
 content_wraper:
-	python gramps_parser/tree_parser.py
+	python3 gramps_parser/tree_parser.py
 	"$(PELICAN)" content -t theme
 
 format:

@@ -8,7 +8,7 @@ source .venv/bin/activate
 pip install -r requirements.txt
 ```
 
-Помести файл с БД в корень проекта, а в папку дерева помести ссылку на файл БД.
+Прикрепи ссылку на файл БД gramps с именем `sqlite.db`.
 
 ## Как разрабатывать?
 
@@ -22,3 +22,5 @@ pelican --listen
 ```
 make content_wraper
 ```
+
+## Как публиковать?
