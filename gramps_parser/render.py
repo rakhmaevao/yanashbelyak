@@ -9,14 +9,11 @@ import drawSvg
 from db import Database, Family, Gender, GrampsId, Person, RelationType
 from loguru import logger
 
-SITEURL = "https://rahmaevao.github.io/yanashbelyak"
-
 
 class NotRightPersonException(Exception):
     pass
 
 
-_DAY_IN_CENTURY = 360 * 100
 _Y_SPACING = 6
 _X_SCALE = 0.01
 _FONT_SIZE = 12
@@ -446,7 +443,7 @@ class Render:
                 )
                 if person_id is not None:
                     new_strings.append(
-                        f'<a href="{SITEURL}/{person_id}.html">{line}</a>'
+                        f'<a xlink:href="/{person_id}.html" target="_parent">[...]>{line}</a>'
                     )
                     continue
 
