@@ -24,6 +24,9 @@ _TRIANGLE_HEIGHT = 4
 _TRIANGLE_WEIGHT = 4
 _DASH_WEIGHT = 20
 _X_OFFSET = _HEIGHT
+_DAY_IN_YEAR = 365
+_BIRTHDAY_ERROR_DAYS = 5 * _DAY_IN_YEAR
+_DEATHDAY_ERROR_DAYS = 10 * _DAY_IN_YEAR
 
 _COLORS = {
     Gender.MALE: "lightblue",
@@ -370,7 +373,7 @@ class Render:
         )
 
         if person.birth_day.quality is DateQuality.ESTIMATED:
-            birthday_offset = 5 * 365 * _X_SCALE
+            birthday_offset = _BIRTHDAY_ERROR_DAYS * _X_SCALE
             gradient = drawSvg.LinearGradient(x - birthday_offset, y, x, y + _HEIGHT)
             gradient.addStop(0, "white", 0)
             gradient.addStop(1, _COLORS[person.gender], 1)
@@ -388,7 +391,7 @@ class Render:
 
         if person.death_day.quality is DateQuality.ESTIMATED:
             gradient = drawSvg.LinearGradient(
-                x + width, y, x + width + 10 * 365 * _X_SCALE, y + _HEIGHT
+                x + width, y, x + width + _DEATHDAY_ERROR_DAYS * _X_SCALE, y + _HEIGHT
             )
             gradient.addStop(0, _COLORS[person.gender], 1)
             gradient.addStop(1, "white", 0)
@@ -396,7 +399,7 @@ class Render:
                 drawSvg.Rectangle(
                     x=x + width,
                     y=y,
-                    width=width / 2,
+                    width=_DEATHDAY_ERROR_DAYS * _X_SCALE,
                     height=_HEIGHT,
                     stroke=_COLORS[person.gender],
                     stroke_width=0.0,
