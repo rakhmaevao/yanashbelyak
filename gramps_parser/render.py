@@ -1,4 +1,5 @@
 import copy
+import os
 import xml.etree.ElementTree as ET
 from datetime import date, datetime
 from operator import attrgetter
@@ -443,7 +444,7 @@ class Render:
                 )
                 if person_id is not None:
                     new_strings.append(
-                        f'<a xlink:href="/{person_id}.html" target="_parent">[...]>{line}</a>'
+                        f'<a xlink:href="{os.getenv("SITEURL")}/{person_id}.html" target="_parent">[...]>{line}</a>'
                     )
                     continue
 

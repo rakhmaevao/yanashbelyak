@@ -18,14 +18,14 @@ pip install -r requirements.txt
 make devserver
 ```
 
-Чтобы сгенерировать контент:
+Чтобы сгенерировать контент для локального dev server:
 ```
-make content
+make local_content
 ```
 
 ## Как публиковать?
-
-Выполни команду:
+1. Убедись, что dev server не запущен.
+2. Выполни команду:
 ```
 make github
 ```

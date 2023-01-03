@@ -1,6 +1,8 @@
+import os
+
 AUTHOR = "Александр Рахмаев"
 SITENAME = "д. Янашбеляк"
-SITEURL = "http://127.0.0.1:8000"
+SITEURL = os.getenv("SITEURL")
 OUTPUT_PATH = "docs"
 PATH = "content"
 
