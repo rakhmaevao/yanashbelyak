@@ -1,21 +1,29 @@
 from __future__ import annotations
 
+import locale
 import pickle
 import random
 import sqlite3
-from datetime import date, datetime, timedelta
+from datetime import date, timedelta
 from enum import Enum
 from functools import cached_property
 from operator import attrgetter
-from typing import Dict, List, Optional, Set, Tuple
 
 from loguru import logger
 from singleton_decorator import singleton
+
+locale.setlocale(locale.LC_TIME, "ru_RU.UTF-8")  # the ru locale is installed
 
 
 class DateQuality(Enum):
     EXACTLY = 0
     ESTIMATED = 1
+
+    def __str__(self):
+        if self == DateQuality.EXACTLY:
+            return ""
+        elif self == DateQuality.ESTIMATED:
+            return "≈ "
 
 
 class Date:
@@ -49,6 +57,9 @@ class Date:
     @quality.setter
     def quality(self, quality: DateQuality):
         self.__quality = quality
+
+    def __str__(self) -> str:
+        return f"{self.quality}{self.date.strftime('%d %B %Y')}"
 
 
 class GrampsId(str):
@@ -100,7 +111,7 @@ class Person:
         else:
             self.__death_day = death_day
         self.__gender: Gender = gender
-        self.__notes: Set[Note] = set()
+        self.__notes: set[Note] = set()
 
     def add_note(self, note: Note):
         self.__notes.add(note)
@@ -136,7 +147,7 @@ class Person:
         return self.__gender
 
     @property
-    def notes(self) -> Set[Note]:
+    def notes(self) -> set[Note]:
         return self.__notes
 
     def __str__(self):
@@ -165,9 +176,9 @@ class Person:
 class Family:
     def __init__(self, id: GrampsId):
         self.__id = id  # type: GrampsId
-        self.__father = None  # type: Optional[Person]
-        self.__mother = None  # type: Optional[Person]
-        self.__children = set()  # type: Set[Person]
+        self.__father = None  # type: Person | None
+        self.__mother = None  # type: Person | None
+        self.__children = set()  # type: set[Person]
 
     def add_child(self, child: Person):
         self.__children.add(child)
@@ -177,7 +188,7 @@ class Family:
         return self.__id
 
     @property
-    def father(self) -> Optional[Person]:
+    def father(self) -> Person | None:
         return self.__father
 
     @father.setter
@@ -185,13 +196,13 @@ class Family:
         self.__father = value
 
     @property
-    def parents(self) -> Set[Person]:
+    def parents(self) -> set[Person]:
         return set(
             [person for person in [self.__father, self.__mother] if person is not None]
         )
 
     @property
-    def mother(self) -> Optional[Person]:
+    def mother(self) -> Person | None:
         return self.__mother
 
     @mother.setter
@@ -213,7 +224,7 @@ class Family:
             return youngest + timedelta(days=majority)
 
     @property
-    def children(self) -> Set[Person]:
+    def children(self) -> set[Person]:
         return self.__children
 
     def is_full(self) -> bool:
@@ -259,9 +270,9 @@ class Database:
         conn = sqlite3.connect("sqlite.db")
         self.__cur = conn.cursor()
 
-        self.__persons = self.__get_persons()  # type: Dict[GrampsId, Person]
+        self.__persons = self.__get_persons()  # type: dict[GrampsId, Person]
 
-        self.__notes = self.__get_notes()  # type: Dict[GrampsId, Note]
+        self.__notes = self.__get_notes()  # type: dict[GrampsId, Note]
 
         self.__add_notes_to_person()
 
@@ -273,16 +284,16 @@ class Database:
         return self.__relations
 
     @property
-    def families(self) -> Dict[GrampsId, Family]:
+    def families(self) -> dict[GrampsId, Family]:
         return self.__families
 
     @property
-    def persons(self) -> Dict[GrampsId, Person]:
+    def persons(self) -> dict[GrampsId, Person]:
         return self.__persons
 
-    def __get_persons(self) -> Dict[GrampsId, Person]:
+    def __get_persons(self) -> dict[GrampsId, Person]:
         persons = dict()
-        self.__cur.execute(f"SELECT gramps_id, given_name, surname, gender FROM person")
+        self.__cur.execute("SELECT gramps_id, given_name, surname, gender FROM person")
         persons_raw = self.__cur.fetchall()
         for id, given_name, surname, gender in persons_raw:
             birth_day, death_day = self.__parse_lifetime(id)
@@ -296,7 +307,7 @@ class Database:
             persons[id] = person
         return persons
 
-    def __parse_lifetime(self, id: GrampsId) -> Tuple[Date, Date | None]:
+    def __parse_lifetime(self, id: GrampsId) -> tuple[Date, Date | None]:
         self.__cur.execute(
             f"SELECT event.blob_data "
             f"FROM person "
@@ -324,7 +335,7 @@ class Database:
 
         return birth_day, death_day
 
-    def __get_notes(self) -> Dict[GrampsId, Note]:
+    def __get_notes(self) -> dict[GrampsId, Note]:
         notes = dict()
         self.__cur.execute(f"SELECT note.gramps_id, note.blob_data FROM note")
         notes_raw = self.__cur.fetchall()
@@ -343,7 +354,7 @@ class Database:
         for person_id, note_id in self.__cur.fetchall():
             self.__persons[person_id].add_note(self.__notes[note_id])
 
-    def __get_relationship(self) -> Tuple[Set[Relation], Dict[GrampsId, Family]]:
+    def __get_relationship(self) -> tuple[set[Relation], dict[GrampsId, Family]]:
 
         self.__cur.execute(
             f"SELECT family_id,"

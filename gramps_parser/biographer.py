@@ -1,8 +1,8 @@
+import datetime
 from pathlib import Path
 from typing import List
 
 from db import Database, Person
-from loguru import logger
 
 
 class Article:
@@ -57,7 +57,9 @@ class Biographer:
 
     @staticmethod
     def __crate_article_from_person(person: Person):
-        main_content = f"{person.birth_day} - {person.death_day}\n\n"
+        main_content = f"Дата рождения: {person.birth_day}\n\n"
+        if person.death_day.date < datetime.date.today():
+            main_content += f"Дата смерти: {person.death_day}\n\n"
         if person.notes:
             main_content += list(person.notes)[0].content
 
