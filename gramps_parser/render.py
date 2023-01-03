@@ -360,15 +360,14 @@ class Render:
         y = (_HEIGHT + _Y_SPACING) * self.__vertical_index
         x = self._compute_x_pos(person.birth_day.date)
         width = person.days_of_life * _X_SCALE
+        color = _COLORS[person.gender]
         self.__draw_objects.append(
             drawSvg.Rectangle(
                 x=x,
                 y=y,
                 width=width,
                 height=_HEIGHT,
-                stroke=_COLORS[person.gender],
-                stroke_width=0.0,
-                fill=_COLORS[person.gender],
+                fill=color,
             )
         )
 
@@ -376,15 +375,13 @@ class Render:
             birthday_offset = _BIRTHDAY_ERROR_DAYS * _X_SCALE
             gradient = drawSvg.LinearGradient(x - birthday_offset, y, x, y + _HEIGHT)
             gradient.addStop(0, "white", 0)
-            gradient.addStop(1, _COLORS[person.gender], 1)
+            gradient.addStop(1, color, 1)
             self.__draw_objects.append(
                 drawSvg.Rectangle(
                     x=x - birthday_offset,
                     y=y,
                     width=birthday_offset,
                     height=_HEIGHT,
-                    stroke=_COLORS[person.gender],
-                    stroke_width=0.0,
                     fill=gradient,
                 )
             )
@@ -393,7 +390,7 @@ class Render:
             gradient = drawSvg.LinearGradient(
                 x + width, y, x + width + _DEATHDAY_ERROR_DAYS * _X_SCALE, y + _HEIGHT
             )
-            gradient.addStop(0, _COLORS[person.gender], 1)
+            gradient.addStop(0, color, 1)
             gradient.addStop(1, "white", 0)
             self.__draw_objects.append(
                 drawSvg.Rectangle(
@@ -401,8 +398,6 @@ class Render:
                     y=y,
                     width=_DEATHDAY_ERROR_DAYS * _X_SCALE,
                     height=_HEIGHT,
-                    stroke=_COLORS[person.gender],
-                    stroke_width=0.0,
                     fill=gradient,
                 )
             )
