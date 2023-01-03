@@ -337,7 +337,7 @@ class Database:
 
     def __get_notes(self) -> dict[GrampsId, Note]:
         notes = dict()
-        self.__cur.execute(f"SELECT note.gramps_id, note.blob_data FROM note")
+        self.__cur.execute("SELECT note.gramps_id, note.blob_data FROM note")
         notes_raw = self.__cur.fetchall()
         for id, blob_data in notes_raw:
             note = Note(blob_data)
