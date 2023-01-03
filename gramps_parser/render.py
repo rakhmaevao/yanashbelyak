@@ -7,7 +7,7 @@ from pathlib import Path
 from typing import Dict, List, NamedTuple, Optional, Tuple
 
 import drawSvg
-from db import Database, Family, Gender, GrampsId, Person, RelationType
+from db import Database, DateQuality, Family, Gender, GrampsId, Person, RelationType
 from loguru import logger
 
 
@@ -356,17 +356,54 @@ class Render:
         self.__vertical_index += 1
         y = (_HEIGHT + _Y_SPACING) * self.__vertical_index
         x = self._compute_x_pos(person.birth_day.date)
+        width = person.days_of_life * _X_SCALE
         self.__draw_objects.append(
             drawSvg.Rectangle(
                 x=x,
                 y=y,
-                width=person.days_of_life * _X_SCALE,
+                width=width,
                 height=_HEIGHT,
-                stroke="black",
-                stroke_width=_LINE_WIDTH,
+                stroke=_COLORS[person.gender],
+                stroke_width=0.0,
                 fill=_COLORS[person.gender],
             )
         )
+
+        if person.birth_day.quality is DateQuality.ESTIMATED:
+            birthday_offset = 5 * 365 * _X_SCALE
+            gradient = drawSvg.LinearGradient(x - birthday_offset, y, x, y + _HEIGHT)
+            gradient.addStop(0, "white", 0)
+            gradient.addStop(1, _COLORS[person.gender], 1)
+            self.__draw_objects.append(
+                drawSvg.Rectangle(
+                    x=x - birthday_offset,
+                    y=y,
+                    width=birthday_offset,
+                    height=_HEIGHT,
+                    stroke=_COLORS[person.gender],
+                    stroke_width=0.0,
+                    fill=gradient,
+                )
+            )
+
+        if person.death_day.quality is DateQuality.ESTIMATED:
+            gradient = drawSvg.LinearGradient(
+                x + width, y, x + width + 10 * 365 * _X_SCALE, y + _HEIGHT
+            )
+            gradient.addStop(0, _COLORS[person.gender], 1)
+            gradient.addStop(1, "white", 0)
+            self.__draw_objects.append(
+                drawSvg.Rectangle(
+                    x=x + width,
+                    y=y,
+                    width=width / 2,
+                    height=_HEIGHT,
+                    stroke=_COLORS[person.gender],
+                    stroke_width=0.0,
+                    fill=gradient,
+                )
+            )
+
         self.__draw_objects.append(
             drawSvg.Text(
                 text=str(person), fontSize=_FONT_SIZE, x=x, y=y + (_HEIGHT - _FONT_SIZE)
