@@ -7,7 +7,7 @@ from pathlib import Path
 from typing import Dict, List, NamedTuple, Optional, Tuple
 
 import drawSvg
-from db import Database, Family, Gender, GrampsId, Person, RelationType
+from db import Database, DateQuality, Family, Gender, GrampsId, Person, RelationType
 from loguru import logger
 
 
@@ -24,6 +24,9 @@ _TRIANGLE_HEIGHT = 4
 _TRIANGLE_WEIGHT = 4
 _DASH_WEIGHT = 20
 _X_OFFSET = _HEIGHT
+_DAY_IN_YEAR = 365
+_BIRTHDAY_ERROR_DAYS = 5 * _DAY_IN_YEAR
+_DEATHDAY_ERROR_DAYS = 10 * _DAY_IN_YEAR
 
 _COLORS = {
     Gender.MALE: "lightblue",
@@ -54,7 +57,9 @@ class Render:
         self.__unpined_person = copy.deepcopy(
             self.__db.persons
         )  # type: Dict[GrampsId, Person]
-        self.__older_date = self.__get_older_person(self.__unpined_person).birth_day
+        self.__older_date = self.__get_older_person(
+            self.__unpined_person
+        ).birth_day.date
 
         self.__nodes = dict()  # type: Dict[GrampsId, Node]
         self.__draw_objects = []  # type: List[drawSvg.DrawingElement]
@@ -274,7 +279,7 @@ class Render:
                 if un_child is not None:
                     un_children.append(un_child)
             if un_children:
-                return max(un_children, key=attrgetter("birth_day"))
+                return max(un_children, key=attrgetter("birth_day.date"))
 
         children = []
         for relation in self.__db.relations:
@@ -286,13 +291,13 @@ class Render:
                     continue
                 children.append(child)
         if children:
-            return max(children, key=attrgetter("birth_day"))
+            return max(children, key=attrgetter("birth_day.date"))
         return None
 
     def __get_oldest_partner(self, person: Person) -> Optional[Person]:
         partners = sorted(
             self.__get_partners(person, self.__unpined_person),
-            key=attrgetter("birth_day"),
+            key=attrgetter("birth_day.date"),
         )
         if partners:
             return partners[-1]
@@ -315,21 +320,21 @@ class Render:
     @staticmethod
     def __get_older_person(where: Dict[GrampsId, Person]) -> Person:
         persons = [p for p in where.values()]
-        return min(persons, key=attrgetter("birth_day"))
+        return min(persons, key=attrgetter("birth_day.date"))
 
     @staticmethod
     def __older_grandpa(where: Dict[GrampsId, Person]) -> Optional[Person]:
         mens = [p for p in where.values() if p.gender == Gender.MALE]
         if not mens:
             return None
-        return min(mens, key=attrgetter("birth_day"))
+        return min(mens, key=attrgetter("birth_day.date"))
 
     @staticmethod
     def __older_grandma(where: Dict[GrampsId, Person]) -> Optional[Person]:
         womens = [p for p in where.values() if p.gender == Gender.FEMALE]
         if not womens:
             return None
-        return min(womens, key=attrgetter("birth_day"))
+        return min(womens, key=attrgetter("birth_day.date"))
 
     def __get_partners(
         self, person: Person, where: Dict[GrampsId, Person]
@@ -353,18 +358,50 @@ class Render:
     def __add_person(self, person: Person):
         self.__vertical_index += 1
         y = (_HEIGHT + _Y_SPACING) * self.__vertical_index
-        x = self._compute_x_pos(person.birth_day)
+        x = self._compute_x_pos(person.birth_day.date)
+        width = person.days_of_life * _X_SCALE
+        color = _COLORS[person.gender]
         self.__draw_objects.append(
             drawSvg.Rectangle(
                 x=x,
                 y=y,
-                width=person.days_of_life * _X_SCALE,
+                width=width,
                 height=_HEIGHT,
-                stroke="black",
-                stroke_width=_LINE_WIDTH,
-                fill=_COLORS[person.gender],
+                fill=color,
             )
         )
+
+        if person.birth_day.quality is DateQuality.ESTIMATED:
+            birthday_offset = _BIRTHDAY_ERROR_DAYS * _X_SCALE
+            gradient = drawSvg.LinearGradient(x - birthday_offset, y, x, y + _HEIGHT)
+            gradient.addStop(0, "white", 0)
+            gradient.addStop(1, color, 1)
+            self.__draw_objects.append(
+                drawSvg.Rectangle(
+                    x=x - birthday_offset,
+                    y=y,
+                    width=birthday_offset,
+                    height=_HEIGHT,
+                    fill=gradient,
+                )
+            )
+
+        if person.death_day.quality is DateQuality.ESTIMATED:
+            gradient = drawSvg.LinearGradient(
+                x + width, y, x + width + _DEATHDAY_ERROR_DAYS * _X_SCALE, y + _HEIGHT
+            )
+            gradient.addStop(0, color, 1)
+            gradient.addStop(1, "white", 0)
+            self.__draw_objects.append(
+                drawSvg.Rectangle(
+                    x=x + width,
+                    y=y,
+                    width=_DEATHDAY_ERROR_DAYS * _X_SCALE,
+                    height=_HEIGHT,
+                    fill=gradient,
+                )
+            )
+
         self.__draw_objects.append(
             drawSvg.Text(
                 text=str(person), fontSize=_FONT_SIZE, x=x, y=y + (_HEIGHT - _FONT_SIZE)

@@ -1,14 +1,65 @@
+from __future__ import annotations
+
+import locale
 import pickle
 import random
 import sqlite3
-from datetime import date, datetime, timedelta
+from datetime import date, timedelta
 from enum import Enum
 from functools import cached_property
 from operator import attrgetter
-from typing import Dict, List, Optional, Set, Tuple
 
 from loguru import logger
 from singleton_decorator import singleton
+
+locale.setlocale(locale.LC_TIME, "ru_RU.UTF-8")  # the ru locale is installed
+
+
+class DateQuality(Enum):
+    EXACTLY = 0
+    ESTIMATED = 1
+
+    def __str__(self):
+        if self == DateQuality.EXACTLY:
+            return ""
+        elif self == DateQuality.ESTIMATED:
+            return "≈ "
+
+
+class Date:
+    def __init__(self, date: date, quality: DateQuality):
+        self.__date = date
+        self.__quality = quality
+
+    @staticmethod
+    def from_gramps_db(raw_date: tuple) -> Date:
+        logger.debug(f"Parsing date: {raw_date}")
+        day, month, year, _ = raw_date[3]
+        if day == 0:
+            day = 1
+        if month == 0:
+            month = 1
+
+        try:
+            return Date(date(year, month, day), DateQuality(raw_date[2]))
+        except ValueError as message:
+            logger.error(f"{message} for raw_date {raw_date}")
+            raise ValueError(message)
+
+    @property
+    def date(self) -> date:
+        return self.__date
+
+    @property
+    def quality(self) -> DateQuality:
+        return self.__quality
+
+    @quality.setter
+    def quality(self, quality: DateQuality):
+        self.__quality = quality
+
+    def __str__(self) -> str:
+        return f"{self.quality}{self.date.strftime('%d %B %Y')}"
 
 
 class GrampsId(str):
@@ -45,16 +96,22 @@ class Person:
         self,
         id: GrampsId,
         full_name: str,
-        birth_day: date,
-        death_day: date,
+        birth_day: Date,
+        death_day: Date,
         gender: Gender,
     ):
         self.__gramps_id = GrampsId(id)
         self.__full_name: str = full_name
-        self.__birth_day: date = birth_day
-        self.__death_day: date = death_day
+        self.__birth_day: Date = birth_day
+        if death_day is None:
+            death_day = self.__birth_day.date + timedelta(
+                days=365 * self.__MAX_LIFETIME_Y
+            )
+            self.__death_day = Date(death_day, DateQuality.ESTIMATED)
+        else:
+            self.__death_day = death_day
         self.__gender: Gender = gender
-        self.__notes: Set[Note] = set()
+        self.__notes: set[Note] = set()
 
     def add_note(self, note: Note):
         self.__notes.add(note)
@@ -68,42 +125,38 @@ class Person:
         return self.__full_name
 
     @property
-    def birth_day(self) -> date:
+    def birth_day(self) -> Date:
         return self.__birth_day
 
     @property
-    def death_day(self):
-        if self.__death_day is None:
-            return self.__birth_day + timedelta(days=365 * self.__MAX_LIFETIME_Y)
-        else:
-            return self.__death_day
+    def death_day(self) -> Date:
+        return self.__death_day
 
     @property
-    def days_of_life(self):
+    def days_of_life(self) -> int:
         if self.__birth_day is None:
             raise ValueError
-        return (self.death_day - self.__birth_day).days
+        return (self.death_day.date - self.__birth_day.date).days
 
     @property
     def mid_life(self) -> date:
-        return (self.death_day - self.__birth_day) / 2 + self.__birth_day
+        return (self.death_day.date - self.__birth_day.date) / 2 + self.__birth_day.date
 
     @property
     def gender(self):
         return self.__gender
 
     @property
-    def notes(self) -> Set[Note]:
+    def notes(self) -> set[Note]:
         return self.__notes
 
     def __str__(self):
-
-        if self.death_day > date.today():
+        if self.death_day.date > date.today():
             right_year = "н. в."
         else:
-            right_year = self.death_day.year
+            right_year = self.death_day.date.year
 
-        return f"{self.__full_name} " f"({self.__birth_day.year}-{right_year})"
+        return f"{self.__full_name} " f"({self.__birth_day.date.year}-{right_year})"
 
     def is_male(self):
         return self.gender == Gender.MALE
@@ -123,9 +176,9 @@ class Person:
 class Family:
     def __init__(self, id: GrampsId):
         self.__id = id  # type: GrampsId
-        self.__father = None  # type: Optional[Person]
-        self.__mother = None  # type: Optional[Person]
-        self.__children = set()  # type: Set[Person]
+        self.__father = None  # type: Person | None
+        self.__mother = None  # type: Person | None
+        self.__children = set()  # type: set[Person]
 
     def add_child(self, child: Person):
         self.__children.add(child)
@@ -135,7 +188,7 @@ class Family:
         return self.__id
 
     @property
-    def father(self) -> Optional[Person]:
+    def father(self) -> Person | None:
         return self.__father
 
     @father.setter
@@ -143,13 +196,13 @@ class Family:
         self.__father = value
 
     @property
-    def parents(self) -> Set[Person]:
+    def parents(self) -> set[Person]:
         return set(
             [person for person in [self.__father, self.__mother] if person is not None]
         )
 
     @property
-    def mother(self) -> Optional[Person]:
+    def mother(self) -> Person | None:
         return self.__mother
 
     @mother.setter
@@ -160,18 +213,18 @@ class Family:
     def wedding_day(self) -> date:
         if self.__children:
             return (
-                min(self.__children, key=attrgetter("birth_day")).birth_day
+                min(self.__children, key=attrgetter("birth_day.date")).birth_day.date
                 - timedelta(weeks=40)
                 - timedelta(weeks=random.randint(a=0, b=500))
             )
         else:
             majority = 360 * 18
             parents = [self.__father, self.__mother]
-            youngest = min((p.birth_day for p in parents if p is not None))
+            youngest = min((p.birth_day.date for p in parents if p is not None))
             return youngest + timedelta(days=majority)
 
     @property
-    def children(self) -> Set[Person]:
+    def children(self) -> set[Person]:
         return self.__children
 
     def is_full(self) -> bool:
@@ -217,9 +270,9 @@ class Database:
         conn = sqlite3.connect("sqlite.db")
         self.__cur = conn.cursor()
 
-        self.__persons = self.__get_persons()  # type: Dict[GrampsId, Person]
+        self.__persons = self.__get_persons()  # type: dict[GrampsId, Person]
 
-        self.__notes = self.__get_notes()  # type: Dict[GrampsId, Note]
+        self.__notes = self.__get_notes()  # type: dict[GrampsId, Note]
 
         self.__add_notes_to_person()
 
@@ -231,16 +284,16 @@ class Database:
         return self.__relations
 
     @property
-    def families(self) -> Dict[GrampsId, Family]:
+    def families(self) -> dict[GrampsId, Family]:
         return self.__families
 
     @property
-    def persons(self) -> Dict[GrampsId, Person]:
+    def persons(self) -> dict[GrampsId, Person]:
         return self.__persons
 
-    def __get_persons(self) -> Dict[GrampsId, Person]:
+    def __get_persons(self) -> dict[GrampsId, Person]:
         persons = dict()
-        self.__cur.execute(f"SELECT gramps_id, given_name, surname, gender FROM person")
+        self.__cur.execute("SELECT gramps_id, given_name, surname, gender FROM person")
         persons_raw = self.__cur.fetchall()
         for id, given_name, surname, gender in persons_raw:
             birth_day, death_day = self.__parse_lifetime(id)
@@ -254,7 +307,7 @@ class Database:
             persons[id] = person
         return persons
 
-    def __parse_lifetime(self, id: GrampsId) -> Tuple[date, date]:
+    def __parse_lifetime(self, id: GrampsId) -> tuple[Date, Date | None]:
         self.__cur.execute(
             f"SELECT event.blob_data "
             f"FROM person "
@@ -272,33 +325,19 @@ class Database:
                 if r_date is None:
                     logger.error(f"The person {id} without birthday")
                     raise ValueError
-                birth_day = self.__parse_date(r_date)
+                birth_day = Date.from_gramps_db(r_date)
 
             if type == EventType.DEATH.value:
                 if r_date is None:
                     death_day = None
                 else:
-                    death_day = self.__parse_date(r_date)
+                    death_day = Date.from_gramps_db(r_date)
 
         return birth_day, death_day
 
-    @staticmethod
-    def __parse_date(raw_date):
-        day, month, year, _ = raw_date[3]
-        if day == 0:
-            day = 1
-        if month == 0:
-            month = 1
-
-        try:
-            return date(year, month, day)
-        except ValueError as message:
-            logger.error(f"{message} for raw_date {raw_date}")
-            raise ValueError(message)
-
-    def __get_notes(self) -> Dict[GrampsId, Note]:
+    def __get_notes(self) -> dict[GrampsId, Note]:
         notes = dict()
-        self.__cur.execute(f"SELECT note.gramps_id, note.blob_data FROM note")
+        self.__cur.execute("SELECT note.gramps_id, note.blob_data FROM note")
         notes_raw = self.__cur.fetchall()
         for id, blob_data in notes_raw:
             note = Note(blob_data)
@@ -315,7 +354,7 @@ class Database:
         for person_id, note_id in self.__cur.fetchall():
             self.__persons[person_id].add_note(self.__notes[note_id])
 
-    def __get_relationship(self) -> Tuple[Set[Relation], Dict[GrampsId, Family]]:
+    def __get_relationship(self) -> tuple[set[Relation], dict[GrampsId, Family]]:
 
         self.__cur.execute(
             f"SELECT family_id,"
