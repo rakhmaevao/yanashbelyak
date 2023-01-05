@@ -13,6 +13,7 @@ Slug: repression
 - [Грозов Дмитрий Иванович]({filename}persons/I0201.md)
 - [Матвеев Александр Иванович]({filename}persons/I0205.md)
 - [Соловьев Алексей Петрович]({filename}persons/I0206.md)
+- [Гурьянов Василий]({filename}persons/I0277.md)
 - Васильев Ефим
 
 
