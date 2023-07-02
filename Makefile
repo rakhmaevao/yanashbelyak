@@ -67,5 +67,7 @@ local_content:
 format:
 	isort .
 	black .
+	npx prettier --write README.md
+	npx prettier --write content
 
 .PHONY: help clean devserver publish github local_content, dfg

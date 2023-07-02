@@ -19,13 +19,16 @@ make devserver
 ```
 
 Чтобы сгенерировать контент для локального dev server:
+
 ```
 make local_content
 ```
 
 ## Как публиковать?
+
 1. Убедись, что dev server не запущен.
 2. Выполни команду:
+
 ```
 make github
 ```
