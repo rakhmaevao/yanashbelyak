@@ -1,5 +1,5 @@
-PY?=python3
-PELICAN?=pelican
+PY?=poetry run python
+PELICAN?=poetry run pelican
 PELICANOPTS=
 
 BASEDIR=$(CURDIR)
@@ -50,10 +50,10 @@ clean:
 	rm -f content/images/tree.svg
 
 devserver:
-	SITEURL=$(LOCAL_SITEURL) "$(PELICAN)" -t theme -lr "$(INPUTDIR)" -o "$(OUTPUTDIR)" -s "$(CONFFILE)" $(PELICANOPTS)
+	SITEURL=$(LOCAL_SITEURL) $(PELICAN) -t theme -lr "$(INPUTDIR)" -o "$(OUTPUTDIR)" -s "$(CONFFILE)" $(PELICANOPTS)
 
 publish:
-	SITEURL=$(GITHUB_PAGES_SITEURL) python3 gramps_parser/tree_parser.py
+	SITEURL=$(GITHUB_PAGES_SITEURL) $(PY) gramps_parser/tree_parser.py
 	SITEURL=$(GITHUB_PAGES_SITEURL) "$(PELICAN)" -t theme "$(INPUTDIR)" -o "$(OUTPUTDIR)" -s "$(PUBLISHCONF)" $(PELICANOPTS)
 
 github: publish
@@ -61,8 +61,8 @@ github: publish
 	git push origin $(GITHUB_PAGES_BRANCH)
 
 local_content:
-	SITEURL=$(LOCAL_SITEURL) python3 gramps_parser/tree_parser.py
-	SITEURL=$(LOCAL_SITEURL) "$(PELICAN)" content -t theme
+	SITEURL=$(LOCAL_SITEURL) $(PY) gramps_parser/tree_parser.py
+	SITEURL=$(LOCAL_SITEURL) $(PELICAN) content -t theme
 
 format:
 	@echo "Форматирование"

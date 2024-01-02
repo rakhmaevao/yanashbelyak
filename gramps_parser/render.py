@@ -6,7 +6,7 @@ from operator import attrgetter
 from pathlib import Path
 from typing import Dict, List, NamedTuple, Optional, Tuple
 
-import drawSvg
+import drawsvg
 from db import Database, DateQuality, Family, Gender, GrampsId, Person, RelationType
 from loguru import logger
 
@@ -60,7 +60,7 @@ class Render:
         ).birth_day.date
 
         self.__nodes = dict()  # type: Dict[GrampsId, Node]
-        self.__draw_objects = []  # type: List[drawSvg.DrawingElement]
+        self.__draw_objects = []  # type: List[drawsvg.DrawingElement]
         self.__person_id_by_label: Dict[str, GrampsId] = {}
         self.__vertical_index = -1
         while True:
@@ -76,17 +76,17 @@ class Render:
 
         background = self.__create_background()
 
-        draw_svg = drawSvg.Drawing(*self.__get_size())
+        draw_svg = drawsvg.Drawing(*self.__get_size())
         [draw_svg.append(obj) for obj in background]
         [draw_svg.append(obj) for obj in family_lines]
         [draw_svg.append(obj) for obj in self.__draw_objects]
-        draw_svg.saveSvg(output_path)
+        draw_svg.save_svg(output_path)
         self.__rewrite_svg_with_hyperlink(output_path)
 
     @staticmethod
-    def __get_triangular(y: float, x: float, direction: str) -> drawSvg.Lines:
+    def __get_triangular(y: float, x: float, direction: str) -> drawsvg.Lines:
         if direction == "down":
-            return drawSvg.Lines(
+            return drawsvg.Lines(
                 x - _TRIANGLE_WEIGHT / 2,
                 y,
                 x + _TRIANGLE_WEIGHT / 2,
@@ -101,7 +101,7 @@ class Render:
                 fill="none",
             )
         elif direction == "up":
-            return drawSvg.Lines(
+            return drawsvg.Lines(
                 x - _TRIANGLE_WEIGHT / 2,
                 y,
                 x + _TRIANGLE_WEIGHT / 2,
@@ -120,12 +120,12 @@ class Render:
 
     def __create_time_slice(
         self, label: str, date: date, date_view: bool
-    ) -> List[drawSvg.DrawingElement]:
+    ) -> List[drawsvg.DrawingElement]:
         x = self._compute_x_pos(date)
         y_max = (_HEIGHT + _Y_SPACING) * self.__vertical_index
         y_min = _HEIGHT
         ret_objects = [
-            drawSvg.Lines(
+            drawsvg.Lines(
                 x - _DASH_WEIGHT / 2,
                 y_min,
                 x + _DASH_WEIGHT / 2,
@@ -146,9 +146,9 @@ class Render:
         ]
         if date_view:
             ret_objects.append(
-                drawSvg.Text(
+                drawsvg.Text(
                     text=str(date.year),
-                    fontSize=_FONT_SIZE,
+                    font_size=_FONT_SIZE,
                     x=x - _FONT_SIZE * 1,
                     y=y_max + _Y_SPACING / 2,
                 )
@@ -156,16 +156,16 @@ class Render:
         else:
             label_weight = _FONT_SIZE * 0.7 * len(label)
             ret_objects.append(
-                drawSvg.Text(
+                drawsvg.Text(
                     text=label,
-                    fontSize=_FONT_SIZE,
+                    font_size=_FONT_SIZE,
                     x=x - label_weight / 2,
                     y=y_max + _Y_SPACING / 2,
                 )
             )
         return ret_objects
 
-    def __create_background(self) -> List[drawSvg.DrawingElement]:
+    def __create_background(self) -> List[drawsvg.DrawingElement]:
         background = []
         background += self.__create_time_slice("", date(1700, 1, 1), date_view=True)
         background += self.__create_time_slice("", date(1800, 1, 1), date_view=True)
@@ -217,7 +217,7 @@ class Render:
                             lower_y = node.y_pos + _HEIGHT / 2
 
                 family_lines.append(
-                    drawSvg.Lines(
+                    drawsvg.Lines(
                         x_pos,
                         lower_y,
                         x_pos,
@@ -360,7 +360,7 @@ class Render:
         width = person.days_of_life * _X_SCALE
         color = _COLORS[person.gender]
         self.__draw_objects.append(
-            drawSvg.Rectangle(
+            drawsvg.Rectangle(
                 x=x,
                 y=y,
                 width=width,
@@ -371,11 +371,11 @@ class Render:
 
         if person.birth_day.quality is DateQuality.ESTIMATED:
             birthday_offset = _BIRTHDAY_ERROR_DAYS * _X_SCALE
-            gradient = drawSvg.LinearGradient(x - birthday_offset, y, x, y + _HEIGHT)
-            gradient.addStop(0, "white", 0)
-            gradient.addStop(1, color, 1)
+            gradient = drawsvg.LinearGradient(x - birthday_offset, y, x, y + _HEIGHT)
+            gradient.add_stop(0, "white", 0)
+            gradient.add_stop(1, color, 1)
             self.__draw_objects.append(
-                drawSvg.Rectangle(
+                drawsvg.Rectangle(
                     x=x - birthday_offset,
                     y=y,
                     width=birthday_offset,
@@ -385,13 +385,13 @@ class Render:
             )
 
         if person.death_day.quality is DateQuality.ESTIMATED:
-            gradient = drawSvg.LinearGradient(
+            gradient = drawsvg.LinearGradient(
                 x + width, y, x + width + _DEATHDAY_ERROR_DAYS * _X_SCALE, y + _HEIGHT
             )
-            gradient.addStop(0, color, 1)
-            gradient.addStop(1, "white", 0)
+            gradient.add_stop(0, color, 1)
+            gradient.add_stop(1, "white", 0)
             self.__draw_objects.append(
-                drawSvg.Rectangle(
+                drawsvg.Rectangle(
                     x=x + width,
                     y=y,
                     width=_DEATHDAY_ERROR_DAYS * _X_SCALE,
@@ -401,14 +401,17 @@ class Render:
             )
 
         self.__draw_objects.append(
-            drawSvg.Text(
-                text=str(person), fontSize=_FONT_SIZE, x=x, y=y + (_HEIGHT - _FONT_SIZE)
+            drawsvg.Text(
+                text=str(person),
+                font_size=_FONT_SIZE,
+                x=x,
+                y=y + (_HEIGHT - _FONT_SIZE),
             )
         )
         self.__draw_objects.append(
-            drawSvg.Text(
+            drawsvg.Text(
                 text=person.id,
-                fontSize=_FONT_SIZE,
+                font_size=_FONT_SIZE,
                 x=x,
                 y=y + (_HEIGHT - _FONT_SIZE),
                 style="fill-opacity:0",
@@ -421,7 +424,7 @@ class Render:
         parental_family = self.__get_parental_family(person)
         if parental_family is not None:
             self.__draw_objects.append(
-                drawSvg.Lines(
+                drawsvg.Lines(
                     x,
                     y + _HEIGHT / 2,
                     self._compute_x_pos(parental_family.wedding_day),
