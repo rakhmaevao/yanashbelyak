@@ -54,9 +54,7 @@ class Render:
         self.__db = db
         Path(output_path).parent.mkdir(parents=True, exist_ok=True)
 
-        self.__unpined_person = copy.deepcopy(
-            self.__db.persons
-        )  # type: Dict[GrampsId, Person]
+        self.__unpined_person = copy.deepcopy(self.__db.persons)  # type: Dict[GrampsId, Person]
         self.__older_date = self.__get_older_person(
             self.__unpined_person
         ).birth_day.date

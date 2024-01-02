@@ -8,3 +8,4 @@
 *.db
 /gramps_parser/__pycache__
 /docs
+.ruff_cache

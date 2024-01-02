@@ -266,7 +266,6 @@ class EventType(Enum):
 @singleton
 class Database:
     def __init__(self):
-
         conn = sqlite3.connect("sqlite.db")
         self.__cur = conn.cursor()
 
@@ -355,7 +354,6 @@ class Database:
             self.__persons[person_id].add_note(self.__notes[note_id])
 
     def __get_relationship(self) -> tuple[set[Relation], dict[GrampsId, Family]]:
-
         self.__cur.execute(
             f"SELECT family_id,"
             f"       father_id,"

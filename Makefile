@@ -9,7 +9,7 @@ CONFFILE=$(BASEDIR)/pelicanconf.py
 PUBLISHCONF=$(BASEDIR)/publishconf.py
 
 LOCAL_SITEURL=http://127.0.0.1:8000
-GITHUB_PAGES_SITEURL=https://rahmaevao.github.io/yanashbelyak
+GITHUB_PAGES_SITEURL=https://rakhmaevao.github.io/yanashbelyak
 
 GITHUB_PAGES_BRANCH=gh-pages
 
@@ -65,9 +65,14 @@ local_content:
 	SITEURL=$(LOCAL_SITEURL) "$(PELICAN)" content -t theme
 
 format:
-	isort .
-	black .
+	@echo "Форматирование"
+	poetry run isort .
+	poetry run ruff format .
 	npx prettier --write README.md
 	npx prettier --write content
+
+lint:
+	@echo "Линтинг"
+	poetry run ruff lint .
 
 .PHONY: help clean devserver publish github local_content, dfg
