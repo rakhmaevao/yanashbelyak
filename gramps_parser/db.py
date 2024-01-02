@@ -345,7 +345,7 @@ class Database:
 
     def __add_notes_to_person(self) -> None:
         self.__cur.execute(
-            f"SELECT person.gramps_id AS person_id, note.gramps_id AS note_id "
+            "SELECT person.gramps_id AS person_id, note.gramps_id AS note_id "
             "FROM reference JOIN person ON person.handle = reference.obj_handle "
             "JOIN note ON note.handle = reference.ref_handle "
             'WHERE reference.ref_class = "Note"; '
@@ -355,28 +355,28 @@ class Database:
 
     def __get_relationship(self) -> tuple[set[Relation], dict[GrampsId, Family]]:
         self.__cur.execute(
-            f"SELECT family_id,"
-            f"       father_id,"
-            f"       mother_id,"
-            f"       person.gramps_id AS person_id FROM "
-            f"( "
-            f"	SELECT family_id,"
-            f"         father_id,"
-            f"         person.gramps_id as mother_id,"
-            f"         person_handle FROM "
-            f"	( "
-            f"		SELECT family.gramps_id as family_id, "
-            f"		       person.gramps_id as father_id, "
-            f"			   family.mother_handle as mother_handle, "
-            f"			   reference.ref_handle as person_handle "
-            f"		FROM reference "
-            f"		JOIN family ON family.handle = reference.obj_handle "
-            f"		LEFT JOIN person ON person.handle = family.father_handle "
-            f'		WHERE reference.ref_class = "Person" '
-            f"	) "
-            f"	LEFT JOIN person ON person.handle = mother_handle "
-            f") "
-            f"JOIN person ON person.handle = person_handle "
+            "SELECT family_id,"
+            "       father_id,"
+            "       mother_id,"
+            "       person.gramps_id AS person_id FROM "
+            "( "
+            "	SELECT family_id,"
+            "         father_id,"
+            "         person.gramps_id as mother_id,"
+            "         person_handle FROM "
+            "	( "
+            "		SELECT family.gramps_id as family_id, "
+            "		       person.gramps_id as father_id, "
+            "			   family.mother_handle as mother_handle, "
+            "			   reference.ref_handle as person_handle "
+            "		FROM reference "
+            "		JOIN family ON family.handle = reference.obj_handle "
+            "		LEFT JOIN person ON person.handle = family.father_handle "
+            '		WHERE reference.ref_class = "Person" '
+            "	) "
+            "	LEFT JOIN person ON person.handle = mother_handle "
+            ") "
+            "JOIN person ON person.handle = person_handle "
         )
         relations = set()
         families = dict()
