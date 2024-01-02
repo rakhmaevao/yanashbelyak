@@ -60,7 +60,15 @@ class Biographer:
         main_content = f"Дата рождения: {person.birth_day}\n\n"
         if person.death_day.date < datetime.date.today():
             main_content += f"Дата смерти: {person.death_day}\n\n"
+        if person.events:
+            main_content += "## События жизни\n\n"
+            for event in person.events:
+                if event.date is not None and event.description != "":
+                    main_content += f"- {event.date} {event.description}\n\n"
+                if event.date is None:
+                    main_content += f"- {event.description}\n\n"
         if person.notes:
+            main_content += "## Заметки\n\n"
             main_content += list(person.notes)[0].content
 
         return Article(

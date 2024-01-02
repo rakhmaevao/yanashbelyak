@@ -4,7 +4,7 @@ import locale
 import pickle
 import random
 import sqlite3
-from datetime import date, timedelta
+from datetime import date, datetime, timedelta
 from enum import Enum
 from functools import cached_property
 from operator import attrgetter
@@ -34,7 +34,13 @@ class Date:
     @staticmethod
     def from_gramps_db(raw_date: tuple) -> Date:
         logger.debug(f"Parsing date: {raw_date}")
-        day, month, year, _ = raw_date[3]
+
+        if len(raw_date[3]) == 4:
+            day, month, year, _ = raw_date[3]
+        elif len(raw_date[3]) == 8:
+            day, month, year, _, _, _, _, _ = raw_date[3]
+        else:
+            raise ValueError(f"Unknown date format {raw_date}")
         if day == 0:
             day = 1
         if month == 0:
@@ -64,6 +70,45 @@ class Date:
 
 class GrampsId(str):
     pass
+
+
+class Event:
+    def __init__(self, blob_data: bytes):
+        (
+            handle,
+            gramps_id,
+            (e_type, _),
+            date,
+            description,
+            _,
+            _,
+            _,
+            _,
+            _,
+            _,
+            _,
+            _,
+        ) = pickle.loads(blob_data)
+
+        self.__description = description
+        if date is not None:
+            self.__date = Date.from_gramps_db(date)
+        else:
+            self.__date = None
+        self.__type = EventType(e_type)
+        self.__id = GrampsId(gramps_id)
+
+    @property
+    def id(self) -> GrampsId:
+        return self.__id
+
+    @property
+    def description(self) -> str:
+        return self.__description
+
+    @property
+    def date(self) -> Date:
+        return self.__date
 
 
 class Note:
@@ -112,9 +157,13 @@ class Person:
             self.__death_day = death_day
         self.__gender: Gender = gender
         self.__notes: set[Note] = set()
+        self.__events: set[Event] = set()
 
     def add_note(self, note: Note):
         self.__notes.add(note)
+
+    def add_event(self, event: Event):
+        self.__events.add(event)
 
     @property
     def id(self) -> GrampsId:
@@ -149,6 +198,10 @@ class Person:
     @property
     def notes(self) -> set[Note]:
         return self.__notes
+
+    @property
+    def events(self) -> set[Event]:
+        return self.__events
 
     def __str__(self):
         if self.death_day.date > date.today():
@@ -259,8 +312,53 @@ class Relation:
 
 
 class EventType(Enum):
+    UNKNOWN = -1
+    CUSTOM = 0
+    MARRIAGE = 1
+    MARR_SETTL = 2
+    MARR_LIC = 3
+    MARR_CONTR = 4
+    MARR_BANNS = 5
+    ENGAGEMENT = 6
+    DIVORCE = 7
+    DIV_FILING = 8
+    ANNULMENT = 9
+    MARR_ALT = 10
+    ADOPT = 11
     BIRTH = 12
     DEATH = 13
+    ADULT_CHRISTEN = 14
+    BAPTISM = 15
+    BAR_MITZVAH = 16
+    BAS_MITZVAH = 17
+    BLESS = 18
+    BURIAL = 19
+    CAUSE_DEATH = 20
+    CENSUS = 21
+    CHRISTEN = 22
+    CONFIRMATION = 23
+    CREMATION = 24
+    DEGREE = 25
+    EDUCATION = 26
+    ELECTED = 27
+    EMIGRATION = 28
+    FIRST_COMMUN = 29
+    IMMIGRATION = 30
+    GRADUATION = 31
+    MED_INFO = 32
+    MILITARY_SERV = 33
+    NATURALIZATION = 34
+    NOB_TITLE = 35
+    NUM_MARRIAGES = 36
+    OCCUPATION = 37
+    ORDINATION = 38
+    PROBATE = 39
+    PROPERTY = 40
+    RELIGION = 41
+    RESIDENCE = 42
+    RETIREMENT = 43
+    WILL = 44
+    STILLBIRTH = 45
 
 
 @singleton
@@ -270,10 +368,11 @@ class Database:
         self.__cur = conn.cursor()
 
         self.__persons = self.__get_persons()  # type: dict[GrampsId, Person]
-
+        self.__events = self.__get_events()  # type: dict[GrampsId, Event]
         self.__notes = self.__get_notes()  # type: dict[GrampsId, Note]
 
         self.__add_notes_to_person()
+        self.__add_event_for_persone()
 
         self.__relations, self.__families = self.__get_relationship()
         pass
@@ -343,6 +442,15 @@ class Database:
             notes[id] = note
         return notes
 
+    def __get_events(self) -> dict[GrampsId, Event]:
+        events = dict()
+        self.__cur.execute("SELECT event.gramps_id, event.blob_data FROM event")
+        event_raw = self.__cur.fetchall()
+        for id, blob_data in event_raw:
+            event = Event(blob_data)
+            events[GrampsId(id)] = event
+        return events
+
     def __add_notes_to_person(self) -> None:
         self.__cur.execute(
             "SELECT person.gramps_id AS person_id, note.gramps_id AS note_id "
@@ -352,6 +460,16 @@ class Database:
         )
         for person_id, note_id in self.__cur.fetchall():
             self.__persons[person_id].add_note(self.__notes[note_id])
+
+    def __add_event_for_persone(self) -> None:
+        self.__cur.execute(
+            "SELECT person.gramps_id AS person_id, event.gramps_id AS event_id "
+            "FROM reference JOIN person ON person.handle = reference.obj_handle "
+            "JOIN event ON event.handle = reference.ref_handle "
+            'WHERE reference.ref_class = "Event"; '
+        )
+        for person_id, event_id in self.__cur.fetchall():
+            self.__persons[person_id].add_event(self.__events[event_id])
 
     def __get_relationship(self) -> tuple[set[Relation], dict[GrampsId, Family]]:
         self.__cur.execute(
