@@ -54,10 +54,10 @@ devserver:
 
 publish:
 	SITEURL=$(GITHUB_PAGES_SITEURL) $(PY) gramps_parser/tree_parser.py
-	SITEURL=$(GITHUB_PAGES_SITEURL) "$(PELICAN)" -t theme "$(INPUTDIR)" -o "$(OUTPUTDIR)" -s "$(PUBLISHCONF)" $(PELICANOPTS)
+	SITEURL=$(GITHUB_PAGES_SITEURL) $(PELICAN) -t theme "$(INPUTDIR)" -o "$(OUTPUTDIR)" -s "$(PUBLISHCONF)" $(PELICANOPTS)
 
 github: publish
-	ghp-import -m "Generate Pelican site" -b $(GITHUB_PAGES_BRANCH) "$(OUTPUTDIR)"
+	poetry run ghp-import -m "Generate Pelican site" -b $(GITHUB_PAGES_BRANCH) "$(OUTPUTDIR)"
 	git push origin $(GITHUB_PAGES_BRANCH)
 
 local_content:
