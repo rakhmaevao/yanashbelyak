@@ -150,7 +150,7 @@ class Render:
                     text=str(date.year),
                     font_size=_FONT_SIZE,
                     x=x - _FONT_SIZE * 1,
-                    y=y_max + _Y_SPACING / 2,
+                    y=y_max + _HEIGHT,
                 )
             )
         else:
@@ -160,7 +160,7 @@ class Render:
                     text=label,
                     font_size=_FONT_SIZE,
                     x=x - label_weight / 2,
-                    y=y_max + _Y_SPACING / 2,
+                    y=y_max + _HEIGHT,
                 )
             )
         return ret_objects
@@ -405,7 +405,7 @@ class Render:
                 text=str(person),
                 font_size=_FONT_SIZE,
                 x=x,
-                y=y + (_HEIGHT - _FONT_SIZE),
+                y=y + _FONT_SIZE,
             )
         )
         self.__draw_objects.append(
@@ -413,7 +413,7 @@ class Render:
                 text=person.id,
                 font_size=_FONT_SIZE,
                 x=x,
-                y=y + (_HEIGHT - _FONT_SIZE),
+                y=y + _FONT_SIZE,
                 style="fill-opacity:0",
             )
         )
