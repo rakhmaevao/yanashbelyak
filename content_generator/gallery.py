@@ -17,16 +17,17 @@ class Gallery:
     def generate_gallery(self):
         self.__clear_gallery()
         for media in self.__gramps_tree.media.values():
-            new_path = self.__copy_media_to_gallery(media)
-            self.__content.add_image(media, new_path)
+            self.__copy_media_to_gallery(media)
+            self.__content.add_image(media)
         self.__content.save()
 
     def __clear_gallery(self):
         shutil.rmtree(self._IMAGES_DIR, ignore_errors=True)
         os.mkdir(self._IMAGES_DIR)
 
-    def __copy_media_to_gallery(self, media: Media) -> Path:
-        return Path(shutil.copy(media.path, self._IMAGES_DIR)).absolute()
+    def __copy_media_to_gallery(self, media: Media):
+        new_path = Path(shutil.copy(media.path, self._IMAGES_DIR)).absolute()
+        media.path = new_path
 
 
 class _GalleryPage:
@@ -37,14 +38,10 @@ class _GalleryPage:
                           )
         self.__path = path
 
-    def add_image(self, media: Media, new_path: Path):
-        self.__content += f"![{media.description}]({self.__relative_path(new_path)})\n\n"
+    def add_image(self, media: Media):
+        self.__content += f"![{media.description}]({media.relative_path})\n\n"
         self.__content += media.title + "\n\n"
 
     def save(self):
         with open(self.__path, "w", encoding="utf-8") as f:
             f.write(self.__content)
-
-    @staticmethod
-    def __relative_path(image_path: Path):
-        return "../" + str(image_path.relative_to(image_path.parent.parent.parent))

@@ -141,6 +141,7 @@ class Person:
         death_day: Date,
         gender: Gender,
     ):
+        self.__media: set[Media] = set()
         self.__gramps_id = GrampsId(id)
         self.__full_name: str = full_name
         self.__birth_day: Date = birth_day
@@ -196,6 +197,10 @@ class Person:
         return self.__notes
 
     @property
+    def media(self) -> set[Media]:
+        return self.__media
+
+    @property
     def events(self) -> set[Event]:
         return self.__events
 
@@ -220,6 +225,9 @@ class Person:
 
     def __hash__(self):
         return hash(self.id)
+
+    def add_media(self, media: Media):
+        self.__media.add(media)
 
 
 class Family:
@@ -379,6 +387,10 @@ class Media:
     def path(self) -> Path:
         return Path(self.__path)
 
+    @path.setter
+    def path(self, value: Path):
+        self.__path = value
+
     @property
     def description(self):
         return self.__description
@@ -386,3 +398,7 @@ class Media:
     @property
     def title(self):
         return self.__description  # TODO: rao: add title
+
+    @property
+    def relative_path(self):
+        return "../" + str(self.path.relative_to(self.path.parent.parent.parent))

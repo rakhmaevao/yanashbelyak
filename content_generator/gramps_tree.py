@@ -36,6 +36,7 @@ class GrampsTree:
 
         self.__add_notes_to_person()
         self.__add_event_for_persone()
+        self.__map_media_to_person()
 
         self.__relations, self.__families = self.__get_relationship()
         pass
@@ -209,3 +210,13 @@ class GrampsTree:
         for id, blob_data in raw:
             media[id] = Media(blob_data)
         return media
+
+    def __map_media_to_person(self):
+        self.__cur.execute(
+            "SELECT person.gramps_id AS person_id, media.gramps_id AS media_id "
+            "FROM reference JOIN person ON person.handle = reference.obj_handle "
+            "JOIN media ON media.handle = reference.ref_handle "
+            'WHERE reference.ref_class = "Media"; '
+        )
+        for person_id, media_id in self.__cur.fetchall():
+            self.__persons[person_id].add_media(self.__media[media_id])

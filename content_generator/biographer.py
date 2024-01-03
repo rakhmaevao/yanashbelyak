@@ -64,6 +64,11 @@ class Biographer:
         if person.notes:
             main_content += "## Заметки\n\n"
             main_content += list(person.notes)[0].content
+            main_content += "\n\n"
+        if person.media:
+            main_content += "## Галерея\n\n"
+            for media in person.media:
+                main_content += f"![{media.description}]({media.relative_path})\n\n"
 
         return Article(
             title=person.full_name,
