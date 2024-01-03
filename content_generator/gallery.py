@@ -38,8 +38,8 @@ class _GalleryPage:
         self.__path = path
 
     def add_image(self, media: Media):
-        self.__content += f"![{media.description}]({media.relative_path})\n\n"
-        self.__content += media.title + "\n\n"
+        link = "{static}/images/gallery/" + media.path.name
+        self.__content += f"![{media.description}]({link})\n\n"
         if media.persons:
             self.__content += "Люди на изображении: "
             for p in media.persons:

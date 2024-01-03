@@ -68,7 +68,8 @@ class Biographer:
         if person.media:
             main_content += "## Галерея\n\n"
             for media in person.media:
-                main_content += f"![{media.description}]({media.relative_path})\n\n"
+                link = "{static}/images/gallery/" + media.path.name
+                main_content += f"![{media.description}]({link})\n\n"
 
         return Article(
             title=person.full_name,

@@ -396,14 +396,6 @@ class Media:
     def description(self):
         return self.__description
 
-    @property
-    def title(self):
-        return self.__description  # TODO: rao: add title
-
-    @property
-    def relative_path(self):
-        return "../" + str(self.path.relative_to(self.path.parent.parent.parent))
-
     def mark_person(self, person: Person):
         self.__persons.append(person)
 
