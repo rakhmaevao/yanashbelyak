@@ -41,7 +41,7 @@ class _GalleryPage:
         self.__content += f"![{media.description}]({media.relative_path})\n\n"
         self.__content += media.title + "\n\n"
         if media.persons:
-            self.__content += f"Люди на изображении: "
+            self.__content += "Люди на изображении: "
             for p in media.persons:
                 self.__content += (
                     "[" + p.full_name + "](" + "{filename}../persons/" + p.id + ".md) "
