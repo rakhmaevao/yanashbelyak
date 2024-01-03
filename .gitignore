@@ -2,9 +2,11 @@
 /venv
 /__pycache__
 /.idea
+/content/images/gallery
 /content/images/tree
 /content/images/tree.svg
 /content/persons
+/content/gallery
 *.db
 /content_generator/__pycache__
 /docs

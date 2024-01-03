@@ -11,6 +11,7 @@ from entities import (
     Family,
     Gender,
     GrampsId,
+    Media,
     Note,
     Person,
     Relation,
@@ -31,6 +32,7 @@ class GrampsTree:
         self.__persons = self.__get_persons()  # type: dict[GrampsId, Person]
         self.__events = self.__get_events()  # type: dict[GrampsId, Event]
         self.__notes = self.__get_notes()  # type: dict[GrampsId, Note]
+        self.__media = self.__get_media()  # type: dict[GrampsId, Media]
 
         self.__add_notes_to_person()
         self.__add_event_for_persone()
@@ -49,6 +51,10 @@ class GrampsTree:
     @property
     def persons(self) -> dict[GrampsId, Person]:
         return self.__persons
+
+    @property
+    def media(self) -> dict[GrampsId, Media]:
+        return self.__media
 
     def __get_persons(self) -> dict[GrampsId, Person]:
         persons = dict()
@@ -195,3 +201,11 @@ class GrampsTree:
                     )
 
         return relations, families
+
+    def __get_media(self) -> dict[GrampsId, Media]:
+        media = dict()
+        self.__cur.execute("SELECT media.gramps_id, media.blob_data FROM media")
+        raw = self.__cur.fetchall()
+        for id, blob_data in raw:
+            media[id] = Media(blob_data)
+        return media

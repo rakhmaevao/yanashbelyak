@@ -354,3 +354,26 @@ class EventType(Enum):
     RETIREMENT = 43
     WILL = 44
     STILLBIRTH = 45
+
+
+class Media:
+    def __init__(self, blob):
+        (
+            _,
+            gramps_id,
+            self.__path,
+            mime_type,
+            description,
+            checksum,
+            _,
+            _,
+            _,
+            _,
+            _,
+            _,
+            _,
+        ) = pickle.loads(blob)
+
+    @property
+    def path(self):
+        return self.__path
