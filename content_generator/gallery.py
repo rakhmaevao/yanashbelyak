@@ -36,21 +36,10 @@ class Gallery:
         input_image_path,
         max_width=400,
     ):
-        original_image = Image.open(input_image_path)
-        w, h = original_image.size
-        print(
-            "The original image size is {wide} wide x {height} " "high".format(
-                wide=w, height=h
-            )
-        )
-
-        if w > max_width:
-            max_size = (max_width, h)
-        else:
-            max_size = (w, h)
-
-        original_image.thumbnail(max_size)
-        original_image.save(input_image_path)
+        image = Image.open(input_image_path)
+        w, h = image.size
+        image.thumbnail((max_width, h))
+        image.save(input_image_path)
 
 
 class _GalleryPage:
