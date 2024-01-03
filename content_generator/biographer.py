@@ -2,7 +2,8 @@ import datetime
 from pathlib import Path
 from typing import List
 
-from db import Database, Person
+from entities import Person
+from gramps_tree import GrampsTree
 
 
 class Article:
@@ -45,13 +46,13 @@ class Article:
 
 
 class Biographer:
-    def __init__(self, db: Database, content_dir: str):
-        self.__db = db
+    def __init__(self, gramps_tree: GrampsTree, content_dir: str):
+        self.__gramps_tree = gramps_tree
 
         persons_dir = Path(f"{content_dir}/persons")
         persons_dir.mkdir(parents=True, exist_ok=True)
 
-        for person in self.__db.persons.values():
+        for person in self.__gramps_tree.persons.values():
             article = self.__crate_article_from_person(person)
             article.export_to_file(persons_dir)
 

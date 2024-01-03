@@ -64,15 +64,16 @@ local_content:
 	SITEURL=$(LOCAL_SITEURL) $(PY) content_generator/content_generator.py
 	SITEURL=$(LOCAL_SITEURL) $(PELICAN) content -t theme
 
-format:
-	@echo "Форматирование"
+py_format:
 	poetry run isort .
 	poetry run ruff format .
+
+all_format: py_format
 	npx prettier --write README.md
 	npx prettier --write content
 
 lint:
 	@echo "Линтинг"
-	poetry run ruff lint .
+	poetry run ruff lint content_generator
 
 .PHONY: help clean devserver publish github local_content, dfg

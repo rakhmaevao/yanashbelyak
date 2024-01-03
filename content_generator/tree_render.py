@@ -7,7 +7,8 @@ from pathlib import Path
 from typing import Dict, List, NamedTuple, Optional, Tuple
 
 import drawsvg
-from db import Database, DateQuality, Family, Gender, GrampsId, Person, RelationType
+from entities import DateQuality, Family, Gender, GrampsId, Person, RelationType
+from gramps_tree import GrampsTree
 from loguru import logger
 
 
@@ -50,11 +51,11 @@ class Node:
 
 
 class TreeRender:
-    def __init__(self, db: Database, output_path: str):
-        self.__db = db
+    def __init__(self, gramps_tree: GrampsTree, output_path: str):
+        self.__gramps_tree = gramps_tree
         Path(output_path).parent.mkdir(parents=True, exist_ok=True)
 
-        self.__unpined_person = copy.deepcopy(self.__db.persons)  # type: Dict[GrampsId, Person]
+        self.__unpined_person = copy.deepcopy(self.__gramps_tree.persons)  # type: Dict[GrampsId, Person]
         self.__older_date = self.__get_older_person(
             self.__unpined_person
         ).birth_day.date
@@ -181,7 +182,7 @@ class TreeRender:
 
     def __create_family_lines(self):
         family_lines = []
-        for family in self.__db.families.values():
+        for family in self.__gramps_tree.families.values():
             if len(family.children) != 0 or family.is_full():
                 nodes = [self.__nodes[p.id] for p in family.children] + [
                     self.__nodes[parent.id] for parent in list(family.parents)
@@ -280,7 +281,7 @@ class TreeRender:
                 return max(un_children, key=attrgetter("birth_day.date"))
 
         children = []
-        for relation in self.__db.relations:
+        for relation in self.__gramps_tree.relations:
             if relation.type_of_relation != RelationType.BIRTH_FROM:
                 continue
             if person.id == relation.other_person_id:
@@ -306,7 +307,7 @@ class TreeRender:
         if partner is None:
             return None
 
-        for family in self.__db.families.values():
+        for family in self.__gramps_tree.families.values():
             if person.is_male():
                 if family.father == person and family.mother == partner:
                     return family
@@ -338,7 +339,7 @@ class TreeRender:
         self, person: Person, where: Dict[GrampsId, Person]
     ) -> List[Person]:
         partners = []
-        for relation in self.__db.relations:
+        for relation in self.__gramps_tree.relations:
             if relation.type_of_relation != RelationType.MARRIAGE:
                 continue
 
@@ -441,7 +442,7 @@ class TreeRender:
         return (date_ - self.__older_date).days * _X_SCALE + _X_OFFSET
 
     def __get_parental_family(self, person: Person) -> Optional[Family]:
-        for family in self.__db.families.values():
+        for family in self.__gramps_tree.families.values():
             if person in family.children:
                 return family
         return None
@@ -462,7 +463,9 @@ class TreeRender:
                 coordinates = Coordinates(
                     svg_struct.attrib["x"], svg_struct.attrib["y"]
                 )
-                person: Person | None = self.__db.persons.get(svg_struct.text, None)
+                person: Person | None = self.__gramps_tree.persons.get(
+                    svg_struct.text, None
+                )
                 if person is not None:
                     person_id_by_coordinates[coordinates] = person.id
                     continue
