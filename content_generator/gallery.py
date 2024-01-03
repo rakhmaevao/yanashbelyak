@@ -2,7 +2,7 @@ import os
 import shutil
 from pathlib import Path
 
-from entities import Media
+from entities import GrampsId, Media
 from gramps_tree import GrampsTree
 from PIL import Image
 
@@ -17,7 +17,8 @@ class Gallery:
 
     def generate_gallery(self):
         self.__clear_gallery()
-        for media in self.__gramps_tree.media.values():
+        media_by_paths = self.__regroup_media_by_paths(self.__gramps_tree.media)
+        for media in media_by_paths.values():
             self.__copy_media_to_gallery(media)
             self.__content.add_image(media)
         self.__content.save()
@@ -40,6 +41,16 @@ class Gallery:
         w, h = image.size
         image.thumbnail((max_width, h))
         image.save(input_image_path)
+
+    @staticmethod
+    def __regroup_media_by_paths(media: dict[GrampsId, Media]):
+        result: dict[Path, Media] = {}
+        for m in media.values():
+            if m.path not in result:
+                result[m.path] = m
+            else:
+                [result[m.path].mark_person(p) for p in m.persons]
+        return result
 
 
 class _GalleryPage:

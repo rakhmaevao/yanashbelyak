@@ -33,7 +33,7 @@ class GrampsTree:
         self.__events = self.__get_events()  # type: dict[GrampsId, Event]
         self.__notes = self.__get_notes()  # type: dict[GrampsId, Note]
         self.__media = self.__get_media()  # type: dict[GrampsId, Media]
-
+        logger.info(f"QQQQQQQQ {[(i, k.description) for i, k in self.__media.items()]}")
         self.__add_notes_to_person()
         self.__add_event_for_persone()
         self.__map_media_to_person()
