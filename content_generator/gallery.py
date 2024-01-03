@@ -32,15 +32,21 @@ class Gallery:
 
 class _GalleryPage:
     def __init__(self, path: Path):
-        self.__content = ("Title: Галерея\n"
-                          "Category: Галерея\n"
-                          "Date: 2021-01-29 13:12\n"
-                          )
+        self.__content = (
+            "Title: Галерея\n" "Category: Галерея\n" "Date: 2021-01-29 13:12\n"
+        )
         self.__path = path
 
     def add_image(self, media: Media):
         self.__content += f"![{media.description}]({media.relative_path})\n\n"
         self.__content += media.title + "\n\n"
+        if media.persons:
+            self.__content += f"Люди на изображении: "
+            for p in media.persons:
+                self.__content += (
+                    "[" + p.full_name + "](" + "{filename}../persons/" + p.id + ".md) "
+                )
+        self.__content += "\n\n---\n\n"
 
     def save(self):
         with open(self.__path, "w", encoding="utf-8") as f:

@@ -367,6 +367,7 @@ class EventType(Enum):
 
 class Media:
     def __init__(self, blob):
+        self.__persons: list[Person] = []
         (
             _,
             gramps_id,
@@ -402,3 +403,10 @@ class Media:
     @property
     def relative_path(self):
         return "../" + str(self.path.relative_to(self.path.parent.parent.parent))
+
+    def mark_person(self, person: Person):
+        self.__persons.append(person)
+
+    @property
+    def persons(self) -> list[Person]:
+        return self.__persons

@@ -219,4 +219,7 @@ class GrampsTree:
             'WHERE reference.ref_class = "Media"; '
         )
         for person_id, media_id in self.__cur.fetchall():
-            self.__persons[person_id].add_media(self.__media[media_id])
+            media = self.__media[media_id]
+            person = self.__persons[person_id]
+            media.mark_person(person)
+            person.add_media(media)
