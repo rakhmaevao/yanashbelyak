@@ -49,7 +49,7 @@ class Node:
         return self.__y_pos
 
 
-class Render:
+class TreeRender:
     def __init__(self, db: Database, output_path: str):
         self.__db = db
         Path(output_path).parent.mkdir(parents=True, exist_ok=True)

@@ -6,6 +6,6 @@
 /content/images/tree.svg
 /content/persons
 *.db
-/gramps_parser/__pycache__
+/content_generator/__pycache__
 /docs
 .ruff_cache

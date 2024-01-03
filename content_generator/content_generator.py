@@ -3,7 +3,7 @@ import os
 from biographer import Biographer
 from db import Database
 from loguru import logger
-from render import Render
+from tree_render import TreeRender
 
 if __name__ == "__main__":
     logger.info("Start")
@@ -14,5 +14,5 @@ if __name__ == "__main__":
         content_dir = "content"
     else:
         content_dir = "../content"
-    Render(db, f"{content_dir}/images/tree.svg")
+    TreeRender(db, f"{content_dir}/images/tree.svg")
     Biographer(db, content_dir)
