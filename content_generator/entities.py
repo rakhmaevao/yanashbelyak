@@ -6,6 +6,7 @@ from datetime import date, timedelta
 from enum import Enum
 from functools import cached_property
 from operator import attrgetter
+from pathlib import Path
 
 from loguru import logger
 
@@ -363,7 +364,7 @@ class Media:
             gramps_id,
             self.__path,
             mime_type,
-            description,
+            self.__description,
             checksum,
             _,
             _,
@@ -375,5 +376,13 @@ class Media:
         ) = pickle.loads(blob)
 
     @property
-    def path(self):
-        return self.__path
+    def path(self) -> Path:
+        return Path(self.__path)
+
+    @property
+    def description(self):
+        return self.__description
+
+    @property
+    def title(self):
+        return self.__description  # TODO: rao: add title
