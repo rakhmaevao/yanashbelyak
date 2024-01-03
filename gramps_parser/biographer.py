@@ -55,18 +55,11 @@ class Biographer:
             article = self.__crate_article_from_person(person)
             article.export_to_file(persons_dir)
 
-    @staticmethod
-    def __crate_article_from_person(person: Person):
+    def __crate_article_from_person(self, person: Person):
         main_content = f"Дата рождения: {person.birth_day}\n\n"
         if person.death_day.date < datetime.date.today():
             main_content += f"Дата смерти: {person.death_day}\n\n"
-        if person.events:
-            main_content += "## События жизни\n\n"
-            for event in person.events:
-                if event.date is not None and event.description != "":
-                    main_content += f"- {event.date} {event.description}\n\n"
-                if event.date is None:
-                    main_content += f"- {event.description}\n\n"
+        main_content += self.__prepare_events(person)
         if person.notes:
             main_content += "## Заметки\n\n"
             main_content += list(person.notes)[0].content
@@ -79,3 +72,16 @@ class Biographer:
             slug=person.id,
             main_content=main_content,
         )
+
+    def __prepare_events(self, person) -> str:
+        content = ""
+        if person.events:
+            for event in person.events:
+                if event.date is not None and event.description != "":
+                    content += f"- {event.date} {event.description}\n\n"
+                if event.date is None:
+                    content += f"- {event.description}\n\n"
+        if content != "":
+            return "## События жизни\n\n" + content
+        else:
+            return ""
