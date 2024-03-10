@@ -89,8 +89,7 @@ class GrampsTree:
 
             if type == EventType.BIRTH.value:
                 if r_date is None:
-                    logger.error(f"The person {id} without birthday")
-                    raise ValueError
+                    raise ValueError(f"The person {id} without birthday")
                 birth_day = Date.from_gramps_db(r_date)
 
             if type == EventType.DEATH.value:

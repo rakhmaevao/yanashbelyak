@@ -145,6 +145,8 @@ class Person:
         self.__gramps_id = GrampsId(id)
         self.__full_name: str = full_name
         self.__birth_day: Date = birth_day
+        if birth_day is None:
+            raise ValueError(f"The person {id} without birthday")
         if death_day is None:
             death_day = self.__birth_day.date + timedelta(
                 days=365 * self.__MAX_LIFETIME_Y
