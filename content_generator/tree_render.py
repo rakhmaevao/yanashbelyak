@@ -214,7 +214,7 @@ class TreeRender:
                             )
                             family_lines.append(
                                 self.__get_triangular(
-                                    node.y_pos + _HEIGHT, x_pos, "up"
+                                    node.y_pos + _HEIGHT, x_pos, "up",
                                 ),
                             )
                     else:
