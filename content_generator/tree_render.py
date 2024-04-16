@@ -478,7 +478,7 @@ class TreeRender:
             for line in f:
                 if line.find("<text") != -1:
                     svg_struct = ElementTree.ElementTree(
-                        ElementTree.fromstring(line),
+                        ElementTree.fromstring(line),  # noqa: S314
                     ).getroot()
                     coordinates = Coordinates(
                         svg_struct.attrib["x"],
@@ -497,7 +497,7 @@ class TreeRender:
         for line in clean_svg:
             if line.find("<text") != -1:
                 svg_struct = ElementTree.ElementTree(
-                    ElementTree.fromstring(line),
+                    ElementTree.fromstring(line),  # noqa: S314
                 ).getroot()
                 coordinates = Coordinates(
                     svg_struct.attrib["x"],
