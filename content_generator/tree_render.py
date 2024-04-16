@@ -12,8 +12,9 @@ from gramps_tree import GrampsTree
 from loguru import logger
 
 
-class NotRightPersonError(Exception):
-    pass
+class UnknownDirectionError(Exception):
+    def __init__(self, direction: str) -> None:
+        super().__init__(f"Unknown direction: {direction}")
 
 
 _Y_SPACING = 6
@@ -116,7 +117,7 @@ class TreeRender:
                 stroke_width=_LINE_WIDTH,
                 fill="none",
             )
-        raise ValueError(f"Unknown direction: {direction}")
+        raise UnknownDirectionError(direction)
 
     def __create_time_slice(
         self,

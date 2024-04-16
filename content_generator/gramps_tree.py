@@ -14,6 +14,7 @@ from entities import (
     Media,
     Note,
     Person,
+    PersonWithoutBirthdayError,
     Relation,
     RelationType,
 )
@@ -74,7 +75,7 @@ class GrampsTree:
 
     def __parse_lifetime(self, _id: GrampsId) -> tuple[Date, Date | None]:
         self.__cur.execute(
-            f"SELECT event.blob_data "
+            f"SELECT event.blob_data "  # noqa: S608
             f"FROM person "
             f"JOIN reference ON reference.obj_handle  = person.handle "
             f"JOIN event ON event.handle = reference.ref_handle "
@@ -88,7 +89,7 @@ class GrampsTree:
 
             if _type == EventType.BIRTH.value:
                 if r_date is None:
-                    raise ValueError(f"The person {_id} without birthday")
+                    raise PersonWithoutBirthdayError(_id)
                 birth_day = Date.from_gramps_db(r_date)
 
             if _type == EventType.DEATH.value:

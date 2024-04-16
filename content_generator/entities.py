@@ -135,6 +135,11 @@ class Gender(Enum):
     UNKNOWN = 2
 
 
+class PersonWithoutBirthdayError(Exception):
+    def __init__(self, person_id: str) -> None:
+        super().__init__(f"The person {person_id} without birthday")
+
+
 class Person:
     __MAX_LIFETIME_Y = 100
 
@@ -151,7 +156,7 @@ class Person:
         self.__full_name: str = full_name
         self.__birth_day: Date = birth_day
         if birth_day is None:
-            raise ValueError(f"The person {_id} without birthday")
+            raise PersonWithoutBirthdayError(_id)
         if death_day is None:
             death_day = self.__birth_day.date + timedelta(
                 days=365 * self.__MAX_LIFETIME_Y,
