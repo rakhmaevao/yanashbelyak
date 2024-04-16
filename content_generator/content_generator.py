@@ -11,10 +11,7 @@ if __name__ == "__main__":
     gramps_tree = GrampsTree()
     logger.info("The database has been read")
 
-    if "content" in set(os.listdir()):
-        content_dir = "content"
-    else:
-        content_dir = "../content"
+    content_dir = "content" if "content" in set(os.listdir()) else "../content"
     TreeRender(gramps_tree, f"{content_dir}/images/tree.svg")
     Gallery(gramps_tree).generate_gallery()
     Biographer(gramps_tree, content_dir)

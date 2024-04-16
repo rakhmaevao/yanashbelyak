@@ -15,11 +15,12 @@ class DateQuality(Enum):
     EXACTLY = 0
     ESTIMATED = 1
 
-    def __str__(self):
+    def __str__(self) -> str:
         if self == DateQuality.EXACTLY:
             return ""
-        elif self == DateQuality.ESTIMATED:
+        if self == DateQuality.ESTIMATED:
             return "≈ "
+        return "???"
 
 
 class Date:
@@ -36,7 +37,7 @@ class Date:
         elif len(raw_date[3]) == 8:
             day, month, year, _, _, _, _, _ = raw_date[3]
         else:
-            raise ValueError(f"Unknown date format {raw_date}")
+            raise ValueError(raw_date)
         if day == 0:
             day = 1
         if month == 0:
@@ -256,9 +257,9 @@ class Family:
 
     @property
     def parents(self) -> set[Person]:
-        return set(
-            [person for person in [self.__father, self.__mother] if person is not None],
-        )
+        return {
+            person for person in [self.__father, self.__mother] if person is not None
+        }
 
     @property
     def mother(self) -> Person | None:

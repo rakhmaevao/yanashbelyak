@@ -57,7 +57,7 @@ class GrampsTree:
         return self.__media
 
     def __get_persons(self) -> dict[GrampsId, Person]:
-        persons = dict()
+        persons = {}
         self.__cur.execute("SELECT gramps_id, given_name, surname, gender FROM person")
         persons_raw = self.__cur.fetchall()
         for id, given_name, surname, gender in persons_raw:
@@ -100,7 +100,7 @@ class GrampsTree:
         return birth_day, death_day
 
     def __get_notes(self) -> dict[GrampsId, Note]:
-        notes = dict()
+        notes = {}
         self.__cur.execute("SELECT note.gramps_id, note.blob_data FROM note")
         notes_raw = self.__cur.fetchall()
         for id, blob_data in notes_raw:
@@ -109,7 +109,7 @@ class GrampsTree:
         return notes
 
     def __get_events(self) -> dict[GrampsId, Event]:
-        events = dict()
+        events = {}
         self.__cur.execute("SELECT event.gramps_id, event.blob_data FROM event")
         event_raw = self.__cur.fetchall()
         for id, blob_data in event_raw:
@@ -187,7 +187,10 @@ class GrampsTree:
                     families[family_id].add_child(self.__persons[person_id])
                     relations.add(
                         Relation(
-                            person_id, RelationType.BIRTH_FROM, father_id, family_id,
+                            person_id,
+                            RelationType.BIRTH_FROM,
+                            father_id,
+                            family_id,
                         ),
                     )
                 elif mother_id is not None:
@@ -195,14 +198,17 @@ class GrampsTree:
                     families[family_id].add_child(self.__persons[person_id])
                     relations.add(
                         Relation(
-                            person_id, RelationType.BIRTH_FROM, mother_id, family_id,
+                            person_id,
+                            RelationType.BIRTH_FROM,
+                            mother_id,
+                            family_id,
                         ),
                     )
 
         return relations, families
 
     def __get_media(self) -> dict[GrampsId, Media]:
-        media = dict()
+        media = {}
         self.__cur.execute("SELECT media.gramps_id, media.blob_data FROM media")
         raw = self.__cur.fetchall()
         for id, blob_data in raw:

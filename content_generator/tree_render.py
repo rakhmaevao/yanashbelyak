@@ -4,7 +4,7 @@ import xml.etree.ElementTree as ET
 from datetime import date, datetime
 from operator import attrgetter
 from pathlib import Path
-from typing import Dict, List, NamedTuple, Optional, Tuple
+from typing import NamedTuple
 
 import drawsvg
 from entities import DateQuality, Family, Gender, GrampsId, Person, RelationType
@@ -55,14 +55,14 @@ class TreeRender:
         self.__gramps_tree = gramps_tree
         Path(output_path).parent.mkdir(parents=True, exist_ok=True)
 
-        self.__unpined_person = copy.deepcopy(self.__gramps_tree.persons)  # type: Dict[GrampsId, Person]
+        self.__unpined_person = copy.deepcopy(self.__gramps_tree.persons)  # type: dict[GrampsId, Person]
         self.__older_date = self.__get_older_person(
             self.__unpined_person,
         ).birth_day.date
 
-        self.__nodes = {}  # type: Dict[GrampsId, Node]
+        self.__nodes = {}  # type: dict[GrampsId, Node]
         self.__draw_objects = []  # type: List[drawsvg.DrawingElement]
-        self.__person_id_by_label: Dict[str, GrampsId] = {}
+        self.__person_id_by_label: dict[str, GrampsId] = {}
         self.__vertical_index = -1
         while True:
             self.__vertical_index += 1
@@ -101,7 +101,7 @@ class TreeRender:
                 stroke_width=_LINE_WIDTH,
                 fill="none",
             )
-        elif direction == "up":
+        if direction == "up":
             return drawsvg.Lines(
                 x - _TRIANGLE_WEIGHT / 2,
                 y,
@@ -116,12 +116,14 @@ class TreeRender:
                 stroke_width=_LINE_WIDTH,
                 fill="none",
             )
-        else:
-            raise ValueError(f"Unknown direction: {direction}")
+        raise ValueError(f"Unknown direction: {direction}")
 
     def __create_time_slice(
-        self, label: str, date: date, date_view: bool,
-    ) -> List[drawsvg.DrawingElement]:
+        self,
+        label: str,
+        date: date,
+        date_view: bool,
+    ) -> list[drawsvg.DrawingElement]:
         x = self._compute_x_pos(date)
         y_max = (_HEIGHT + _Y_SPACING) * self.__vertical_index
         y_min = _HEIGHT
@@ -166,14 +168,16 @@ class TreeRender:
             )
         return ret_objects
 
-    def __create_background(self) -> List[drawsvg.DrawingElement]:
+    def __create_background(self) -> list[drawsvg.DrawingElement]:
         background = []
         background += self.__create_time_slice("", date(1700, 1, 1), date_view=True)
         background += self.__create_time_slice("", date(1800, 1, 1), date_view=True)
         background += self.__create_time_slice("", date(1900, 1, 1), date_view=True)
 
         background += self.__create_time_slice(
-            "ВОВ", date(1941, 6, 22), date_view=False,
+            "ВОВ",
+            date(1941, 6, 22),
+            date_view=False,
         )
         background += self.__create_time_slice("", date(1945, 5, 9), date_view=False)
 
@@ -209,7 +213,9 @@ class TreeRender:
                                 self.__get_triangular(node.y_pos, x_pos, "down"),
                             )
                             family_lines.append(
-                                self.__get_triangular(node.y_pos + _HEIGHT, x_pos, "up"),
+                                self.__get_triangular(
+                                    node.y_pos + _HEIGHT, x_pos, "up"
+                                ),
                             )
                     else:
                         if node.person == top_node.person:
@@ -231,14 +237,14 @@ class TreeRender:
                 )
         return family_lines
 
-    def __get_size(self) -> Tuple[float, float]:
+    def __get_size(self) -> tuple[float, float]:
         return (
             (datetime.today().date() - self.__older_date).days * _X_SCALE
             + _X_OFFSET * 10,
             (_HEIGHT + _Y_SPACING) * (self.__vertical_index + 2),
         )
 
-    def __get_patriarch(self, where: Dict[GrampsId, Person]):
+    def __get_patriarch(self, where: dict[GrampsId, Person]):
         patriarch = self.__older_grandpa(where)
         if patriarch is None:
             patriarch = self.__older_grandma(where)
@@ -256,7 +262,7 @@ class TreeRender:
             else:
                 break
 
-    def __get_next_person(self, person: Person) -> Optional[Person]:
+    def __get_next_person(self, person: Person) -> Person | None:
         child = self.__get_latest_child_by_last_partner(person)
         if child is not None:
             return child
@@ -269,7 +275,7 @@ class TreeRender:
 
         return None
 
-    def __get_latest_child_by_last_partner(self, person: Person) -> Optional[Person]:
+    def __get_latest_child_by_last_partner(self, person: Person) -> Person | None:
         oldest_family = self.__get_oldest_family(person)
         if oldest_family is not None and oldest_family.children:
             un_children = []
@@ -293,7 +299,7 @@ class TreeRender:
             return max(children, key=attrgetter("birth_day.date"))
         return None
 
-    def __get_oldest_partner(self, person: Person) -> Optional[Person]:
+    def __get_oldest_partner(self, person: Person) -> Person | None:
         partners = sorted(
             self.__get_partners(person, self.__unpined_person),
             key=attrgetter("birth_day.date"),
@@ -302,42 +308,50 @@ class TreeRender:
             return partners[-1]
         return None
 
-    def __get_oldest_family(self, person: Person) -> Optional[Family]:
+    def __get_oldest_family(self, person: Person) -> Family | None:
         partner = self.__get_oldest_partner(person)
         if partner is None:
             return None
 
         for family in self.__gramps_tree.families.values():
-            if person.is_male():
-                if family.father == person and family.mother == partner:
-                    return family
-            if person.is_female():
-                if family.father == partner and family.mother == person:
-                    return family
+            if (
+                person.is_male()
+                and family.father == person
+                and family.mother == partner
+            ):
+                return family
+            if (
+                person.is_female()
+                and family.father == partner
+                and family.mother == person
+            ):
+                return family
         return None
 
     @staticmethod
-    def __get_older_person(where: Dict[GrampsId, Person]) -> Person:
-        persons = [p for p in where.values()]
+    def __get_older_person(where: dict[GrampsId, Person]) -> Person:
+        persons = list(where.values())
         return min(persons, key=attrgetter("birth_day.date"))
 
     @staticmethod
-    def __older_grandpa(where: Dict[GrampsId, Person]) -> Optional[Person]:
+    def __older_grandpa(where: dict[GrampsId, Person]) -> Person | None:
         mens = [p for p in where.values() if p.gender == Gender.MALE]
         if not mens:
             return None
         return min(mens, key=attrgetter("birth_day.date"))
 
     @staticmethod
-    def __older_grandma(where: Dict[GrampsId, Person]) -> Optional[Person]:
+    def __older_grandma(where: dict[GrampsId, Person]) -> Person | None:
         womens = [p for p in where.values() if p.gender == Gender.FEMALE]
         if not womens:
             return None
         return min(womens, key=attrgetter("birth_day.date"))
 
     def __get_partners(
-        self, person: Person, where: Dict[GrampsId, Person],
-    ) -> List[Person]:
+        self,
+        person: Person,
+        where: dict[GrampsId, Person],
+    ) -> list[Person]:
         partners = []
         for relation in self.__gramps_tree.relations:
             if relation.type_of_relation != RelationType.MARRIAGE:
@@ -387,7 +401,10 @@ class TreeRender:
 
         if person.death_day.quality is DateQuality.ESTIMATED:
             gradient = drawsvg.LinearGradient(
-                x + width, y, x + width + _DEATHDAY_ERROR_DAYS * _X_SCALE, y + _HEIGHT,
+                x + width,
+                y,
+                x + width + _DEATHDAY_ERROR_DAYS * _X_SCALE,
+                y + _HEIGHT,
             )
             gradient.add_stop(0, color, 1)
             gradient.add_stop(1, "white", 0)
@@ -441,7 +458,7 @@ class TreeRender:
     def _compute_x_pos(self, date_: date) -> float:
         return (date_ - self.__older_date).days * _X_SCALE + _X_OFFSET
 
-    def __get_parental_family(self, person: Person) -> Optional[Family]:
+    def __get_parental_family(self, person: Person) -> Family | None:
         for family in self.__gramps_tree.families.values():
             if person in family.children:
                 return family
@@ -455,33 +472,36 @@ class TreeRender:
         Блок label персоны дополняется гиперссылкой на страницу персоны.
         """
         clean_svg = []  # Массив строк svg файла без невидимых строк с id персон
-        person_id_by_coordinates: Dict[Coordinates, GrampsId] = {}
-        f = open(path)
-        for line in f:
-            if line.find("<text") != -1:
-                svg_struct = ET.ElementTree(ET.fromstring(line)).getroot()
-                coordinates = Coordinates(
-                    svg_struct.attrib["x"], svg_struct.attrib["y"],
-                )
-                person: Person | None = self.__gramps_tree.persons.get(
-                    svg_struct.text, None,
-                )
-                if person is not None:
-                    person_id_by_coordinates[coordinates] = person.id
-                    continue
-            clean_svg.append(line)
-        f.close()
+        person_id_by_coordinates: dict[Coordinates, GrampsId] = {}
+        with open(path) as f:
+            for line in f:
+                if line.find("<text") != -1:
+                    svg_struct = ET.ElementTree(ET.fromstring(line)).getroot()
+                    coordinates = Coordinates(
+                        svg_struct.attrib["x"],
+                        svg_struct.attrib["y"],
+                    )
+                    person: Person | None = self.__gramps_tree.persons.get(
+                        svg_struct.text,
+                        None,
+                    )
+                    if person is not None:
+                        person_id_by_coordinates[coordinates] = person.id
+                        continue
+                clean_svg.append(line)
 
         new_strings = []
         for line in clean_svg:
             if line.find("<text") != -1:
                 svg_struct = ET.ElementTree(ET.fromstring(line)).getroot()
                 coordinates = Coordinates(
-                    svg_struct.attrib["x"], svg_struct.attrib["y"],
+                    svg_struct.attrib["x"],
+                    svg_struct.attrib["y"],
                 )
 
                 person_id: GrampsId | None = person_id_by_coordinates.get(
-                    coordinates, None,
+                    coordinates,
+                    None,
                 )
                 if person_id is not None:
                     new_strings.append(

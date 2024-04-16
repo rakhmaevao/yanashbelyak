@@ -1,4 +1,3 @@
-
 import datetime
 import os
 import shlex
@@ -33,7 +32,7 @@ CONFIG = {
 
 
 @task
-def clean(c):
+def clean(c):  # noqa: ARG001
     """Remove generated files."""
     if os.path.isdir(CONFIG["deploy_path"]):
         shutil.rmtree(CONFIG["deploy_path"])
@@ -41,25 +40,25 @@ def clean(c):
 
 
 @task
-def build(c):
+def build(c):  # noqa: ARG001
     """Build local version of site."""
     pelican_run("-s {settings_base}".format(**CONFIG))
 
 
 @task
-def rebuild(c):
+def rebuild(c):  # noqa: ARG001
     """`build` with the delete switch."""
     pelican_run("-d -s {settings_base}".format(**CONFIG))
 
 
 @task
-def regenerate(c):
+def regenerate(c):  # noqa: ARG001
     """Automatically regenerate site upon file modification."""
     pelican_run("-r -s {settings_base}".format(**CONFIG))
 
 
 @task
-def serve(c):
+def serve(c):  # noqa: ARG001
     """Serve site at http://$HOST:$PORT/ (default is localhost:8000)."""
 
     class AddressReuseTCPServer(RootedHTTPServer):
@@ -89,13 +88,13 @@ def reserve(c):
 
 
 @task
-def preview(c):
+def preview(c):  # noqa: ARG001
     """Build production version of site."""
     pelican_run("-s {settings_publish}".format(**CONFIG))
 
 
 @task
-def livereload(c):
+def livereload(c):  # noqa: ARG001
     """Automatically reload browser tab upon file modification."""
     from livereload import Server
 
@@ -141,7 +140,8 @@ def publish(c):
         'rsync --delete --exclude ".DS_Store" -pthrvz -c '
         '-e "ssh -p {ssh_port}" '
         "{} {ssh_user}@{ssh_host}:{ssh_path}".format(
-            CONFIG["deploy_path"].rstrip("/") + "/", **CONFIG,
+            CONFIG["deploy_path"].rstrip("/") + "/",
+            **CONFIG,
         ),
     )
 

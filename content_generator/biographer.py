@@ -1,6 +1,5 @@
 import datetime
 from pathlib import Path
-from typing import List
 
 from entities import Person
 from gramps_tree import GrampsTree
@@ -12,7 +11,7 @@ class Article:
         title: str,
         date: str,
         category: str,
-        tags: List[str],
+        tags: list[str],
         slug: str,
         main_content: str,
     ):
@@ -90,5 +89,4 @@ class Biographer:
                     content += f"- {event.description}\n\n"
         if content != "":
             return "## События жизни\n\n" + content
-        else:
-            return ""
+        return ""
