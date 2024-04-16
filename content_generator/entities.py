@@ -212,7 +212,7 @@ class Person:
         return self.__events
 
     def __str__(self):
-        if self.death_day.date > datetime.datetime.now().date():
+        if self.death_day.date > datetime.datetime.now(tz=datetime.UTC).date():
             right_year = "н. в."
         else:
             right_year = self.death_day.date.year
