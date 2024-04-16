@@ -57,10 +57,7 @@ class Biographer:
 
     def __crate_article_from_person(self, person: Person):
         main_content = f"Дата рождения: {person.birth_day}\n\n"
-        if (
-            person.death_day.date
-            < datetime.datetime.now(tz=datetime.UTC).date()
-        ):
+        if person.death_day.date < datetime.datetime.now(tz=datetime.UTC).date():
             main_content += f"Дата смерти: {person.death_day}\n\n"
         main_content += self.__prepare_events(person)
         if person.notes:

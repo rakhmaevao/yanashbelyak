@@ -122,6 +122,7 @@ class TreeRender:
         self,
         label: str,
         date: date,
+        *,
         date_view: bool,
     ) -> list[drawsvg.DrawingElement]:
         x = self._compute_x_pos(date)
