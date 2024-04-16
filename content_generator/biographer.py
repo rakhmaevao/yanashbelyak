@@ -6,7 +6,7 @@ from gramps_tree import GrampsTree
 
 
 class Article:
-    def __init__(
+    def __init__(  # noqa: PLR0913
         self,
         title: str,
         date: str,
@@ -62,7 +62,7 @@ class Biographer:
         main_content += self.__prepare_events(person)
         if person.notes:
             main_content += "## Заметки\n\n"
-            main_content += list(person.notes)[0].content
+            main_content += next(person.notes).content
             main_content += "\n\n"
         if person.media:
             main_content += "## Галерея\n\n"

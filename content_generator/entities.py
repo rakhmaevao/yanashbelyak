@@ -51,7 +51,7 @@ class Date:
             return Date(date(year, month, day), DateQuality(raw_date[2]))
         except ValueError as message:
             logger.error(f"{message} for raw_date {raw_date}")
-            raise ValueError(message)
+            raise ValueError(message) from message
 
     @property
     def date(self) -> date:
@@ -70,7 +70,7 @@ class Date:
 
 
 class GrampsId(str):
-    pass
+    __slots__ = ()
 
 
 class Event:
@@ -284,7 +284,7 @@ class Family:
             return (
                 min(self.__children, key=attrgetter("birth_day.date")).birth_day.date
                 - timedelta(weeks=40)
-                - timedelta(weeks=random.randint(a=0, b=500))
+                - timedelta(weeks=random.randint(a=0, b=500))  # noqa: S311
             )
 
         majority = 360 * 18

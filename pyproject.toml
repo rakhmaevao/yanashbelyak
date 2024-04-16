@@ -40,6 +40,8 @@ ignore = [
     "RUF002",  # Docstrings contains ambiguous symbols
     "RUF003",  # Comment contains ambiguous symbols
     "ANN", # Missing type annotation. Use mypy to check types.
+    "COM812",  # Trailing comma not allowed
+    "ISC001"  # Single line implicit string concatenation
 ]
 
 [tool.ruff.lint.pydocstyle]

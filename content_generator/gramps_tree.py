@@ -167,19 +167,15 @@ class GrampsTree:
             family_id = GrampsId(_family_id)
             if family_id not in families:
                 families[family_id] = Family(family_id)
-            if person_id == father_id and mother_id is not None:
+            if (person_id == father_id and mother_id is not None) or (
+                person_id == mother_id and father_id is not None
+            ):
                 families[family_id].father = self.__persons[father_id]
                 families[family_id].mother = self.__persons[mother_id]
                 relations.add(
                     Relation(father_id, RelationType.MARRIAGE, mother_id, family_id),
                 )
-            elif person_id == mother_id and father_id is not None:
-                families[family_id].father = self.__persons[father_id]
-                families[family_id].mother = self.__persons[mother_id]
-                relations.add(
-                    Relation(father_id, RelationType.MARRIAGE, mother_id, family_id),
-                )
-            elif person_id != father_id and person_id != mother_id:
+            elif person_id not in set(father_id, mother_id):
                 if father_id is not None:
                     families[family_id].father = self.__persons[father_id]
                     families[family_id].add_child(self.__persons[person_id])
