@@ -1,4 +1,3 @@
-import os
 import shutil
 from pathlib import Path
 
@@ -8,7 +7,7 @@ from PIL import Image
 
 
 class Gallery:
-    _IMAGES_DIR = "content/images/gallery"
+    _IMAGES_DIR = Path("content/images/gallery")
     _GALLERY_PAGE_PATH = Path("content/gallery/gallery.md")
 
     def __init__(self, gramps_tree: GrampsTree):
@@ -25,7 +24,7 @@ class Gallery:
 
     def __clear_gallery(self):
         shutil.rmtree(self._IMAGES_DIR, ignore_errors=True)
-        os.mkdir(self._IMAGES_DIR)
+        self._IMAGES_DIR.mkdir()
 
     def __copy_media_to_gallery(self, media: Media):
         new_path = Path(shutil.copy(media.path, self._IMAGES_DIR)).absolute()
@@ -70,5 +69,5 @@ class _GalleryPage:
         self.__content += "\n\n---\n\n"
 
     def save(self):
-        with open(self.__path, "w", encoding="utf-8") as f:
+        with self.__path.open("w", encoding="utf-8") as f:
             f.write(self.__content)

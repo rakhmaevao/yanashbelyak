@@ -33,7 +33,7 @@ class Article:
         )
 
     def export_to_file(self, parent_path: Path):
-        with open(f"{parent_path}/{self.__slug}.md", "w") as file:
+        with (parent_path / f"{self.__slug}.md").open("w") as file:
             file.write(str(self))
 
     @staticmethod
@@ -57,7 +57,7 @@ class Biographer:
 
     def __crate_article_from_person(self, person: Person):
         main_content = f"Дата рождения: {person.birth_day}\n\n"
-        if person.death_day.date < datetime.date.today():
+        if person.death_day.date < datetime.datetime.now().date():
             main_content += f"Дата смерти: {person.death_day}\n\n"
         main_content += self.__prepare_events(person)
         if person.notes:

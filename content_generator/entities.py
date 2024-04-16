@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+import datetime
 import pickle
 import random
 from datetime import date, timedelta
@@ -24,6 +25,9 @@ class DateQuality(Enum):
 
 
 class Date:
+    __SHORT_DATETIME_LEN = 4
+    __FULL_DATETIME_LEN = 8
+
     def __init__(self, date: date, quality: DateQuality):
         self.__date = date
         self.__quality = quality
@@ -32,9 +36,9 @@ class Date:
     def from_gramps_db(raw_date: tuple) -> Date:
         logger.debug(f"Parsing date: {raw_date}")
 
-        if len(raw_date[3]) == 4:
+        if len(raw_date[3]) == Date.__SHORT_DATETIME_LEN:
             day, month, year, _ = raw_date[3]
-        elif len(raw_date[3]) == 8:
+        elif len(raw_date[3]) == Date.__FULL_DATETIME_LEN:
             day, month, year, _, _, _, _, _ = raw_date[3]
         else:
             raise ValueError(raw_date)
@@ -96,7 +100,7 @@ class Event:
         self.__id = GrampsId(gramps_id)
 
     @property
-    def id(self) -> GrampsId:
+    def gramps_id(self) -> GrampsId:
         return self.__id
 
     @property
@@ -117,7 +121,7 @@ class Note:
         self.__id = GrampsId(gramps_id)
 
     @property
-    def id(self) -> GrampsId:
+    def gramps_id(self) -> GrampsId:
         return self.__id
 
     @property
@@ -136,18 +140,18 @@ class Person:
 
     def __init__(
         self,
-        id: GrampsId,
+        _id: GrampsId,
         full_name: str,
         birth_day: Date,
         death_day: Date,
         gender: Gender,
     ):
         self.__media: set[Media] = set()
-        self.__gramps_id = GrampsId(id)
+        self.__gramps_id = GrampsId(_id)
         self.__full_name: str = full_name
         self.__birth_day: Date = birth_day
         if birth_day is None:
-            raise ValueError(f"The person {id} without birthday")
+            raise ValueError(f"The person {_id} without birthday")
         if death_day is None:
             death_day = self.__birth_day.date + timedelta(
                 days=365 * self.__MAX_LIFETIME_Y,
@@ -208,7 +212,7 @@ class Person:
         return self.__events
 
     def __str__(self):
-        if self.death_day.date > date.today():
+        if self.death_day.date > datetime.datetime.now().date():
             right_year = "н. в."
         else:
             right_year = self.death_day.date.year
@@ -234,8 +238,8 @@ class Person:
 
 
 class Family:
-    def __init__(self, id: GrampsId):
-        self.__id = id  # type: GrampsId
+    def __init__(self, _id: GrampsId):
+        self.__id = _id  # type: GrampsId
         self.__father = None  # type: Person | None
         self.__mother = None  # type: Person | None
         self.__children = set()  # type: set[Person]
@@ -244,7 +248,7 @@ class Family:
         self.__children.add(child)
 
     @property
-    def id(self) -> GrampsId:
+    def gramps_id(self) -> GrampsId:
         return self.__id
 
     @property

@@ -1,10 +1,10 @@
 import copy
 import os
-import xml.etree.ElementTree as ET
 from datetime import date, datetime
 from operator import attrgetter
 from pathlib import Path
 from typing import NamedTuple
+from xml.etree import ElementTree
 
 import drawsvg
 from entities import DateQuality, Family, Gender, GrampsId, Person, RelationType
@@ -12,7 +12,7 @@ from gramps_tree import GrampsTree
 from loguru import logger
 
 
-class NotRightPersonException(Exception):
+class NotRightPersonError(Exception):
     pass
 
 
@@ -51,9 +51,9 @@ class Node:
 
 
 class TreeRender:
-    def __init__(self, gramps_tree: GrampsTree, output_path: str):
+    def __init__(self, gramps_tree: GrampsTree, output_path: Path):
         self.__gramps_tree = gramps_tree
-        Path(output_path).parent.mkdir(parents=True, exist_ok=True)
+        output_path.parent.mkdir(parents=True, exist_ok=True)
 
         self.__unpined_person = copy.deepcopy(self.__gramps_tree.persons)  # type: dict[GrampsId, Person]
         self.__older_date = self.__get_older_person(
@@ -61,7 +61,7 @@ class TreeRender:
         ).birth_day.date
 
         self.__nodes = {}  # type: dict[GrampsId, Node]
-        self.__draw_objects = []  # type: List[drawsvg.DrawingElement]
+        self.__draw_objects = []  # type: list[drawsvg.DrawingElement]
         self.__person_id_by_label: dict[str, GrampsId] = {}
         self.__vertical_index = -1
         while True:
@@ -240,7 +240,7 @@ class TreeRender:
 
     def __get_size(self) -> tuple[float, float]:
         return (
-            (datetime.today().date() - self.__older_date).days * _X_SCALE
+            (datetime.datetime.now().date() - self.__older_date).days * _X_SCALE
             + _X_OFFSET * 10,
             (_HEIGHT + _Y_SPACING) * (self.__vertical_index + 2),
         )
@@ -465,7 +465,7 @@ class TreeRender:
                 return family
         return None
 
-    def __rewrite_svg_with_hyperlink(self, path: str):
+    def __rewrite_svg_with_hyperlink(self, path: Path):
         """DrawSvg не умеет в гиперссылки, поэтому уже готовый файл изменяется.
 
         В нем ищется скрытый текстовый блок с id персоны.
@@ -474,10 +474,12 @@ class TreeRender:
         """
         clean_svg = []  # Массив строк svg файла без невидимых строк с id персон
         person_id_by_coordinates: dict[Coordinates, GrampsId] = {}
-        with open(path) as f:
+        with path.open() as f:
             for line in f:
                 if line.find("<text") != -1:
-                    svg_struct = ET.ElementTree(ET.fromstring(line)).getroot()
+                    svg_struct = ElementTree.ElementTree(
+                        ElementTree.fromstring(line),
+                    ).getroot()
                     coordinates = Coordinates(
                         svg_struct.attrib["x"],
                         svg_struct.attrib["y"],
@@ -494,7 +496,9 @@ class TreeRender:
         new_strings = []
         for line in clean_svg:
             if line.find("<text") != -1:
-                svg_struct = ET.ElementTree(ET.fromstring(line)).getroot()
+                svg_struct = ElementTree.ElementTree(
+                    ElementTree.fromstring(line),
+                ).getroot()
                 coordinates = Coordinates(
                     svg_struct.attrib["x"],
                     svg_struct.attrib["y"],
@@ -513,7 +517,7 @@ class TreeRender:
 
             new_strings.append(line)
 
-        with open(path, "w") as file:
+        with path.open("w") as file:
             for s in new_strings:
                 file.write(s)
 
