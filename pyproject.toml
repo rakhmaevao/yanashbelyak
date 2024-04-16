@@ -24,7 +24,6 @@ requires = ["poetry-core"]
 build-backend = "poetry.core.masonry.api"
 
 [tool.ruff]
-fix = true
 target-version = "py311"
 
 [tool.ruff.lint]

@@ -24,7 +24,9 @@ CONFIG = {
     "deploy_path": SETTINGS["OUTPUT_PATH"],
     # Github Pages configuration
     "github_pages_branch": "gh-pages",
-    "commit_message": f"'Publish site on {datetime.date.today().isoformat()}'",
+    "commit_message": f"'Publish site on {
+        datetime.datetime.now(tz=datetime.UTC).date().isoformat()
+        }'",
     # Host and port for `serve`
     "host": "localhost",
     "port": 8000,
@@ -34,9 +36,9 @@ CONFIG = {
 @task
 def clean(c):  # noqa: ARG001
     """Remove generated files."""
-    if os.path.isdir(CONFIG["deploy_path"]):
+    if os.path.isdir(CONFIG["deploy_path"]):  # noqa: PTH112
         shutil.rmtree(CONFIG["deploy_path"])
-        os.makedirs(CONFIG["deploy_path"])
+        os.makedirs(CONFIG["deploy_path"])  # noqa: PTH103
 
 
 @task
@@ -112,7 +114,7 @@ def livereload(c):  # noqa: ARG001
 
     content_file_extensions = [".md", ".rst"]
     for extension in content_file_extensions:
-        content_glob = "{0}/**/*{1}".format(SETTINGS["PATH"], extension)
+        content_glob = "{0}/**/*{1}".format(SETTINGS["PATH"], extension)  # noqa: UP030
         watched_globs.append(content_glob)
 
     static_file_extensions = [".css", ".js"]

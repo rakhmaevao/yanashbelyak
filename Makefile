@@ -65,6 +65,7 @@ local_content:
 	SITEURL=$(LOCAL_SITEURL) $(PELICAN) content -t theme
 
 py_format:
+	poetry run ruff --fix content_generator pelicanconf.py tasks.py publishconf.py publishconf.py
 	poetry run ruff format content_generator pelicanconf.py tasks.py publishconf.py publishconf.py
 
 all_format: py_format
@@ -73,6 +74,6 @@ all_format: py_format
 
 lint:
 	@echo "Линтинг"
-	poetry run ruff content_generator
+	poetry run ruff content_generator pelicanconf.py tasks.py publishconf.py publishconf.py
 
 .PHONY: help clean devserver publish github local_content, dfg
