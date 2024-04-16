@@ -83,7 +83,7 @@ class GrampsTree:
         events = self.__cur.fetchall()
         birth_day, death_day = None, None
         for (event,) in events:
-            _, _, _type, r_date, _, _, _, _, _, _, _, _, _ = pickle.loads(event)
+            _, _, _type, r_date, _, _, _, _, _, _, _, _, _ = pickle.loads(event)  # noqa: S301
             _type = _type[0]
 
             if _type == EventType.BIRTH.value:

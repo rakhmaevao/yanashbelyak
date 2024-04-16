@@ -64,7 +64,12 @@ class _GalleryPage:
             self.__content += "Люди на изображении: "
             for p in media.persons:
                 self.__content += (
-                    "[" + p.full_name + "](" + "{filename}../persons/" + p.id + ".md) "
+                    "["
+                    + p.full_name
+                    + "]("
+                    + "{filename}../persons/"
+                    + p.gramps_id
+                    + ".md) "
                 )
         self.__content += "\n\n---\n\n"
 

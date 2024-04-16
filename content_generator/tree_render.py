@@ -281,7 +281,7 @@ class TreeRender:
         if oldest_family is not None and oldest_family.children:
             un_children = []
             for child in oldest_family.children:
-                un_child = self.__unpined_person.get(child.id, None)
+                un_child = self.__unpined_person.get(child.gramps_id, None)
                 if un_child is not None:
                     un_children.append(un_child)
             if un_children:
@@ -291,7 +291,7 @@ class TreeRender:
         for relation in self.__gramps_tree.relations:
             if relation.type_of_relation != RelationType.BIRTH_FROM:
                 continue
-            if person.id == relation.other_person_id:
+            if person.gramps_id == relation.other_person_id:
                 child = self.__unpined_person.get(relation.first_person_id)
                 if child is None:
                     continue
@@ -359,9 +359,9 @@ class TreeRender:
                 continue
 
             partner = None
-            if person.id == relation.first_person_id:
+            if person.gramps_id == relation.first_person_id:
                 partner = where.get(relation.other_person_id)
-            elif person.id == relation.other_person_id:
+            elif person.gramps_id == relation.other_person_id:
                 partner = where.get(relation.first_person_id)
 
             if partner is not None:
@@ -429,15 +429,15 @@ class TreeRender:
         )
         self.__draw_objects.append(
             drawsvg.Text(
-                text=person.id,
+                text=person.gramps_id,
                 font_size=_FONT_SIZE,
                 x=x,
                 y=y + _FONT_SIZE,
                 style="fill-opacity:0",
             ),
         )
-        self.__person_id_by_label[str(person)] = person.id
-        del self.__unpined_person[person.id]
+        self.__person_id_by_label[str(person)] = person.gramps_id
+        del self.__unpined_person[person.gramps_id]
         logger.info(f"Added {person}")
 
         parental_family = self.__get_parental_family(person)
@@ -454,7 +454,7 @@ class TreeRender:
                     fill="none",
                 ),
             )
-        self.__nodes[person.id] = Node(person, y)
+        self.__nodes[person.gramps_id] = Node(person, y)
 
     def _compute_x_pos(self, date_: date) -> float:
         return (date_ - self.__older_date).days * _X_SCALE + _X_OFFSET
@@ -489,7 +489,7 @@ class TreeRender:
                         None,
                     )
                     if person is not None:
-                        person_id_by_coordinates[coordinates] = person.id
+                        person_id_by_coordinates[coordinates] = person.gramps_id
                         continue
                 clean_svg.append(line)
 

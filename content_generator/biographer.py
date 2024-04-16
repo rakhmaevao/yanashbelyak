@@ -75,7 +75,7 @@ class Biographer:
             date="1100-02-21 13:12",
             category="Люди",
             tags=["Люди"],
-            slug=person.id,
+            slug=person.gramps_id,
             main_content=main_content,
         )
 

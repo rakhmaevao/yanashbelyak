@@ -89,7 +89,7 @@ class Event:
             _,
             _,
             _,
-        ) = pickle.loads(blob_data)
+        ) = pickle.loads(blob_data)  # noqa: S301
 
         self.__description = description
         if date is not None:
@@ -114,7 +114,7 @@ class Event:
 
 class Note:
     def __init__(self, blob_data: bytes):
-        handle, gramps_id, (content, _), _, _, _, _, is_private = pickle.loads(
+        _, gramps_id, (content, _), _, _, _, _, _ = pickle.loads(  # noqa: S301
             blob_data,
         )
         self.__content = content
@@ -170,7 +170,7 @@ class Person:
         self.__events.add(event)
 
     @property
-    def id(self) -> GrampsId:
+    def gramps_id(self) -> GrampsId:
         return self.__gramps_id
 
     @property
@@ -228,10 +228,10 @@ class Person:
     def __eq__(self, other):
         if other is None:
             return False
-        return self.id == other.id
+        return self.gramps_id == other.id
 
     def __hash__(self):
-        return hash(self.id)
+        return hash(self.gramps_id)
 
     def add_media(self, media: Media):
         self.__media.add(media)
@@ -389,7 +389,7 @@ class Media:
             _,
             _,
             _,
-        ) = pickle.loads(blob)
+        ) = pickle.loads(blob)  # noqa: S301
 
     @property
     def path(self) -> Path:
