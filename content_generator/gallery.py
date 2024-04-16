@@ -56,7 +56,7 @@ class Gallery:
 class _GalleryPage:
     def __init__(self, path: Path):
         self.__content = (
-            "Title: Галерея\n" "Category: Галерея\n" "Date: 2021-01-29 13:12\n"
+            "Title: Галерея\nCategory: Галерея\nDate: 2021-01-29 13:12\n"
         )
         self.__path = path
 

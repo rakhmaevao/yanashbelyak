@@ -110,7 +110,7 @@ class Event:
 class Note:
     def __init__(self, blob_data: bytes):
         handle, gramps_id, (content, _), _, _, _, _, is_private = pickle.loads(
-            blob_data
+            blob_data,
         )
         self.__content = content
         self.__id = GrampsId(gramps_id)
@@ -149,7 +149,7 @@ class Person:
             raise ValueError(f"The person {id} without birthday")
         if death_day is None:
             death_day = self.__birth_day.date + timedelta(
-                days=365 * self.__MAX_LIFETIME_Y
+                days=365 * self.__MAX_LIFETIME_Y,
             )
             self.__death_day = Date(death_day, DateQuality.ESTIMATED)
         else:
@@ -212,7 +212,7 @@ class Person:
         else:
             right_year = self.death_day.date.year
 
-        return f"{self.__full_name} " f"({self.__birth_day.date.year}-{right_year})"
+        return f"{self.__full_name} ({self.__birth_day.date.year}-{right_year})"
 
     def is_male(self):
         return self.gender == Gender.MALE
@@ -257,7 +257,7 @@ class Family:
     @property
     def parents(self) -> set[Person]:
         return set(
-            [person for person in [self.__father, self.__mother] if person is not None]
+            [person for person in [self.__father, self.__mother] if person is not None],
         )
 
     @property
@@ -276,11 +276,11 @@ class Family:
                 - timedelta(weeks=40)
                 - timedelta(weeks=random.randint(a=0, b=500))
             )
-        else:
-            majority = 360 * 18
-            parents = [self.__father, self.__mother]
-            youngest = min((p.birth_day.date for p in parents if p is not None))
-            return youngest + timedelta(days=majority)
+
+        majority = 360 * 18
+        parents = [self.__father, self.__mother]
+        youngest = min(p.birth_day.date for p in parents if p is not None)
+        return youngest + timedelta(days=majority)
 
     @property
     def children(self) -> set[Person]:

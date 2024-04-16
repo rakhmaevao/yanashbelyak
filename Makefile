@@ -74,6 +74,6 @@ all_format: py_format
 
 lint:
 	@echo "Линтинг"
-	poetry run ruff lint content_generator
+	poetry run ruff content_generator
 
 .PHONY: help clean devserver publish github local_content, dfg

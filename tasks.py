@@ -1,4 +1,3 @@
-# -*- coding: utf-8 -*-
 
 import datetime
 import os
@@ -8,7 +7,6 @@ import sys
 
 from invoke import task
 from invoke.main import program
-from invoke.util import cd
 from pelican import main as pelican_main
 from pelican.server import ComplexHTTPRequestHandler, RootedHTTPServer
 from pelican.settings import DEFAULT_CONFIG, get_settings_from_file
@@ -27,7 +25,7 @@ CONFIG = {
     "deploy_path": SETTINGS["OUTPUT_PATH"],
     # Github Pages configuration
     "github_pages_branch": "gh-pages",
-    "commit_message": "'Publish site on {}'".format(datetime.date.today().isoformat()),
+    "commit_message": f"'Publish site on {datetime.date.today().isoformat()}'",
     # Host and port for `serve`
     "host": "localhost",
     "port": 8000,
@@ -110,7 +108,7 @@ def livereload(c):
     theme_path = SETTINGS["THEME"]
     watched_globs = [
         CONFIG["settings_base"],
-        "{}/templates/**/*.html".format(theme_path),
+        f"{theme_path}/templates/**/*.html",
     ]
 
     content_file_extensions = [".md", ".rst"]
@@ -120,7 +118,7 @@ def livereload(c):
 
     static_file_extensions = [".css", ".js"]
     for extension in static_file_extensions:
-        static_file_glob = "{0}/static/**/*{1}".format(theme_path, extension)
+        static_file_glob = f"{theme_path}/static/**/*{extension}"
         watched_globs.append(static_file_glob)
 
     for glob in watched_globs:
@@ -143,8 +141,8 @@ def publish(c):
         'rsync --delete --exclude ".DS_Store" -pthrvz -c '
         '-e "ssh -p {ssh_port}" '
         "{} {ssh_user}@{ssh_host}:{ssh_path}".format(
-            CONFIG["deploy_path"].rstrip("/") + "/", **CONFIG
-        )
+            CONFIG["deploy_path"].rstrip("/") + "/", **CONFIG,
+        ),
     )
 
 
@@ -155,7 +153,7 @@ def gh_pages(c):
     c.run(
         "ghp-import -b {github_pages_branch} "
         "-m {commit_message} "
-        "{deploy_path} -p".format(**CONFIG)
+        "{deploy_path} -p".format(**CONFIG),
     )
 
 

@@ -57,10 +57,10 @@ class TreeRender:
 
         self.__unpined_person = copy.deepcopy(self.__gramps_tree.persons)  # type: Dict[GrampsId, Person]
         self.__older_date = self.__get_older_person(
-            self.__unpined_person
+            self.__unpined_person,
         ).birth_day.date
 
-        self.__nodes = dict()  # type: Dict[GrampsId, Node]
+        self.__nodes = {}  # type: Dict[GrampsId, Node]
         self.__draw_objects = []  # type: List[drawsvg.DrawingElement]
         self.__person_id_by_label: Dict[str, GrampsId] = {}
         self.__vertical_index = -1
@@ -120,7 +120,7 @@ class TreeRender:
             raise ValueError(f"Unknown direction: {direction}")
 
     def __create_time_slice(
-        self, label: str, date: date, date_view: bool
+        self, label: str, date: date, date_view: bool,
     ) -> List[drawsvg.DrawingElement]:
         x = self._compute_x_pos(date)
         y_max = (_HEIGHT + _Y_SPACING) * self.__vertical_index
@@ -143,7 +143,7 @@ class TreeRender:
                 stroke="gray",
                 stroke_width=_LINE_WIDTH,
                 fill="none",
-            )
+            ),
         ]
         if date_view:
             ret_objects.append(
@@ -152,7 +152,7 @@ class TreeRender:
                     font_size=_FONT_SIZE,
                     x=x - _FONT_SIZE * 1,
                     y=y_max + _HEIGHT,
-                )
+                ),
             )
         else:
             label_weight = _FONT_SIZE * 0.7 * len(label)
@@ -162,7 +162,7 @@ class TreeRender:
                     font_size=_FONT_SIZE,
                     x=x - label_weight / 2,
                     y=y_max + _HEIGHT,
-                )
+                ),
             )
         return ret_objects
 
@@ -173,7 +173,7 @@ class TreeRender:
         background += self.__create_time_slice("", date(1900, 1, 1), date_view=True)
 
         background += self.__create_time_slice(
-            "ВОВ", date(1941, 6, 22), date_view=False
+            "ВОВ", date(1941, 6, 22), date_view=False,
         )
         background += self.__create_time_slice("", date(1945, 5, 9), date_view=False)
 
@@ -197,19 +197,19 @@ class TreeRender:
                         if node.person == top_node.person:
                             top_y = node.y_pos
                             family_lines.append(
-                                self.__get_triangular(top_y, x_pos, "down")
+                                self.__get_triangular(top_y, x_pos, "down"),
                             )
                         elif node.person == lower_node.person:
                             lower_y = node.y_pos + _HEIGHT
                             family_lines.append(
-                                self.__get_triangular(lower_y, x_pos, "up")
+                                self.__get_triangular(lower_y, x_pos, "up"),
                             )
                         else:
                             family_lines.append(
-                                self.__get_triangular(node.y_pos, x_pos, "down")
+                                self.__get_triangular(node.y_pos, x_pos, "down"),
                             )
                             family_lines.append(
-                                self.__get_triangular(node.y_pos + _HEIGHT, x_pos, "up")
+                                self.__get_triangular(node.y_pos + _HEIGHT, x_pos, "up"),
                             )
                     else:
                         if node.person == top_node.person:
@@ -227,7 +227,7 @@ class TreeRender:
                         stroke="black",
                         stroke_width=_LINE_WIDTH,
                         fill="none",
-                    )
+                    ),
                 )
         return family_lines
 
@@ -336,7 +336,7 @@ class TreeRender:
         return min(womens, key=attrgetter("birth_day.date"))
 
     def __get_partners(
-        self, person: Person, where: Dict[GrampsId, Person]
+        self, person: Person, where: Dict[GrampsId, Person],
     ) -> List[Person]:
         partners = []
         for relation in self.__gramps_tree.relations:
@@ -367,7 +367,7 @@ class TreeRender:
                 width=width,
                 height=_HEIGHT,
                 fill=color,
-            )
+            ),
         )
 
         if person.birth_day.quality is DateQuality.ESTIMATED:
@@ -382,12 +382,12 @@ class TreeRender:
                     width=birthday_offset,
                     height=_HEIGHT,
                     fill=gradient,
-                )
+                ),
             )
 
         if person.death_day.quality is DateQuality.ESTIMATED:
             gradient = drawsvg.LinearGradient(
-                x + width, y, x + width + _DEATHDAY_ERROR_DAYS * _X_SCALE, y + _HEIGHT
+                x + width, y, x + width + _DEATHDAY_ERROR_DAYS * _X_SCALE, y + _HEIGHT,
             )
             gradient.add_stop(0, color, 1)
             gradient.add_stop(1, "white", 0)
@@ -398,7 +398,7 @@ class TreeRender:
                     width=_DEATHDAY_ERROR_DAYS * _X_SCALE,
                     height=_HEIGHT,
                     fill=gradient,
-                )
+                ),
             )
 
         self.__draw_objects.append(
@@ -407,7 +407,7 @@ class TreeRender:
                 font_size=_FONT_SIZE,
                 x=x,
                 y=y + _FONT_SIZE,
-            )
+            ),
         )
         self.__draw_objects.append(
             drawsvg.Text(
@@ -416,7 +416,7 @@ class TreeRender:
                 x=x,
                 y=y + _FONT_SIZE,
                 style="fill-opacity:0",
-            )
+            ),
         )
         self.__person_id_by_label[str(person)] = person.id
         del self.__unpined_person[person.id]
@@ -434,7 +434,7 @@ class TreeRender:
                     stroke="black",
                     stroke_width=_LINE_WIDTH,
                     fill="none",
-                )
+                ),
             )
         self.__nodes[person.id] = Node(person, y)
 
@@ -456,15 +456,15 @@ class TreeRender:
         """
         clean_svg = []  # Массив строк svg файла без невидимых строк с id персон
         person_id_by_coordinates: Dict[Coordinates, GrampsId] = {}
-        f = open(path, "r")
+        f = open(path)
         for line in f:
             if line.find("<text") != -1:
                 svg_struct = ET.ElementTree(ET.fromstring(line)).getroot()
                 coordinates = Coordinates(
-                    svg_struct.attrib["x"], svg_struct.attrib["y"]
+                    svg_struct.attrib["x"], svg_struct.attrib["y"],
                 )
                 person: Person | None = self.__gramps_tree.persons.get(
-                    svg_struct.text, None
+                    svg_struct.text, None,
                 )
                 if person is not None:
                     person_id_by_coordinates[coordinates] = person.id
@@ -477,15 +477,16 @@ class TreeRender:
             if line.find("<text") != -1:
                 svg_struct = ET.ElementTree(ET.fromstring(line)).getroot()
                 coordinates = Coordinates(
-                    svg_struct.attrib["x"], svg_struct.attrib["y"]
+                    svg_struct.attrib["x"], svg_struct.attrib["y"],
                 )
 
                 person_id: GrampsId | None = person_id_by_coordinates.get(
-                    coordinates, None
+                    coordinates, None,
                 )
                 if person_id is not None:
                     new_strings.append(
-                        f'<a xlink:href="{os.getenv("SITEURL")}/{person_id}.html" target="_parent">[...]>{line}</a>'
+                        f'<a xlink:href="{os.getenv("SITEURL")}/{person_id}.html" '
+                        'target="_parent">[...]>{line}</a>',
                     )
                     continue
 

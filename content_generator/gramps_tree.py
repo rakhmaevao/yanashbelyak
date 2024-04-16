@@ -39,7 +39,6 @@ class GrampsTree:
         self.__map_media_to_person()
 
         self.__relations, self.__families = self.__get_relationship()
-        pass
 
     @property
     def relations(self):
@@ -79,7 +78,7 @@ class GrampsTree:
             f"FROM person "
             f"JOIN reference ON reference.obj_handle  = person.handle "
             f"JOIN event ON event.handle = reference.ref_handle "
-            f'WHERE person.gramps_id = "{id}"'
+            f'WHERE person.gramps_id = "{id}"',
         )
         events = self.__cur.fetchall()
         birth_day, death_day = None, None
@@ -123,7 +122,7 @@ class GrampsTree:
             "SELECT person.gramps_id AS person_id, note.gramps_id AS note_id "
             "FROM reference JOIN person ON person.handle = reference.obj_handle "
             "JOIN note ON note.handle = reference.ref_handle "
-            'WHERE reference.ref_class = "Note"; '
+            'WHERE reference.ref_class = "Note"; ',
         )
         for person_id, note_id in self.__cur.fetchall():
             self.__persons[person_id].add_note(self.__notes[note_id])
@@ -133,7 +132,7 @@ class GrampsTree:
             "SELECT person.gramps_id AS person_id, event.gramps_id AS event_id "
             "FROM reference JOIN person ON person.handle = reference.obj_handle "
             "JOIN event ON event.handle = reference.ref_handle "
-            'WHERE reference.ref_class = "Event"; '
+            'WHERE reference.ref_class = "Event"; ',
         )
         for person_id, event_id in self.__cur.fetchall():
             self.__persons[person_id].add_event(self.__events[event_id])
@@ -161,10 +160,10 @@ class GrampsTree:
             "	) "
             "	LEFT JOIN person ON person.handle = mother_handle "
             ") "
-            "JOIN person ON person.handle = person_handle "
+            "JOIN person ON person.handle = person_handle ",
         )
         relations = set()
-        families = dict()
+        families = {}
         relation_raw = self.__cur.fetchall()
         for family_id, father_id, mother_id, person_id in relation_raw:
             family_id = GrampsId(family_id)
@@ -174,13 +173,13 @@ class GrampsTree:
                 families[family_id].father = self.__persons[father_id]
                 families[family_id].mother = self.__persons[mother_id]
                 relations.add(
-                    Relation(father_id, RelationType.MARRIAGE, mother_id, family_id)
+                    Relation(father_id, RelationType.MARRIAGE, mother_id, family_id),
                 )
             elif person_id == mother_id and father_id is not None:
                 families[family_id].father = self.__persons[father_id]
                 families[family_id].mother = self.__persons[mother_id]
                 relations.add(
-                    Relation(father_id, RelationType.MARRIAGE, mother_id, family_id)
+                    Relation(father_id, RelationType.MARRIAGE, mother_id, family_id),
                 )
             elif person_id != father_id and person_id != mother_id:
                 if father_id is not None:
@@ -188,16 +187,16 @@ class GrampsTree:
                     families[family_id].add_child(self.__persons[person_id])
                     relations.add(
                         Relation(
-                            person_id, RelationType.BIRTH_FROM, father_id, family_id
-                        )
+                            person_id, RelationType.BIRTH_FROM, father_id, family_id,
+                        ),
                     )
                 elif mother_id is not None:
                     families[family_id].mother = self.__persons[mother_id]
                     families[family_id].add_child(self.__persons[person_id])
                     relations.add(
                         Relation(
-                            person_id, RelationType.BIRTH_FROM, mother_id, family_id
-                        )
+                            person_id, RelationType.BIRTH_FROM, mother_id, family_id,
+                        ),
                     )
 
         return relations, families
@@ -215,7 +214,7 @@ class GrampsTree:
             "SELECT person.gramps_id AS person_id, media.gramps_id AS media_id "
             "FROM reference JOIN person ON person.handle = reference.obj_handle "
             "JOIN media ON media.handle = reference.ref_handle "
-            'WHERE reference.ref_class = "Media"; '
+            'WHERE reference.ref_class = "Media"; ',
         )
         for person_id, media_id in self.__cur.fetchall():
             media = self.__media[media_id]

@@ -27,7 +27,7 @@ build-backend = "poetry.core.masonry.api"
 fix = true
 
 [tool.ruff.lint]
-select = ["D", "I"]
+select = ["ALL"]
 ignore = [
     "D100",  # Missing docstring in public module
     "D101",  # Missing docstring in public class
@@ -36,6 +36,10 @@ ignore = [
     "D104",  # Missing docstring in public package
     "D105",  # Missing docstring in magic method
     "D107",  # Missing docstring in __init__
+    "RUF001",  # String contains ambiguous symbols
+    "RUF002",  # Docstrings contains ambiguous symbols
+    "RUF003",  # Comment contains ambiguous symbols
+    "ANN", # Missing type annotation. Use mypy to check types.
 ]
 
 [tool.ruff.lint.pydocstyle]
