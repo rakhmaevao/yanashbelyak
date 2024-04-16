@@ -214,14 +214,15 @@ class TreeRender:
                             )
                             family_lines.append(
                                 self.__get_triangular(
-                                    node.y_pos + _HEIGHT, x_pos, "up",
+                                    node.y_pos + _HEIGHT,
+                                    x_pos,
+                                    "up",
                                 ),
                             )
-                    else:
-                        if node.person == top_node.person:
-                            top_y = node.y_pos + _HEIGHT / 2
-                        elif node.person == lower_node.person:
-                            lower_y = node.y_pos + _HEIGHT / 2
+                    elif node.person == top_node.person:
+                        top_y = node.y_pos + _HEIGHT / 2
+                    elif node.person == lower_node.person:
+                        lower_y = node.y_pos + _HEIGHT / 2
 
                 family_lines.append(
                     drawsvg.Lines(
