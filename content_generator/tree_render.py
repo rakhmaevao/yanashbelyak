@@ -1,6 +1,6 @@
 import copy
 import os
-from datetime import date, datetime
+from datetime import UTC, date, datetime
 from operator import attrgetter
 from pathlib import Path
 from typing import NamedTuple
@@ -242,7 +242,7 @@ class TreeRender:
 
     def __get_size(self) -> tuple[float, float]:
         return (
-            (datetime.now(tz=datetime.UTC).date() - self.__older_date).days * _X_SCALE
+            (datetime.now(tz=UTC).date() - self.__older_date).days * _X_SCALE
             + _X_OFFSET * 10,
             (_HEIGHT + _Y_SPACING) * (self.__vertical_index + 2),
         )
