@@ -96,7 +96,7 @@ class GrampsTree:
                 birth_day = Date.from_gramps_db(r_date)
 
             if _type == EventType.DEATH.value:
-                death_day = None if birth_day is None else Date.from_gramps_db(r_date)
+                death_day = Date.from_gramps_db(r_date)
 
         return birth_day, death_day
 
