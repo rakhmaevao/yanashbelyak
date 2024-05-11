@@ -190,8 +190,8 @@ class TreeRender:
         family_lines = []
         for family in self.__gramps_tree.families.values():
             if len(family.children) != 0 or family.is_full():
-                nodes = [self.__nodes[p.id] for p in family.children] + [
-                    self.__nodes[parent.id] for parent in list(family.parents)
+                nodes = [self.__nodes[p.gramps_id] for p in family.children] + [
+                    self.__nodes[parent.gramps_id] for parent in list(family.parents)
                 ]
                 top_node = max(nodes, key=attrgetter("y_pos"))
                 lower_node = min(nodes, key=attrgetter("y_pos"))
@@ -242,7 +242,7 @@ class TreeRender:
 
     def __get_size(self) -> tuple[float, float]:
         return (
-            (datetime.datetime.now().date() - self.__older_date).days * _X_SCALE
+            (datetime.now().date() - self.__older_date).days * _X_SCALE
             + _X_OFFSET * 10,
             (_HEIGHT + _Y_SPACING) * (self.__vertical_index + 2),
         )

@@ -230,10 +230,10 @@ class Person:
     def is_female(self):
         return self.gender == Gender.FEMALE
 
-    def __eq__(self, other):
+    def __eq__(self, other: Person) -> bool:
         if other is None:
             return False
-        return self.gramps_id == other.id
+        return self.gramps_id == other.gramps_id
 
     def __hash__(self):
         return hash(self.gramps_id)

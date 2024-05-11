@@ -74,5 +74,6 @@ class _GalleryPage:
         self.__content += "\n\n---\n\n"
 
     def save(self):
+        self.__path.parent.mkdir(exist_ok=True, parents=True)
         with self.__path.open("w", encoding="utf-8") as f:
             f.write(self.__content)
