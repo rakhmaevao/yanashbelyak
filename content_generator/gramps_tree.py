@@ -1,9 +1,9 @@
 from __future__ import annotations
 
 import locale
-from pathlib import Path
 import pickle
 import sqlite3
+from pathlib import Path
 
 from entities import (
     Date,
@@ -19,7 +19,6 @@ from entities import (
     Relation,
     RelationType,
 )
-from loguru import logger
 from singleton_decorator import singleton
 
 locale.setlocale(locale.LC_TIME, "ru_RU.UTF-8")  # the ru locale is installed
@@ -27,8 +26,9 @@ locale.setlocale(locale.LC_TIME, "ru_RU.UTF-8")  # the ru locale is installed
 
 @singleton
 class GrampsTree:
-    _MEDIA_BASE_PATH = Path("/home/rakhmaevao/Documents/Genealogy/д. Янашбеляк/Дерево деревни/db/media")  # TODO: rao: Так то бы надо читать это из `meta_data.db` файла
-    
+    _MEDIA_BASE_PATH = Path(
+        "/home/rakhmaevao/Documents/Genealogy/д. Янашбеляк/Дерево деревни/db/media"
+    )  # TODO(rao): Так то бы надо читать это из `meta_data.db` файла
 
     def __init__(self):
         conn = sqlite3.connect("sqlite.db")
@@ -178,7 +178,7 @@ class GrampsTree:
                 relations.add(
                     Relation(father_id, RelationType.MARRIAGE, mother_id, family_id),
                 )
-            elif person_id not in set([father_id, mother_id]):
+            elif person_id not in {father_id, mother_id}:
                 if father_id is not None:
                     families[family_id].father = self.__persons[father_id]
                     families[family_id].add_child(self.__persons[person_id])

@@ -242,7 +242,7 @@ class TreeRender:
 
     def __get_size(self) -> tuple[float, float]:
         return (
-            (datetime.now().date() - self.__older_date).days * _X_SCALE
+            (datetime.now(tz=datetime.UTC).date() - self.__older_date).days * _X_SCALE
             + _X_OFFSET * 10,
             (_HEIGHT + _Y_SPACING) * (self.__vertical_index + 2),
         )
@@ -513,7 +513,7 @@ class TreeRender:
                 if person_id is not None:
                     new_strings.append(
                         f'<a xlink:href="{os.getenv("SITEURL")}/{person_id}.html" '
-                        'target="_parent">[...]>{line}</a>',
+                        f'target="_parent">[...]>{line}</a>',
                     )
                     continue
 
