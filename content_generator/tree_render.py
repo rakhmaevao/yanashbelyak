@@ -1,6 +1,6 @@
 import copy
 import os
-from datetime import date, datetime
+from datetime import UTC, date, datetime
 from operator import attrgetter
 from pathlib import Path
 from typing import NamedTuple
@@ -190,8 +190,8 @@ class TreeRender:
         family_lines = []
         for family in self.__gramps_tree.families.values():
             if len(family.children) != 0 or family.is_full():
-                nodes = [self.__nodes[p.id] for p in family.children] + [
-                    self.__nodes[parent.id] for parent in list(family.parents)
+                nodes = [self.__nodes[p.gramps_id] for p in family.children] + [
+                    self.__nodes[parent.gramps_id] for parent in list(family.parents)
                 ]
                 top_node = max(nodes, key=attrgetter("y_pos"))
                 lower_node = min(nodes, key=attrgetter("y_pos"))
@@ -242,7 +242,7 @@ class TreeRender:
 
     def __get_size(self) -> tuple[float, float]:
         return (
-            (datetime.datetime.now().date() - self.__older_date).days * _X_SCALE
+            (datetime.now(tz=UTC).date() - self.__older_date).days * _X_SCALE
             + _X_OFFSET * 10,
             (_HEIGHT + _Y_SPACING) * (self.__vertical_index + 2),
         )
@@ -513,7 +513,7 @@ class TreeRender:
                 if person_id is not None:
                     new_strings.append(
                         f'<a xlink:href="{os.getenv("SITEURL")}/{person_id}.html" '
-                        'target="_parent">[...]>{line}</a>',
+                        f'target="_parent">[...]>{line}</a>',
                     )
                     continue
 

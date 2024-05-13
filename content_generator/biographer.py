@@ -62,7 +62,7 @@ class Biographer:
         main_content += self.__prepare_events(person)
         if person.notes:
             main_content += "## Заметки\n\n"
-            main_content += next(person.notes).content
+            main_content += "".join([f"{note.content}\n\n" for note in person.notes])
             main_content += "\n\n"
         if person.media:
             main_content += "## Галерея\n\n"

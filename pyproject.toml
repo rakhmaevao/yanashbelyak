@@ -41,7 +41,9 @@ ignore = [
     "RUF003",  # Comment contains ambiguous symbols
     "ANN", # Missing type annotation. Use mypy to check types.
     "COM812",  # Trailing comma not allowed
-    "ISC001"  # Single line implicit string concatenation
+    "ISC001",  # Single line implicit string concatenation
+    "TD003",  # Missing issue link on the line following this TODO
+    "FIX002"  # Line contains TODO, consider resolving the issue
 ]
 
 [tool.ruff.lint.pydocstyle]

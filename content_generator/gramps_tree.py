@@ -3,6 +3,7 @@ from __future__ import annotations
 import locale
 import pickle
 import sqlite3
+from pathlib import Path
 
 from entities import (
     Date,
@@ -18,7 +19,6 @@ from entities import (
     Relation,
     RelationType,
 )
-from loguru import logger
 from singleton_decorator import singleton
 
 locale.setlocale(locale.LC_TIME, "ru_RU.UTF-8")  # the ru locale is installed
@@ -26,6 +26,10 @@ locale.setlocale(locale.LC_TIME, "ru_RU.UTF-8")  # the ru locale is installed
 
 @singleton
 class GrampsTree:
+    _MEDIA_BASE_PATH = Path(
+        "/home/rakhmaevao/Documents/Genealogy/д. Янашбеляк/Дерево деревни/db/media"
+    )  # TODO(rao): Так то бы надо читать это из `meta_data.db` файла
+
     def __init__(self):
         conn = sqlite3.connect("sqlite.db")
         self.__cur = conn.cursor()
@@ -34,7 +38,6 @@ class GrampsTree:
         self.__events = self.__get_events()  # type: dict[GrampsId, Event]
         self.__notes = self.__get_notes()  # type: dict[GrampsId, Note]
         self.__media = self.__get_media()  # type: dict[GrampsId, Media]
-        logger.info(f"QQQQQQQQ {[(i, k.description) for i, k in self.__media.items()]}")
         self.__add_notes_to_person()
         self.__add_event_for_persone()
         self.__map_media_to_person()
@@ -93,7 +96,7 @@ class GrampsTree:
                 birth_day = Date.from_gramps_db(r_date)
 
             if _type == EventType.DEATH.value:
-                death_day = None if birth_day is None else Date.from_gramps_db(r_date)
+                death_day = Date.from_gramps_db(r_date)
 
         return birth_day, death_day
 
@@ -175,7 +178,7 @@ class GrampsTree:
                 relations.add(
                     Relation(father_id, RelationType.MARRIAGE, mother_id, family_id),
                 )
-            elif person_id not in set(father_id, mother_id):
+            elif person_id not in {father_id, mother_id}:
                 if father_id is not None:
                     families[family_id].father = self.__persons[father_id]
                     families[family_id].add_child(self.__persons[person_id])
@@ -206,7 +209,9 @@ class GrampsTree:
         self.__cur.execute("SELECT media.gramps_id, media.blob_data FROM media")
         raw = self.__cur.fetchall()
         for _id, blob_data in raw:
-            media[_id] = Media(blob_data)
+            media_obj = Media(blob_data)
+            media_obj.path = Path(self._MEDIA_BASE_PATH) / media_obj.path
+            media[_id] = media_obj
         return media
 
     def __map_media_to_person(self):
