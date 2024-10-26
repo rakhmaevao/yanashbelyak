@@ -9,7 +9,7 @@ poetry install --no-root
 Прикрепи ссылку на файл БД gramps с именем `sqlite.db`.
 
 ```shell
-ln -s /home/rakhmaevao/Documents/Genealogy/д.\ Янашбеляк/Дерево\ деревни/db/sqlite.db sqlite.db
+ln -s /home/rakhmaevao/Documents/Genealogy/Yanashbeliak/Gramps\ project/db/sqlite.db sqlite.db
 ```
 
 ## Как разрабатывать?

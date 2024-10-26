@@ -1,6 +1,8 @@
 import shutil
 from pathlib import Path
 
+from loguru import logger
+
 from entities import GrampsId, Media
 from gramps_tree import GrampsTree
 from PIL import Image
@@ -27,6 +29,7 @@ class Gallery:
         self._IMAGES_DIR.mkdir()
 
     def __copy_media_to_gallery(self, media: Media):
+        logger.info(f"rao --> {media.path} {self._IMAGES_DIR}")
         new_path = Path(shutil.copy(media.path, self._IMAGES_DIR)).absolute()
         self.__scale_image(new_path)
         media.path = new_path

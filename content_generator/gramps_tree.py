@@ -27,7 +27,7 @@ locale.setlocale(locale.LC_TIME, "ru_RU.UTF-8")  # the ru locale is installed
 @singleton
 class GrampsTree:
     _MEDIA_BASE_PATH = Path(
-        "/home/rakhmaevao/Documents/Genealogy/д. Янашбеляк/Дерево деревни/db/media"
+        "/home/rakhmaevao/Documents/Genealogy/Yanashbeliak/Gramps project/db/media"
     )  # TODO(rao): Так то бы надо читать это из `meta_data.db` файла
 
     def __init__(self):
