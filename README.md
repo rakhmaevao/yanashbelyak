@@ -28,7 +28,7 @@ make devserver
 make local_content
 ```
 
-При проблемах с локалью, помог [рецепт](https://stackoverflow.com/a/14548156/12993040). 
+При проблемах с локалью, помог [рецепт](https://stackoverflow.com/a/14548156/12993040).
 
 ## Как публиковать?
 
