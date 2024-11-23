@@ -5,7 +5,9 @@ import pickle
 import sqlite3
 from pathlib import Path
 
-from entities import (
+from singleton_decorator import singleton
+
+from content_generator.entities import (
     Date,
     Event,
     EventType,
@@ -19,7 +21,6 @@ from entities import (
     Relation,
     RelationType,
 )
-from singleton_decorator import singleton
 
 locale.setlocale(locale.LC_TIME, "ru_RU.UTF-8")  # the ru locale is installed
 

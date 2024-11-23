@@ -76,4 +76,7 @@ lint:
 	@echo "Линтинг"
 	poetry run ruff content_generator pelicanconf.py tasks.py publishconf.py publishconf.py
 
+pytest:
+	poetry run pytest -vv -s --disable-warnings tests
+
 .PHONY: help clean devserver publish github local_content, dfg
