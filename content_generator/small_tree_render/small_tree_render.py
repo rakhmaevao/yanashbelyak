@@ -70,7 +70,7 @@ class SmallTreeRender:
             base_person, gramps_tree
         )
 
-        draw_objects = self.__app_persons(generations)
+        draw_objects = self.__draw_objects_from_generations(generations)
 
         draw_svg = drawsvg.Drawing(*self.__get_size(generations))
         [draw_svg.append(obj) for obj in draw_objects]
@@ -78,7 +78,7 @@ class SmallTreeRender:
         draw_svg.save_svg(output_path)
         self.__rewrite_svg_with_hyperlink(output_path, gramps_tree)
 
-    def __app_persons(self, generations: dict[int, list[Person]]):
+    def __draw_objects_from_generations(self, generations: dict[int, list[Person]]):
         draw_objects = []
         for generation, persons in generations.items():
             for i, person in enumerate(persons):
