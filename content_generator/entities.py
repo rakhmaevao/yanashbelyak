@@ -201,7 +201,7 @@ class Person:
         return (self.death_day.date - self.__birth_day.date) / 2 + self.__birth_day.date
 
     @property
-    def gender(self):
+    def gender(self) -> Gender:
         return self.__gender
 
     @property

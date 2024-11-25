@@ -1,5 +1,4 @@
 import os
-from datetime import date
 from operator import attrgetter
 from pathlib import Path
 from typing import NamedTuple
@@ -9,11 +8,9 @@ import drawsvg
 from loguru import logger
 
 from content_generator.entities import (
-    Family,
     Gender,
     GrampsId,
     Person,
-    RelationType,
 )
 from content_generator.gramps_tree import GrampsTree
 
@@ -23,13 +20,12 @@ class UnknownDirectionError(Exception):
         super().__init__(f"Unknown direction: {direction}")
 
 
-_X_SCALE = 0.01
-_FONT_SIZE = 12
-_HEIGHT = _FONT_SIZE * 1.2
-_LINE_WIDTH = 0.8
-_TRIANGLE_HEIGHT = 4
-_TRIANGLE_WEIGHT = 4
-_X_OFFSET = _HEIGHT
+class _Coordinates(NamedTuple):
+    """Класс, хранящий координаты svg элемента."""
+
+    x: str
+    y: str
+
 
 _COLORS = {
     Gender.MALE: "lightblue",
@@ -38,18 +34,9 @@ _COLORS = {
 }
 
 
-class Node:
-    def __init__(self, person: Person, y_pos: float):
-        self.__person = person
-        self.__y_pos = y_pos
-
-    @property
-    def person(self):
-        return self.__person
-
-    @property
-    def y_pos(self):
-        return self.__y_pos
+class _PartnerRelation(NamedTuple):
+    partner: Person
+    children: list[Person]
 
 
 class SmallTreeRender:
@@ -59,33 +46,136 @@ class SmallTreeRender:
     _PERSON_HEIGHT = 50
     _Y_SPACING = 50
     _X_SPACING = 50
-    _MIN_GENERATIONS = 1
+    _FONT_SIZE = 12
+    _LINE_WIDTH = 0.8
 
     def create_svg(
         self, base_person_id: GrampsId, gramps_tree: GrampsTree, output_path: Path
     ):
         base_person = gramps_tree.persons[base_person_id]
 
+        panther_relations, parents = self.__create_relationships(
+            base_person, gramps_tree
+        )
+
         generations: dict[int, list[Person]] = self.__arrange_in_generation(
             base_person, gramps_tree
         )
 
-        draw_objects = self.__draw_objects_from_generations(generations)
+        draw_objects = self.__draw_objects(base_person, panther_relations, parents)
 
         draw_svg = drawsvg.Drawing(*self.__get_size(generations))
-        [draw_svg.append(obj) for obj in draw_objects]
+        [draw_svg.append(obj) for obj in sorted(draw_objects, key=self.__do_comparator)]
         output_path.parent.mkdir(parents=True, exist_ok=True)
         draw_svg.save_svg(output_path)
         self.__rewrite_svg_with_hyperlink(output_path, gramps_tree)
 
-    def __draw_objects_from_generations(self, generations: dict[int, list[Person]]):
-        draw_objects = []
-        for generation, persons in generations.items():
-            for i, person in enumerate(persons):
-                draw_objects += self.__add_person(
-                    person=person, generation=generation, column=i
+    def __do_comparator(self, obj):
+        return str(type(obj))
+
+    def __create_relationships(
+        self, base_person: Person, gramps_tree: GrampsTree
+    ) -> tuple[list[_PartnerRelation], list[Person]]:
+        partner_relations = []
+        parents = []
+        for family in gramps_tree.families.values():
+            if base_person in family.parents:
+                partner = family.mother if base_person.is_male() else family.father
+                partner_relations.append(
+                    _PartnerRelation(partner=partner, children=family.children)
                 )
+            if base_person in family.children:
+                parents.append(family.father)
+                parents.append(family.mother)
+        return partner_relations, parents
+
+    def __draw_objects(
+        self,
+        base_person: Person,
+        panther_relations: list[_PartnerRelation],
+        parents: list[Person],
+    ):
+        draw_objects = []
+        for i, parent in enumerate(sorted(parents, key=attrgetter("gender.value"))):
+            draw_objects += self.__add_person(person=parent, generation=0, column=i)
+        draw_objects += self.__create_relationships_line(
+            generation=0, left_column=0, right_column=1
+        )
+
+        draw_objects += self.__add_person(base_person, generation=1, column=0)
+        draw_objects += self.__create_parents_line(
+            up_generation=0, down_generation=1, right_parent_column=1, child_column=0
+        )
+
+        relationship_column = 1
+        old_relationship_column = relationship_column
+        for panther_relation in panther_relations:
+            draw_objects += self.__add_person(
+                panther_relation.partner, generation=1, column=relationship_column
+            )
+            this_partner_column = relationship_column
+            draw_objects += self.__create_relationships_line(
+                generation=1, left_column=0, right_column=this_partner_column
+            )
+            for i, child in enumerate(panther_relation.children):
+                draw_objects += self.__add_person(person=child, generation=2, column=i)
+                draw_objects += self.__create_parents_line(
+                    up_generation=1,
+                    down_generation=2,
+                    right_parent_column=this_partner_column,
+                    child_column=i,
+                )
+                relationship_column += 1
+            if relationship_column == old_relationship_column:
+                relationship_column += 1
+                old_relationship_column = relationship_column
+
         return draw_objects
+
+    def __create_parents_line(
+        self,
+        up_generation: int,
+        down_generation: int,
+        right_parent_column: int,
+        child_column: int,
+    ):
+        return [
+            drawsvg.Lines(
+                right_parent_column * (self._PERSON_WIDTH + self._X_SPACING)
+                - self._X_SPACING / 2,
+                (
+                    up_generation * (self._PERSON_HEIGHT + self._Y_SPACING)
+                    + self._PERSON_HEIGHT / 2
+                ),
+                child_column * (self._PERSON_WIDTH + self._X_SPACING)
+                + self._PERSON_WIDTH / 2,
+                (down_generation * (self._PERSON_HEIGHT + self._Y_SPACING)),
+                close=False,
+                stroke="gray",
+                stroke_width=self._LINE_WIDTH,
+                fill="none",
+            )
+        ]
+
+    def __create_relationships_line(
+        self, generation: int, left_column: int, right_column: int
+    ):
+        y = (
+            generation * (self._PERSON_HEIGHT + self._Y_SPACING)
+            + self._PERSON_HEIGHT / 2
+        )
+        return [
+            drawsvg.Lines(
+                left_column * (self._PERSON_WIDTH) + self._PERSON_WIDTH,
+                y,
+                right_column * (self._PERSON_WIDTH + self._X_SPACING),
+                y,
+                close=False,
+                stroke="black",
+                stroke_width=self._LINE_WIDTH,
+                fill="none",
+            )
+        ]
 
     @staticmethod
     def __arrange_in_generation(base_person: Person, gramps_tree: GrampsTree):
@@ -104,94 +194,6 @@ class SmallTreeRender:
                 [generation[-1].add(person) for person in family.children]
         return generation
 
-    @staticmethod
-    def __get_triangular(y: float, x: float, direction: str) -> drawsvg.Lines:
-        if direction == "down":
-            return drawsvg.Lines(
-                x - _TRIANGLE_WEIGHT / 2,
-                y,
-                x + _TRIANGLE_WEIGHT / 2,
-                y,
-                x,
-                y - _TRIANGLE_HEIGHT,
-                x - _TRIANGLE_WEIGHT / 2,
-                y,
-                close=False,
-                stroke="black",
-                stroke_width=_LINE_WIDTH,
-                fill="none",
-            )
-        if direction == "up":
-            return drawsvg.Lines(
-                x - _TRIANGLE_WEIGHT / 2,
-                y,
-                x + _TRIANGLE_WEIGHT / 2,
-                y,
-                x,
-                y + _TRIANGLE_HEIGHT,
-                x - _TRIANGLE_WEIGHT / 2,
-                y,
-                close=False,
-                stroke="black",
-                stroke_width=_LINE_WIDTH,
-                fill="none",
-            )
-        raise UnknownDirectionError(direction)
-
-    def __create_family_lines(self):
-        family_lines = []
-        for family in self.__gramps_tree.families.values():
-            if len(family.children) != 0 or family.is_full():
-                nodes = [self.__nodes[p.gramps_id] for p in family.children] + [
-                    self.__nodes[parent.gramps_id] for parent in list(family.parents)
-                ]
-                top_node = max(nodes, key=attrgetter("y_pos"))
-                lower_node = min(nodes, key=attrgetter("y_pos"))
-                top_y = None
-                lower_y = None
-                x_pos = self._compute_x_pos(family.wedding_day)
-                for node in nodes:
-                    if node.person in family.parents:
-                        if node.person == top_node.person:
-                            top_y = node.y_pos
-                            family_lines.append(
-                                self.__get_triangular(top_y, x_pos, "down"),
-                            )
-                        elif node.person == lower_node.person:
-                            lower_y = node.y_pos + _HEIGHT
-                            family_lines.append(
-                                self.__get_triangular(lower_y, x_pos, "up"),
-                            )
-                        else:
-                            family_lines.append(
-                                self.__get_triangular(node.y_pos, x_pos, "down"),
-                            )
-                            family_lines.append(
-                                self.__get_triangular(
-                                    node.y_pos + _HEIGHT,
-                                    x_pos,
-                                    "up",
-                                ),
-                            )
-                    elif node.person == top_node.person:
-                        top_y = node.y_pos + _HEIGHT / 2
-                    elif node.person == lower_node.person:
-                        lower_y = node.y_pos + _HEIGHT / 2
-
-                family_lines.append(
-                    drawsvg.Lines(
-                        x_pos,
-                        lower_y,
-                        x_pos,
-                        top_y,
-                        close=False,
-                        stroke="black",
-                        stroke_width=_LINE_WIDTH,
-                        fill="none",
-                    ),
-                )
-        return family_lines
-
     @classmethod
     def __get_size(cls, generations: dict[int, list[Person]]) -> tuple[float, float]:
         max_num_persons_in_generation = 0
@@ -203,135 +205,9 @@ class SmallTreeRender:
             (cls._PERSON_HEIGHT + cls._Y_SPACING) * len(generations),
         )
 
-    def __get_patriarch(self, where: dict[GrampsId, Person]):
-        patriarch = self.__older_grandpa(where)
-        if patriarch is None:
-            patriarch = self.__older_grandma(where)
-        if patriarch is not None:
-            logger.info(f"Patriarchs of a new kind found: {patriarch}")
-        return patriarch
-
-    def __recursively_adding_person_to_the_right(self, person: Person):
-        logger.info(f"Searching the next person for {person}")
-        while True:
-            new_person = self.__get_next_person(person)
-            if new_person is not None:
-                self.__add_person(new_person)
-                self.__recursively_adding_person_to_the_right(new_person)
-            else:
-                break
-
-    def __get_next_person(self, person: Person) -> Person | None:
-        child = self.__get_latest_child_by_last_partner(person)
-        if child is not None:
-            return child
-
-        partner = self.__get_oldest_partner(person)
-        if partner is not None:
-            return partner
-
-        logger.info(f"There are no more next people for {person}")
-
-        return None
-
-    def __get_latest_child_by_last_partner(self, person: Person) -> Person | None:
-        oldest_family = self.__get_oldest_family(person)
-        if oldest_family is not None and oldest_family.children:
-            un_children = []
-            for child in oldest_family.children:
-                un_child = self.__unpined_person.get(child.gramps_id, None)
-                if un_child is not None:
-                    un_children.append(un_child)
-            if un_children:
-                return max(un_children, key=attrgetter("birth_day.date"))
-
-        children = []
-        for relation in self.__gramps_tree.relations:
-            if relation.type_of_relation != RelationType.BIRTH_FROM:
-                continue
-            if person.gramps_id == relation.other_person_id:
-                child = self.__unpined_person.get(relation.first_person_id)
-                if child is None:
-                    continue
-                children.append(child)
-        if children:
-            return max(children, key=attrgetter("birth_day.date"))
-        return None
-
-    def __get_oldest_partner(self, person: Person) -> Person | None:
-        partners = sorted(
-            self.__get_partners(person, self.__unpined_person),
-            key=attrgetter("birth_day.date"),
-        )
-        if partners:
-            return partners[-1]
-        return None
-
-    def __get_oldest_family(self, person: Person) -> Family | None:
-        partner = self.__get_oldest_partner(person)
-        if partner is None:
-            return None
-
-        for family in self.__gramps_tree.families.values():
-            if (
-                person.is_male()
-                and family.father == person
-                and family.mother == partner
-            ):
-                return family
-            if (
-                person.is_female()
-                and family.father == partner
-                and family.mother == person
-            ):
-                return family
-        return None
-
-    @staticmethod
-    def __get_older_person(where: dict[GrampsId, Person]) -> Person:
-        persons = list(where.values())
-        return min(persons, key=attrgetter("birth_day.date"))
-
-    @staticmethod
-    def __older_grandpa(where: dict[GrampsId, Person]) -> Person | None:
-        mens = [p for p in where.values() if p.gender == Gender.MALE]
-        if not mens:
-            return None
-        return min(mens, key=attrgetter("birth_day.date"))
-
-    @staticmethod
-    def __older_grandma(where: dict[GrampsId, Person]) -> Person | None:
-        womens = [p for p in where.values() if p.gender == Gender.FEMALE]
-        if not womens:
-            return None
-        return min(womens, key=attrgetter("birth_day.date"))
-
-    def __get_partners(
-        self,
-        person: Person,
-        where: dict[GrampsId, Person],
-    ) -> list[Person]:
-        partners = []
-        for relation in self.__gramps_tree.relations:
-            if relation.type_of_relation != RelationType.MARRIAGE:
-                continue
-
-            partner = None
-            if person.gramps_id == relation.first_person_id:
-                partner = where.get(relation.other_person_id)
-            elif person.gramps_id == relation.other_person_id:
-                partner = where.get(relation.first_person_id)
-
-            if partner is not None:
-                partners.append(partner)
-
-        return partners
-
     def __add_person(self, person: Person, generation: int, column: int) -> list:
-        y = (generation + self._MIN_GENERATIONS) * (
-            self._PERSON_HEIGHT + self._Y_SPACING
-        )
-        x = column * (self._PERSON_WIDTH * 1.3)
+        y = generation * (self._PERSON_HEIGHT + self._Y_SPACING)
+        x = column * (self._PERSON_WIDTH + self._X_SPACING)
         color = _COLORS[person.gender]
 
         draw_objects = []
@@ -345,11 +221,11 @@ class SmallTreeRender:
             ),
         )
         person_label = person.full_name
-        label_weight = _FONT_SIZE * 0.7 * len(person_label)
+        label_weight = self._FONT_SIZE * 0.7 * len(person_label)
         draw_objects.append(
             drawsvg.Text(
                 text=person_label,
-                font_size=_FONT_SIZE,
+                font_size=self._FONT_SIZE,
                 x=x + self._PERSON_WIDTH / 2 - label_weight / 2,
                 y=y + self._PERSON_HEIGHT / 2,
             ),
@@ -357,7 +233,7 @@ class SmallTreeRender:
         draw_objects.append(
             drawsvg.Text(
                 text=person.gramps_id,
-                font_size=_FONT_SIZE,
+                font_size=self._FONT_SIZE,
                 x=x + self._PERSON_WIDTH / 2 - label_weight / 2,
                 y=y + self._PERSON_HEIGHT / 2,
                 style="fill-opacity:0",
@@ -365,15 +241,6 @@ class SmallTreeRender:
         )
         logger.info(f"Added {person}")
         return draw_objects
-
-    def _compute_x_pos(self, date_: date) -> float:
-        return (date_ - self.__older_date).days * _X_SCALE + _X_OFFSET
-
-    def __get_parental_family(self, person: Person) -> Family | None:
-        for family in self.__gramps_tree.families.values():
-            if person in family.children:
-                return family
-        return None
 
     @staticmethod
     def __rewrite_svg_with_hyperlink(path: Path, gramps_tree: GrampsTree):
@@ -384,14 +251,14 @@ class SmallTreeRender:
         Блок label персоны дополняется гиперссылкой на страницу персоны.
         """
         clean_svg = []  # Массив строк svg файла без невидимых строк с id персон
-        person_id_by_coordinates: dict[Coordinates, GrampsId] = {}
+        person_id_by_coordinates: dict[_Coordinates, GrampsId] = {}
         with path.open() as f:
             for line in f:
                 if line.find("<text") != -1:
                     svg_struct = ElementTree.ElementTree(
                         ElementTree.fromstring(line),  # noqa: S314
                     ).getroot()
-                    coordinates = Coordinates(
+                    coordinates = _Coordinates(
                         svg_struct.attrib["x"],
                         svg_struct.attrib["y"],
                     )
@@ -410,7 +277,7 @@ class SmallTreeRender:
                 svg_struct = ElementTree.ElementTree(
                     ElementTree.fromstring(line),  # noqa: S314
                 ).getroot()
-                coordinates = Coordinates(
+                coordinates = _Coordinates(
                     svg_struct.attrib["x"],
                     svg_struct.attrib["y"],
                 )
@@ -431,10 +298,3 @@ class SmallTreeRender:
         with path.open("w") as file:
             for s in new_strings:
                 file.write(s)
-
-
-class Coordinates(NamedTuple):
-    """Класс, хранящий координаты svg элемента."""
-
-    x: str
-    y: str
