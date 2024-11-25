@@ -1,5 +1,5 @@
 import os
-from datetime import UTC, date, datetime
+from datetime import date
 from operator import attrgetter
 from pathlib import Path
 from typing import NamedTuple
@@ -23,18 +23,13 @@ class UnknownDirectionError(Exception):
         super().__init__(f"Unknown direction: {direction}")
 
 
-_Y_SPACING = 6
 _X_SCALE = 0.01
 _FONT_SIZE = 12
 _HEIGHT = _FONT_SIZE * 1.2
 _LINE_WIDTH = 0.8
 _TRIANGLE_HEIGHT = 4
 _TRIANGLE_WEIGHT = 4
-_DASH_WEIGHT = 20
 _X_OFFSET = _HEIGHT
-_DAY_IN_YEAR = 365
-_BIRTHDAY_ERROR_DAYS = 5 * _DAY_IN_YEAR
-_DEATHDAY_ERROR_DAYS = 10 * _DAY_IN_YEAR
 
 _COLORS = {
     Gender.MALE: "lightblue",
@@ -62,23 +57,52 @@ class SmallTreeRender:
     _DOWN_GENERATION = 2
     _PERSON_WIDTH = 150
     _PERSON_HEIGHT = 50
+    _Y_SPACING = 50
+    _X_SPACING = 50
+    _MIN_GENERATIONS = 1
 
     def create_svg(
         self, base_person_id: GrampsId, gramps_tree: GrampsTree, output_path: Path
     ):
-        output_path.parent.mkdir(parents=True, exist_ok=True)
         base_person = gramps_tree.persons[base_person_id]
-        draw_objects = self.__add_person(base_person, generation=0, column=0)
 
-        for family in gramps_tree.families.values():
-            if base_person in family.parents:
-                for i, child in enumerate(family.children):
-                    draw_objects += self.__add_person(child, generation=1, column=i)
+        generations: dict[int, list[Person]] = self.__arrange_in_generation(
+            base_person, gramps_tree
+        )
 
-        draw_svg = drawsvg.Drawing(10000, 10000)
+        draw_objects = self.__app_persons(generations)
+
+        draw_svg = drawsvg.Drawing(*self.__get_size(generations))
         [draw_svg.append(obj) for obj in draw_objects]
+        output_path.parent.mkdir(parents=True, exist_ok=True)
         draw_svg.save_svg(output_path)
         self.__rewrite_svg_with_hyperlink(output_path, gramps_tree)
+
+    def __app_persons(self, generations: dict[int, list[Person]]):
+        draw_objects = []
+        for generation, persons in generations.items():
+            for i, person in enumerate(persons):
+                draw_objects += self.__add_person(
+                    person=person, generation=generation, column=i
+                )
+        return draw_objects
+
+    @staticmethod
+    def __arrange_in_generation(base_person: Person, gramps_tree: GrampsTree):
+        generation = {}
+        for family in gramps_tree.families.values():
+            if base_person in family.parents:
+                if 0 not in generation:
+                    generation[0] = set()
+                if 1 not in generation:
+                    generation[1] = set()
+                [generation[0].add(person) for person in family.parents]
+                [generation[1].add(person) for person in family.children]
+            if base_person in family.children:
+                if -1 not in generation:
+                    generation[-1] = set()
+                [generation[-1].add(person) for person in family.children]
+        return generation
 
     @staticmethod
     def __get_triangular(y: float, x: float, direction: str) -> drawsvg.Lines:
@@ -168,11 +192,15 @@ class SmallTreeRender:
                 )
         return family_lines
 
-    def __get_size(self) -> tuple[float, float]:
+    @classmethod
+    def __get_size(cls, generations: dict[int, list[Person]]) -> tuple[float, float]:
+        max_num_persons_in_generation = 0
+        for generation in generations.values():
+            if len(generation) > max_num_persons_in_generation:
+                max_num_persons_in_generation = len(generation)
         return (
-            (datetime.now(tz=UTC).date() - self.__older_date).days * _X_SCALE
-            + _X_OFFSET * 10,
-            (_HEIGHT + _Y_SPACING) * (self.__vertical_index + 2),
+            (cls._PERSON_WIDTH + cls._X_SPACING) * max_num_persons_in_generation,
+            (cls._PERSON_HEIGHT + cls._Y_SPACING) * len(generations),
         )
 
     def __get_patriarch(self, where: dict[GrampsId, Person]):
@@ -300,7 +328,9 @@ class SmallTreeRender:
         return partners
 
     def __add_person(self, person: Person, generation: int, column: int) -> list:
-        y = generation * self._PERSON_HEIGHT * 2
+        y = (generation + self._MIN_GENERATIONS) * (
+            self._PERSON_HEIGHT + self._Y_SPACING
+        )
         x = column * (self._PERSON_WIDTH * 1.3)
         color = _COLORS[person.gender]
 
