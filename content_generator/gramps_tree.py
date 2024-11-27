@@ -31,8 +31,9 @@ class GrampsTree:
         "/home/rakhmaevao/Documents/Genealogy/Yanashbeliak/Gramps project/db/media"
     )  # TODO(rao): Так то бы надо читать это из `meta_data.db` файла
 
-    def __init__(self):
-        conn = sqlite3.connect("sqlite.db")
+    def __init__(self, gramps_tree_path: Path):
+        self.__gramps_tree_path = gramps_tree_path
+        conn = sqlite3.connect(self.__gramps_tree_path / Path("sqlite.db"))
         self.__cur = conn.cursor()
 
         self.__persons = self.__get_persons()  # type: dict[GrampsId, Person]
@@ -211,7 +212,7 @@ class GrampsTree:
         raw = self.__cur.fetchall()
         for _id, blob_data in raw:
             media_obj = Media(blob_data)
-            media_obj.path = Path(self._MEDIA_BASE_PATH) / media_obj.path
+            media_obj.path = self.__gramps_tree_path / media_obj.path
             media[_id] = media_obj
         return media
 

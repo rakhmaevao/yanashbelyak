@@ -117,7 +117,9 @@ class SmallTreeRender:
             draw_objects += self.__create_relationships_line(
                 generation=1, left_column=0, right_column=this_partner_column
             )
-            for i, child in enumerate(panther_relation.children):
+            for i, child in enumerate(
+                sorted(panther_relation.children, key=attrgetter("birth_day.date"))
+            ):
                 draw_objects += self.__add_person(person=child, generation=2, column=i)
                 draw_objects += self.__create_parents_line(
                     up_generation=1,
@@ -178,21 +180,27 @@ class SmallTreeRender:
         ]
 
     @staticmethod
-    def __arrange_in_generation(base_person: Person, gramps_tree: GrampsTree):
-        generation = {}
+    def __arrange_in_generation(
+        base_person: Person, gramps_tree: GrampsTree
+    ) -> dict[int, list[Person]]:
+        generations = {}
         for family in gramps_tree.families.values():
             if base_person in family.parents:
-                if 0 not in generation:
-                    generation[0] = set()
-                if 1 not in generation:
-                    generation[1] = set()
-                [generation[0].add(person) for person in family.parents]
-                [generation[1].add(person) for person in family.children]
+                if 0 not in generations:
+                    generations[0] = set()
+                if 1 not in generations:
+                    generations[1] = set()
+                [generations[0].add(person) for person in family.parents]
+                [generations[1].add(person) for person in family.children]
             if base_person in family.children:
-                if -1 not in generation:
-                    generation[-1] = set()
-                [generation[-1].add(person) for person in family.children]
-        return generation
+                if -1 not in generations:
+                    generations[-1] = set()
+                [generations[-1].add(person) for person in family.children]
+        for gen_i in generations:
+            generations[gen_i] = sorted(
+                generations[gen_i], key=attrgetter("birth_day.date")
+            )
+        return generations
 
     @classmethod
     def __get_size(cls, generations: dict[int, list[Person]]) -> tuple[float, float]:
