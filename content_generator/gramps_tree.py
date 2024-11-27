@@ -7,7 +7,7 @@ from pathlib import Path
 
 from singleton_decorator import singleton
 
-from content_generator.entities import (
+from entities import (
     Date,
     Event,
     EventType,
@@ -212,7 +212,7 @@ class GrampsTree:
         raw = self.__cur.fetchall()
         for _id, blob_data in raw:
             media_obj = Media(blob_data)
-            media_obj.path = self.__gramps_tree_path / media_obj.path
+            media_obj.path = self.__gramps_tree_path / Path("media") / media_obj.path
             media[_id] = media_obj
         return media
 
