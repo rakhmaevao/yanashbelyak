@@ -1,0 +1,29 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink"
+     width="1020" height="200" viewBox="0 0 1020 200">
+<defs>
+</defs>
+<path d="M150,25.0 L170,25.0" stroke="black" stroke-width="0.8" fill="none" />
+<path d="M160.0,25.0 L75.0,100" stroke="gray" stroke-width="0.8" fill="none" />
+<path d="M160.0,25.0 L245.0,100" stroke="gray" stroke-width="0.8" fill="none" />
+<path d="M160.0,25.0 L415.0,100" stroke="gray" stroke-width="0.8" fill="none" />
+<path d="M160.0,25.0 L585.0,100" stroke="gray" stroke-width="0.8" fill="none" />
+<path d="M160.0,25.0 L755.0,100" stroke="gray" stroke-width="0.8" fill="none" />
+<path d="M160.0,25.0 L925.0,100" stroke="gray" stroke-width="0.8" fill="none" />
+<rect x="0" y="0" width="150" height="50" fill="pink" />
+<rect x="170" y="0" width="150" height="50" fill="lightblue" />
+<rect x="0" y="100" width="150" height="50" fill="lightblue" />
+<rect x="170" y="100" width="150" height="50" fill="lightblue" />
+<rect x="340" y="100" width="150" height="50" fill="pink" />
+<rect x="510" y="100" width="150" height="50" fill="pink" />
+<rect x="680" y="100" width="150" height="50" fill="pink" />
+<rect x="850" y="100" width="150" height="50" fill="lightblue" />
+<a xlink:href="https://rakhmaevao.github.io/yanashbelyak/I0279.html" target="_parent">[...]><text x="17.249999999999993" y="25.0" font-size="14">Ксения Сергиева</text>
+</a><a xlink:href="https://rakhmaevao.github.io/yanashbelyak/I0278.html" target="_parent">[...]><text x="202.64999999999998" y="25.0" font-size="14">Иван Ефимов</text>
+</a><a xlink:href="https://rakhmaevao.github.io/yanashbelyak/I0038.html" target="_parent">[...]><text x="21.099999999999994" y="125.0" font-size="14">Василий Иванов</text>
+</a><a xlink:href="https://rakhmaevao.github.io/yanashbelyak/I0292.html" target="_parent">[...]><text x="198.8" y="125.0" font-size="14">Павел Ефимов</text>
+</a><a xlink:href="https://rakhmaevao.github.io/yanashbelyak/I0293.html" target="_parent">[...]><text x="380.35" y="125.0" font-size="14">Праскева </text>
+</a><a xlink:href="https://rakhmaevao.github.io/yanashbelyak/I0296.html" target="_parent">[...]><text x="558.05" y="125.0" font-size="14">Агафья </text>
+</a><a xlink:href="https://rakhmaevao.github.io/yanashbelyak/I0297.html" target="_parent">[...]><text x="731.9" y="125.0" font-size="14">Марья </text>
+</a><a xlink:href="https://rakhmaevao.github.io/yanashbelyak/I0288.html" target="_parent">[...]><text x="871.1" y="125.0" font-size="14">Николай Иванов</text>
+</a></svg>

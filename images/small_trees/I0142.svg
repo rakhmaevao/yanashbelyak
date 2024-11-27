@@ -1,0 +1,17 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink"
+     width="340" height="300" viewBox="0 0 340 300">
+<defs>
+</defs>
+<path d="M75.0,25.0 L75.0,100" stroke="gray" stroke-width="0.8" fill="none" />
+<path d="M150,125.0 L170,125.0" stroke="black" stroke-width="0.8" fill="none" />
+<path d="M160.0,125.0 L75.0,200" stroke="gray" stroke-width="0.8" fill="none" />
+<rect x="0" y="0" width="150" height="50" fill="lightblue" />
+<rect x="0" y="100" width="150" height="50" fill="lightblue" />
+<rect x="170" y="100" width="150" height="50" fill="pink" />
+<rect x="0" y="200" width="150" height="50" fill="lightblue" />
+<a xlink:href="https://rakhmaevao.github.io/yanashbelyak/I0146.html" target="_parent">[...]><text x="9.549999999999997" y="25.0" font-size="14">Василий Харитонов</text>
+</a><a xlink:href="https://rakhmaevao.github.io/yanashbelyak/I0142.html" target="_parent">[...]><text x="5.699999999999989" y="125.0" font-size="14">Григорий Харитонов</text>
+</a><a xlink:href="https://rakhmaevao.github.io/yanashbelyak/I0144.html" target="_parent">[...]><text x="183.39999999999998" y="125.0" font-size="14">Мария Харитонова</text>
+</a><a xlink:href="https://rakhmaevao.github.io/yanashbelyak/I0143.html" target="_parent">[...]><text x="1.8499999999999943" y="225.0" font-size="14">Александр Харитонов</text>
+</a></svg>

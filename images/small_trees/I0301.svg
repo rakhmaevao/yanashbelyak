@@ -1,0 +1,14 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink"
+     width="340" height="200" viewBox="0 0 340 200">
+<defs>
+</defs>
+<path d="M150,25.0 L170,25.0" stroke="black" stroke-width="0.8" fill="none" />
+<path d="M160.0,25.0 L75.0,100" stroke="gray" stroke-width="0.8" fill="none" />
+<rect x="0" y="0" width="150" height="50" fill="pink" />
+<rect x="170" y="0" width="150" height="50" fill="lightblue" />
+<rect x="0" y="100" width="150" height="50" fill="lightblue" />
+<a xlink:href="https://rakhmaevao.github.io/yanashbelyak/I0300.html" target="_parent">[...]><text x="13.399999999999991" y="25.0" font-size="14">Евдокия Романова</text>
+</a><a xlink:href="https://rakhmaevao.github.io/yanashbelyak/I0052.html" target="_parent">[...]><text x="198.8" y="25.0" font-size="14">Петр Шульгин</text>
+</a><a xlink:href="https://rakhmaevao.github.io/yanashbelyak/I0301.html" target="_parent">[...]><text x="17.249999999999993" y="125.0" font-size="14">Аркадий Шульгин</text>
+</a></svg>

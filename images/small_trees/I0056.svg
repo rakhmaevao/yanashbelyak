@@ -1,0 +1,35 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink"
+     width="1020" height="300" viewBox="0 0 1020 300">
+<defs>
+</defs>
+<path d="M150,25.0 L170,25.0" stroke="black" stroke-width="0.8" fill="none" />
+<path d="M160.0,25.0 L75.0,100" stroke="gray" stroke-width="0.8" fill="none" />
+<path d="M150,125.0 L170,125.0" stroke="black" stroke-width="0.8" fill="none" />
+<path d="M160.0,125.0 L75.0,200" stroke="gray" stroke-width="0.8" fill="none" />
+<path d="M160.0,125.0 L245.0,200" stroke="gray" stroke-width="0.8" fill="none" />
+<path d="M160.0,125.0 L415.0,200" stroke="gray" stroke-width="0.8" fill="none" />
+<path d="M160.0,125.0 L585.0,200" stroke="gray" stroke-width="0.8" fill="none" />
+<path d="M160.0,125.0 L755.0,200" stroke="gray" stroke-width="0.8" fill="none" />
+<path d="M160.0,125.0 L925.0,200" stroke="gray" stroke-width="0.8" fill="none" />
+<rect x="0" y="0" width="150" height="50" fill="pink" />
+<rect x="170" y="0" width="150" height="50" fill="lightblue" />
+<rect x="0" y="100" width="150" height="50" fill="lightblue" />
+<rect x="170" y="100" width="150" height="50" fill="pink" />
+<rect x="0" y="200" width="150" height="50" fill="lightblue" />
+<rect x="170" y="200" width="150" height="50" fill="pink" />
+<rect x="340" y="200" width="150" height="50" fill="lightblue" />
+<rect x="510" y="200" width="150" height="50" fill="lightblue" />
+<rect x="680" y="200" width="150" height="50" fill="pink" />
+<rect x="850" y="200" width="150" height="50" fill="lightblue" />
+<a xlink:href="https://rakhmaevao.github.io/yanashbelyak/I0169.html" target="_parent">[...]><text x="17.249999999999993" y="25.0" font-size="14">Фёкла Михайлова</text>
+</a><a xlink:href="https://rakhmaevao.github.io/yanashbelyak/I0055.html" target="_parent">[...]><text x="194.95" y="25.0" font-size="14">Степан Иванов</text>
+</a><a xlink:href="https://rakhmaevao.github.io/yanashbelyak/I0056.html" target="_parent">[...]><text x="13.399999999999991" y="125.0" font-size="14">Дмитрий Степанов</text>
+</a><a xlink:href="https://rakhmaevao.github.io/yanashbelyak/I0228.html" target="_parent">[...]><text x="194.95" y="125.0" font-size="14">Анна Истакова</text>
+</a><a xlink:href="https://rakhmaevao.github.io/yanashbelyak/I0229.html" target="_parent">[...]><text x="13.399999999999991" y="225.0" font-size="14">Евгений Степанов</text>
+</a><a xlink:href="https://rakhmaevao.github.io/yanashbelyak/I0230.html" target="_parent">[...]><text x="171.85" y="225.0" font-size="14">Елизавета Степанова</text>
+</a><a xlink:href="https://rakhmaevao.github.io/yanashbelyak/I0231.html" target="_parent">[...]><text x="364.95" y="225.0" font-size="14">Петр Степанов</text>
+</a><a xlink:href="https://rakhmaevao.github.io/yanashbelyak/I0232.html" target="_parent">[...]><text x="519.55" y="225.0" font-size="14">Владимир Степанов</text>
+</a><a xlink:href="https://rakhmaevao.github.io/yanashbelyak/I0233.html" target="_parent">[...]><text x="697.25" y="225.0" font-size="14">Мария Степанова</text>
+</a><a xlink:href="https://rakhmaevao.github.io/yanashbelyak/I0234.html" target="_parent">[...]><text x="863.4" y="225.0" font-size="14">Генадий Степанов</text>
+</a></svg>

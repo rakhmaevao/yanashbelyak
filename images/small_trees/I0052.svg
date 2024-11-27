@@ -1,0 +1,35 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink"
+     width="1020" height="300" viewBox="0 0 1020 300">
+<defs>
+</defs>
+<path d="M150,25.0 L170,25.0" stroke="black" stroke-width="0.8" fill="none" />
+<path d="M160.0,25.0 L75.0,100" stroke="gray" stroke-width="0.8" fill="none" />
+<path d="M150,125.0 L170,125.0" stroke="black" stroke-width="0.8" fill="none" />
+<path d="M160.0,125.0 L75.0,200" stroke="gray" stroke-width="0.8" fill="none" />
+<path d="M160.0,125.0 L245.0,200" stroke="gray" stroke-width="0.8" fill="none" />
+<path d="M160.0,125.0 L415.0,200" stroke="gray" stroke-width="0.8" fill="none" />
+<path d="M160.0,125.0 L585.0,200" stroke="gray" stroke-width="0.8" fill="none" />
+<path d="M160.0,125.0 L755.0,200" stroke="gray" stroke-width="0.8" fill="none" />
+<path d="M160.0,125.0 L925.0,200" stroke="gray" stroke-width="0.8" fill="none" />
+<rect x="0" y="0" width="150" height="50" fill="pink" />
+<rect x="170" y="0" width="150" height="50" fill="lightblue" />
+<rect x="0" y="100" width="150" height="50" fill="lightblue" />
+<rect x="170" y="100" width="150" height="50" fill="pink" />
+<rect x="0" y="200" width="150" height="50" fill="lightblue" />
+<rect x="170" y="200" width="150" height="50" fill="lightblue" />
+<rect x="340" y="200" width="150" height="50" fill="pink" />
+<rect x="510" y="200" width="150" height="50" fill="pink" />
+<rect x="680" y="200" width="150" height="50" fill="pink" />
+<rect x="850" y="200" width="150" height="50" fill="lightblue" />
+<a xlink:href="https://rakhmaevao.github.io/yanashbelyak/I0123.html" target="_parent">[...]><text x="9.549999999999997" y="25.0" font-size="14">Анастасия Иванова</text>
+</a><a xlink:href="https://rakhmaevao.github.io/yanashbelyak/I0121.html" target="_parent">[...]><text x="202.64999999999998" y="25.0" font-size="14">Ефим Иванов</text>
+</a><a xlink:href="https://rakhmaevao.github.io/yanashbelyak/I0052.html" target="_parent">[...]><text x="28.799999999999997" y="125.0" font-size="14">Петр Шульгин</text>
+</a><a xlink:href="https://rakhmaevao.github.io/yanashbelyak/I0300.html" target="_parent">[...]><text x="183.39999999999998" y="125.0" font-size="14">Евдокия Романова</text>
+</a><a xlink:href="https://rakhmaevao.github.io/yanashbelyak/I0306.html" target="_parent">[...]><text x="17.249999999999993" y="225.0" font-size="14">Николай Шульгин</text>
+</a><a xlink:href="https://rakhmaevao.github.io/yanashbelyak/I0303.html" target="_parent">[...]><text x="187.25" y="225.0" font-size="14">Альберт Шульгин</text>
+</a><a xlink:href="https://rakhmaevao.github.io/yanashbelyak/I0302.html" target="_parent">[...]><text x="361.1" y="225.0" font-size="14">Мария Шульгина</text>
+</a><a xlink:href="https://rakhmaevao.github.io/yanashbelyak/I0305.html" target="_parent">[...]><text x="531.1" y="225.0" font-size="14">Раиса Шульгина</text>
+</a><a xlink:href="https://rakhmaevao.github.io/yanashbelyak/I0304.html" target="_parent">[...]><text x="704.95" y="225.0" font-size="14">Нина Шульгина</text>
+</a><a xlink:href="https://rakhmaevao.github.io/yanashbelyak/I0301.html" target="_parent">[...]><text x="867.25" y="225.0" font-size="14">Аркадий Шульгин</text>
+</a></svg>

@@ -1,0 +1,23 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink"
+     width="340" height="300" viewBox="0 0 340 300">
+<defs>
+</defs>
+<path d="M150,25.0 L170,25.0" stroke="black" stroke-width="0.8" fill="none" />
+<path d="M160.0,25.0 L75.0,100" stroke="gray" stroke-width="0.8" fill="none" />
+<path d="M150,125.0 L170,125.0" stroke="black" stroke-width="0.8" fill="none" />
+<path d="M160.0,125.0 L75.0,200" stroke="gray" stroke-width="0.8" fill="none" />
+<path d="M160.0,125.0 L245.0,200" stroke="gray" stroke-width="0.8" fill="none" />
+<rect x="0" y="0" width="150" height="50" fill="pink" />
+<rect x="170" y="0" width="150" height="50" fill="lightblue" />
+<rect x="0" y="100" width="150" height="50" fill="lightblue" />
+<rect x="170" y="100" width="150" height="50" fill="pink" />
+<rect x="0" y="200" width="150" height="50" fill="pink" />
+<rect x="170" y="200" width="150" height="50" fill="pink" />
+<a xlink:href="https://rakhmaevao.github.io/yanashbelyak/I0184.html" target="_parent">[...]><text x="17.249999999999993" y="25.0" font-size="14">Клавдия Карпова</text>
+</a><a xlink:href="https://rakhmaevao.github.io/yanashbelyak/I0038.html" target="_parent">[...]><text x="191.1" y="25.0" font-size="14">Василий Иванов</text>
+</a><a xlink:href="https://rakhmaevao.github.io/yanashbelyak/I0183.html" target="_parent">[...]><text x="13.399999999999991" y="125.0" font-size="14">Александр Иванов</text>
+</a><a xlink:href="https://rakhmaevao.github.io/yanashbelyak/I0189.html" target="_parent">[...]><text x="175.7" y="125.0" font-size="14">Агрипина Степанова</text>
+</a><a xlink:href="https://rakhmaevao.github.io/yanashbelyak/I0191.html" target="_parent">[...]><text x="24.949999999999996" y="225.0" font-size="14">Лидия Иванова</text>
+</a><a xlink:href="https://rakhmaevao.github.io/yanashbelyak/I0190.html" target="_parent">[...]><text x="191.1" y="225.0" font-size="14">Любовь Иванова</text>
+</a></svg>
