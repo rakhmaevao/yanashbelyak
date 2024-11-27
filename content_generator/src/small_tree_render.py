@@ -6,6 +6,7 @@ from xml.etree import ElementTree
 
 import drawsvg
 from loguru import logger
+
 from .entities import (
     Gender,
     GrampsId,
@@ -19,7 +20,8 @@ class UnknownDirectionError(Exception):
         super().__init__(f"Unknown direction: {direction}")
 
 
-class WithoutRelationsError(Exception): ...
+class WithoutRelationsError(Exception):
+    ...
 
 
 class _Coordinates(NamedTuple):
@@ -34,6 +36,7 @@ _COLORS = {
     Gender.FEMALE: "pink",
     Gender.UNKNOWN: "LightYellow",
 }
+_TWO_PARENTS = 2
 
 
 class _PartnerRelation(NamedTuple):
@@ -71,7 +74,9 @@ class SmallTreeRender:
 
         draw_objects = self.__draw_objects(base_person, partner_relations, parents)
 
-        draw_svg = drawsvg.Drawing(*self.__get_size(partner_relations, generations, parents))
+        draw_svg = drawsvg.Drawing(
+            *self.__get_size(partner_relations, generations, parents)
+        )
         [draw_svg.append(obj) for obj in sorted(draw_objects, key=self.__do_comparator)]
         output_path.parent.mkdir(parents=True, exist_ok=True)
         draw_svg.save_svg(output_path)
@@ -116,9 +121,9 @@ class SmallTreeRender:
                 down_generation=generation_index,
                 left_parent_column=0,
                 child_column=0,
-                generation_jitter=0.5
+                generation_jitter=0.5,
             )
-        elif len(parents) == 2:
+        elif len(parents) == _TWO_PARENTS:
             for child_num, parent in enumerate(
                 sorted(parents, key=attrgetter("gender.value"))
             ):
@@ -137,7 +142,7 @@ class SmallTreeRender:
                 down_generation=generation_index,
                 right_parent_column=1,
                 child_column=0,
-                generation_jitter=0.5
+                generation_jitter=0.5,
             )
         draw_objects += self.__add_person(
             base_person, generation=generation_index, column=0
@@ -165,8 +170,8 @@ class SmallTreeRender:
             else:
                 partner_column = None
                 left_parent_column = global_children_column
-            for child_num, child in enumerate(
-                sorted(panther_relation.children, key=attrgetter("birth_day.date"))
+            for child in sorted(
+                panther_relation.children, key=attrgetter("birth_day.date")
             ):
                 draw_objects += self.__add_person(
                     person=child,
@@ -187,7 +192,8 @@ class SmallTreeRender:
 
     @staticmethod
     def __get_family_jitter(num_families: int) -> float:
-        """
+        """Смещаю линии брака, если оных было много, дабы не наслаивались.
+
         >>> SmallTreeRender._SmallTreeRender__get_family_jitter(1)
         0.5
         >>> SmallTreeRender._SmallTreeRender__get_family_jitter(2)
@@ -261,7 +267,7 @@ class SmallTreeRender:
     def __arrange_in_generation(
         base_person: Person, gramps_tree: GrampsTree
     ) -> dict[int, list[Person]]:
-        generations = {0: set((base_person,))}
+        generations = {0: set([base_person])}
         for family in gramps_tree.families.values():
             if base_person in family.parents:
                 if 1 not in generations:

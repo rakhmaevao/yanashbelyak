@@ -66,7 +66,7 @@ local_content:
 
 py_format:
 	poetry run ruff format content_generator pelicanconf.py tasks.py publishconf.py publishconf.py
-	poetry run ruff --fix content_generator/src pelicanconf.py tasks.py publishconf.py publishconf.py
+	# poetry run ruff --fix content_generator/src pelicanconf.py tasks.py publishconf.py publishconf.py
 
 all_format: py_format
 	npx prettier --write README.md
