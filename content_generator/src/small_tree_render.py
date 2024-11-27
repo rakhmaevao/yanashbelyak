@@ -291,11 +291,10 @@ class SmallTreeRender:
         generations: dict[int, list[Person]],
         parents: list[Person],
     ) -> tuple[float, float]:
-
         max_children = 0
         for rel in partner_relations:
             max_children = max(len(rel.children), max_children)
-        
+
         columns = max(len(parents), 1 + 1 if partner_relations else 0, max_children)
 
         non_blank_generation = 0
