@@ -70,7 +70,7 @@ class SmallTreeRender:
 
         draw_objects = self.__draw_objects(base_person, panther_relations, parents)
 
-        draw_svg = drawsvg.Drawing(*self.__get_size(generations))
+        draw_svg = drawsvg.Drawing(*self.__get_size(panther_relations, generations))
         [draw_svg.append(obj) for obj in sorted(draw_objects, key=self.__do_comparator)]
         output_path.parent.mkdir(parents=True, exist_ok=True)
         draw_svg.save_svg(output_path)
@@ -103,6 +103,7 @@ class SmallTreeRender:
         panther_relations: list[_PartnerRelation],
         parents: list[Person],
     ):
+        logger.info(f"rao --> AAAAAA {base_person} {panther_relations} {parents}")
         generation_index = 0
         draw_objects = []
         if len(parents) == 1:
@@ -117,9 +118,9 @@ class SmallTreeRender:
                 child_column=0,
             )
         elif len(parents) == 2:
-            for i, parent in enumerate(sorted(parents, key=attrgetter("gender.value"))):
+            for child_num, parent in enumerate(sorted(parents, key=attrgetter("gender.value"))):
                 draw_objects += self.__add_person(
-                    person=parent, generation=generation_index, column=i
+                    person=parent, generation=generation_index, column=child_num
                 )
             draw_objects += self.__create_relationships_line(
                 generation=generation_index, left_column=0, right_column=1
@@ -135,35 +136,29 @@ class SmallTreeRender:
             base_person, generation=generation_index, column=0
         )
 
-        relationship_column = 1
-        old_relationship_column = relationship_column
-        for panther_relation in panther_relations:
-            logger.info(f"rao --> {base_person.gramps_id} {panther_relation.partner}")
-            this_partner_column = relationship_column
+        global_children_column = 0
+        for family_number, panther_relation in enumerate(panther_relations):
             if panther_relation.partner is not None:
+                partner_column = global_children_column + (1 if family_number == 0 else 0)
                 draw_objects += self.__add_person(
                     panther_relation.partner,
                     generation=generation_index,
-                    column=relationship_column,
+                    column=partner_column,
                 )
-                this_partner_column = relationship_column
                 draw_objects += self.__create_relationships_line(
-                    generation=1, left_column=0, right_column=this_partner_column
+                    generation=generation_index, left_column=0, right_column=partner_column
                 )
-            for i, child in enumerate(
+            for child_num, child in enumerate(
                 sorted(panther_relation.children, key=attrgetter("birth_day.date"))
             ):
-                draw_objects += self.__add_person(person=child, generation=2, column=i)
+                draw_objects += self.__add_person(person=child, generation=generation_index + 1, column=global_children_column)
                 draw_objects += self.__create_parents_line(
-                    up_generation=1,
-                    down_generation=2,
-                    right_parent_column=this_partner_column,
-                    child_column=i,
+                    up_generation=generation_index,
+                    down_generation=generation_index+ 1,
+                    right_parent_column=partner_column,
+                    child_column=global_children_column,
                 )
-                relationship_column += 1
-            if relationship_column == old_relationship_column:
-                relationship_column += 1
-                old_relationship_column = relationship_column
+                global_children_column += 1
 
         return draw_objects
 
@@ -240,13 +235,13 @@ class SmallTreeRender:
         return generations
 
     @classmethod
-    def __get_size(cls, generations: dict[int, list[Person]]) -> tuple[float, float]:
-        max_num_persons_in_generation = 0
-        for generation in generations.values():
-            if len(generation) > max_num_persons_in_generation:
-                max_num_persons_in_generation = len(generation)
+    def __get_size(cls, partner_relations: list[_PartnerRelation], generations: dict[int, list[Person]]) -> tuple[float, float]:
+        columns = 0
+        for rel in partner_relations:
+            columns += max(len(rel.children), 1)
+        logger.info(f"rao --> {columns} {len(generations)}")
         return (
-            (cls._PERSON_WIDTH + cls._X_SPACING) * max_num_persons_in_generation,
+            (cls._PERSON_WIDTH + cls._X_SPACING) * columns,
             (cls._PERSON_HEIGHT + cls._Y_SPACING) * len(generations),
         )
 
