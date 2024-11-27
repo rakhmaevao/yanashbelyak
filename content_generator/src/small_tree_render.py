@@ -115,6 +115,7 @@ class SmallTreeRender:
                 down_generation=generation_index,
                 left_parent_column=0,
                 child_column=0,
+                generation_jitter=0.5
             )
         elif len(parents) == 2:
             for child_num, parent in enumerate(
@@ -135,6 +136,7 @@ class SmallTreeRender:
                 down_generation=generation_index,
                 right_parent_column=1,
                 child_column=0,
+                generation_jitter=0.5
             )
         draw_objects += self.__add_person(
             base_person, generation=generation_index, column=0
