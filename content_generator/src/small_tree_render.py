@@ -56,21 +56,22 @@ class SmallTreeRender:
     ):
         base_person = gramps_tree.persons[base_person_id]
 
-        panther_relations, parents = self.__create_relationships(
+        partner_relations, parents = self.__create_relationships(
             base_person, gramps_tree
         )
 
-        if not panther_relations and not parents:
+        if not partner_relations and not parents:
             raise WithoutRelationsError
-        logger.info(f"rao FFFFF --> {panther_relations} {parents}")
+        logger.debug(f"Parents: {parents} and relations {partner_relations}")
 
         generations: dict[int, list[Person]] = self.__arrange_in_generation(
             base_person, gramps_tree
         )
+        logger.debug(f"Generations {generations}")
 
-        draw_objects = self.__draw_objects(base_person, panther_relations, parents)
+        draw_objects = self.__draw_objects(base_person, partner_relations, parents)
 
-        draw_svg = drawsvg.Drawing(*self.__get_size(panther_relations, generations))
+        draw_svg = drawsvg.Drawing(*self.__get_size(partner_relations, generations, parents))
         [draw_svg.append(obj) for obj in sorted(draw_objects, key=self.__do_comparator)]
         output_path.parent.mkdir(parents=True, exist_ok=True)
         draw_svg.save_svg(output_path)
@@ -260,11 +261,9 @@ class SmallTreeRender:
     def __arrange_in_generation(
         base_person: Person, gramps_tree: GrampsTree
     ) -> dict[int, list[Person]]:
-        generations = {}
+        generations = {0: set((base_person,))}
         for family in gramps_tree.families.values():
             if base_person in family.parents:
-                if 0 not in generations:
-                    generations[0] = set()
                 if 1 not in generations:
                     generations[1] = set()
                 [generations[0].add(person) for person in family.parents]
@@ -284,11 +283,13 @@ class SmallTreeRender:
         cls,
         partner_relations: list[_PartnerRelation],
         generations: dict[int, list[Person]],
+        parents: list[Person],
     ) -> tuple[float, float]:
         columns = 0
         for rel in partner_relations:
             columns += max(len(rel.children), 1)
-        logger.info(f"rao --> {columns} {len(generations)}")
+        columns = max(columns, len(parents))
+        logger.debug(f"Size of svg in scales {columns} {len(generations)}")
         return (
             (cls._PERSON_WIDTH + cls._X_SPACING) * columns,
             (cls._PERSON_HEIGHT + cls._Y_SPACING) * len(generations),
