@@ -6,11 +6,7 @@
 poetry install --no-root
 ```
 
-Прикрепи ссылку на файл БД gramps с именем `sqlite.db`.
-
-```shell
-ln -s /home/rakhmaevao/Documents/Genealogy/Yanashbeliak/Gramps\ project/db/sqlite.db sqlite.db
-```
+Пропиши путь до проекта gramps в content_generator/main.py
 
 ## Как разрабатывать?
 
