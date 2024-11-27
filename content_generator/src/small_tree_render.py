@@ -51,7 +51,7 @@ class SmallTreeRender:
     _PERSON_HEIGHT = 50
     _Y_SPACING = 50
     _X_SPACING = 20
-    _FONT_SIZE = 12
+    _FONT_SIZE = 14
     _LINE_WIDTH = 0.8
 
     def create_svg(
@@ -291,11 +291,11 @@ class SmallTreeRender:
         generations: dict[int, list[Person]],
         parents: list[Person],
     ) -> tuple[float, float]:
-        max_children = 0
+        all_children = 0
         for rel in partner_relations:
-            max_children = max(len(rel.children), max_children)
+            all_children += len(rel.children)
 
-        columns = max(len(parents), 1 + 1 if partner_relations else 0, max_children)
+        columns = max(len(parents), 1 + 1 if partner_relations else 0, all_children)
 
         non_blank_generation = 0
         for gen_i in generations:
