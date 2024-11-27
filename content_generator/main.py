@@ -2,6 +2,7 @@ import os
 from pathlib import Path
 
 from loguru import logger
+from src.small_tree_render.small_tree_render import SmallTreeRender
 from src.biographer import Biographer
 from src.gallery import Gallery
 from src.gramps_tree import GrampsTree

@@ -84,8 +84,10 @@ class SmallTreeRender:
                     _PartnerRelation(partner=partner, children=family.children)
                 )
             if base_person in family.children:
-                parents.append(family.father)
-                parents.append(family.mother)
+                if family.father is not None:
+                    parents.append(family.father)
+                if family.mother is not None:
+                    parents.append(family.mother)
         return partner_relations, parents
 
     def __draw_objects(
@@ -109,13 +111,16 @@ class SmallTreeRender:
         relationship_column = 1
         old_relationship_column = relationship_column
         for panther_relation in panther_relations:
-            draw_objects += self.__add_person(
-                panther_relation.partner, generation=1, column=relationship_column
-            )
+            logger.info(f"rao --> {base_person.gramps_id} {panther_relation.partner}")
             this_partner_column = relationship_column
-            draw_objects += self.__create_relationships_line(
-                generation=1, left_column=0, right_column=this_partner_column
-            )
+            if panther_relation.partner is not None:
+                draw_objects += self.__add_person(
+                    panther_relation.partner, generation=1, column=relationship_column
+                )
+                this_partner_column = relationship_column
+                draw_objects += self.__create_relationships_line(
+                    generation=1, left_column=0, right_column=this_partner_column
+                )
             for i, child in enumerate(
                 sorted(panther_relation.children, key=attrgetter("birth_day.date"))
             ):
@@ -213,6 +218,7 @@ class SmallTreeRender:
         )
 
     def __add_person(self, person: Person, generation: int, column: int) -> list:
+        logger.info(f"rao --> Adding {person}")
         y = generation * (self._PERSON_HEIGHT + self._Y_SPACING)
         x = column * (self._PERSON_WIDTH + self._X_SPACING)
         color = _COLORS[person.gender]

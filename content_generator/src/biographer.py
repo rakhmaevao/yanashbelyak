@@ -1,6 +1,8 @@
 import datetime
 from pathlib import Path
 
+from src.small_tree_render.small_tree_render import SmallTreeRender
+
 from .entities import Person
 from .gramps_tree import GrampsTree
 
@@ -59,6 +61,7 @@ class Biographer:
         main_content = f"Дата рождения: {person.birth_day}\n\n"
         if person.death_day.date < datetime.datetime.now(tz=datetime.UTC).date():
             main_content += f"Дата смерти: {person.death_day}\n\n"
+        main_content += self.__add_small_tree(person)
         main_content += self.__prepare_events(person)
         if person.notes:
             main_content += "## Заметки\n\n"
@@ -89,4 +92,13 @@ class Biographer:
                     content += f"- {event.description}\n\n"
         if content != "":
             return "## События жизни\n\n" + content
+        return ""
+
+    def __add_small_tree(self, person: Person):
+        small_tree_render = SmallTreeRender()
+        small_tree_render.create_svg(
+            base_person_id=person.gramps_id,
+            gramps_tree=self.__gramps_tree,
+            output_path=Path("content/images/small_trees/" + person.gramps_id + ".svg"),
+        )
         return ""

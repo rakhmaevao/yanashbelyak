@@ -12,3 +12,6 @@
 .ruff_cache
 **/*.pyc
 tmp/*
+content/images/small_trees/*
+lock
+content_generator/tmp/*
