@@ -1,7 +1,7 @@
 import datetime
 from pathlib import Path
 
-from src.small_tree_render import SmallTreeRender
+from .small_tree_render import SmallTreeRender
 
 from .entities import Person
 from .gramps_tree import GrampsTree

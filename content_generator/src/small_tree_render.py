@@ -6,12 +6,12 @@ from xml.etree import ElementTree
 
 import drawsvg
 from loguru import logger
-from src.entities import (
+from .entities import (
     Gender,
     GrampsId,
     Person,
 )
-from src.gramps_tree import GrampsTree
+from .gramps_tree import GrampsTree
 
 
 class UnknownDirectionError(Exception):
@@ -103,7 +103,6 @@ class SmallTreeRender:
         panther_relations: list[_PartnerRelation],
         parents: list[Person],
     ):
-        logger.info(f"rao --> AAAAAA {base_person} {panther_relations} {parents}")
         generation_index = 0
         draw_objects = []
         if len(parents) == 1:
@@ -118,12 +117,17 @@ class SmallTreeRender:
                 child_column=0,
             )
         elif len(parents) == 2:
-            for child_num, parent in enumerate(sorted(parents, key=attrgetter("gender.value"))):
+            for child_num, parent in enumerate(
+                sorted(parents, key=attrgetter("gender.value"))
+            ):
                 draw_objects += self.__add_person(
                     person=parent, generation=generation_index, column=child_num
                 )
             draw_objects += self.__create_relationships_line(
-                generation=generation_index, left_column=0, right_column=1
+                generation=generation_index,
+                left_column=0,
+                right_column=1,
+                generation_jitter=0.5,
             )
             generation_index += 1
             draw_objects += self.__create_parents_line(
@@ -135,54 +139,84 @@ class SmallTreeRender:
         draw_objects += self.__add_person(
             base_person, generation=generation_index, column=0
         )
-
+        base_fj = self.__get_family_jitter(len(panther_relations))
         global_children_column = 0
         for family_number, panther_relation in enumerate(panther_relations):
+            family_jitter = 1 - base_fj * (family_number + 1)
             if panther_relation.partner is not None:
-                partner_column = global_children_column + (1 if family_number == 0 else 0)
+                partner_column = global_children_column + (
+                    1 if family_number == 0 else 0
+                )
                 draw_objects += self.__add_person(
                     panther_relation.partner,
                     generation=generation_index,
                     column=partner_column,
                 )
                 draw_objects += self.__create_relationships_line(
-                    generation=generation_index, left_column=0, right_column=partner_column
+                    generation=generation_index,
+                    left_column=0,
+                    right_column=partner_column,
+                    generation_jitter=family_jitter,
                 )
             for child_num, child in enumerate(
                 sorted(panther_relation.children, key=attrgetter("birth_day.date"))
             ):
-                draw_objects += self.__add_person(person=child, generation=generation_index + 1, column=global_children_column)
+                draw_objects += self.__add_person(
+                    person=child,
+                    generation=generation_index + 1,
+                    column=global_children_column,
+                )
                 draw_objects += self.__create_parents_line(
                     up_generation=generation_index,
-                    down_generation=generation_index+ 1,
+                    down_generation=generation_index + 1,
                     right_parent_column=partner_column,
                     child_column=global_children_column,
+                    generation_jitter=family_jitter,
                 )
                 global_children_column += 1
 
         return draw_objects
+
+    @staticmethod
+    def __get_family_jitter(num_families: int) -> float:
+        """
+        >>> SmallTreeRender._SmallTreeRender__get_family_jitter(1)
+        0.5
+        >>> SmallTreeRender._SmallTreeRender__get_family_jitter(2)
+        0.33
+        """
+        if num_families == 1:
+            return 0.5
+        return round(1 / (num_families + 1), 2)
 
     def __create_parents_line(
         self,
         up_generation: int,
         down_generation: int,
         child_column: int,
+        generation_jitter: float,
         left_parent_column: int | None = None,
         right_parent_column: int | None = None,
-    ):  
+    ):
         if right_parent_column is not None:
-            x_up = right_parent_column * (self._PERSON_WIDTH + self._X_SPACING) - self._X_SPACING / 2
+            x_up = (
+                right_parent_column * (self._PERSON_WIDTH + self._X_SPACING)
+                - self._X_SPACING / 2
+            )
         elif left_parent_column is not None:
-            x_up = left_parent_column * (self._PERSON_WIDTH + self._X_SPACING) + self._PERSON_WIDTH / 2
+            x_up = (
+                left_parent_column * (self._PERSON_WIDTH + self._X_SPACING)
+                + self._PERSON_WIDTH / 2
+            )
         return [
             drawsvg.Lines(
                 x_up,
                 (
                     up_generation * (self._PERSON_HEIGHT + self._Y_SPACING)
-                    + self._PERSON_HEIGHT / 2
+                    + self._PERSON_HEIGHT * generation_jitter
                 ),
                 child_column * (self._PERSON_WIDTH + self._X_SPACING)
-                + self._PERSON_WIDTH / 2,
+                + self._PERSON_WIDTH * generation_jitter,
                 (down_generation * (self._PERSON_HEIGHT + self._Y_SPACING)),
                 close=False,
                 stroke="gray",
@@ -192,11 +226,15 @@ class SmallTreeRender:
         ]
 
     def __create_relationships_line(
-        self, generation: int, left_column: int, right_column: int
+        self,
+        generation: int,
+        left_column: int,
+        right_column: int,
+        generation_jitter: float,
     ):
         y = (
             generation * (self._PERSON_HEIGHT + self._Y_SPACING)
-            + self._PERSON_HEIGHT / 2
+            + self._PERSON_HEIGHT * generation_jitter
         )
         return [
             drawsvg.Lines(
@@ -235,7 +273,11 @@ class SmallTreeRender:
         return generations
 
     @classmethod
-    def __get_size(cls, partner_relations: list[_PartnerRelation], generations: dict[int, list[Person]]) -> tuple[float, float]:
+    def __get_size(
+        cls,
+        partner_relations: list[_PartnerRelation],
+        generations: dict[int, list[Person]],
+    ) -> tuple[float, float]:
         columns = 0
         for rel in partner_relations:
             columns += max(len(rel.children), 1)
