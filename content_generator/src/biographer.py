@@ -104,4 +104,5 @@ class Biographer:
             )
         except WithoutRelationsError:
             return ""
-        return ""
+        link = "{static}/images/small_trees/" + person.gramps_id + ".svg"
+        return f"![small_tree]({link})\n\n"
