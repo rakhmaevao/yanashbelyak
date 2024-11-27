@@ -1,7 +1,7 @@
 import datetime
 from pathlib import Path
 
-from .small_tree_render import SmallTreeRender
+from .small_tree_render import SmallTreeRender, WithoutRelationsError
 
 from .entities import Person
 from .gramps_tree import GrampsTree
@@ -96,9 +96,12 @@ class Biographer:
 
     def __add_small_tree(self, person: Person):
         small_tree_render = SmallTreeRender()
-        small_tree_render.create_svg(
-            base_person_id=person.gramps_id,
-            gramps_tree=self.__gramps_tree,
-            output_path=Path("content/images/small_trees/" + person.gramps_id + ".svg"),
-        )
+        try:
+            small_tree_render.create_svg(
+                base_person_id=person.gramps_id,
+                gramps_tree=self.__gramps_tree,
+                output_path=Path("content/images/small_trees/" + person.gramps_id + ".svg"),
+            )
+        except WithoutRelationsError:
+            return ""
         return ""

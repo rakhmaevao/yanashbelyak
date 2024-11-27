@@ -47,7 +47,7 @@ class SmallTreeRender:
     _PERSON_WIDTH = 150
     _PERSON_HEIGHT = 50
     _Y_SPACING = 50
-    _X_SPACING = 50
+    _X_SPACING = 20
     _FONT_SIZE = 12
     _LINE_WIDTH = 0.8
 
@@ -160,6 +160,10 @@ class SmallTreeRender:
                     right_column=partner_column,
                     generation_jitter=family_jitter,
                 )
+                left_parent_column = None
+            else:
+                partner_column = None
+                left_parent_column = global_children_column
             for child_num, child in enumerate(
                 sorted(panther_relation.children, key=attrgetter("birth_day.date"))
             ):
@@ -172,6 +176,7 @@ class SmallTreeRender:
                     up_generation=generation_index,
                     down_generation=generation_index + 1,
                     right_parent_column=partner_column,
+                    left_parent_column=left_parent_column,
                     child_column=global_children_column,
                     generation_jitter=family_jitter,
                 )
@@ -290,7 +295,6 @@ class SmallTreeRender:
         )
 
     def __add_person(self, person: Person, generation: int, column: int) -> list:
-        logger.info(f"rao --> Adding {person}")
         y = generation * (self._PERSON_HEIGHT + self._Y_SPACING)
         x = column * (self._PERSON_WIDTH + self._X_SPACING)
         color = _COLORS[person.gender]
