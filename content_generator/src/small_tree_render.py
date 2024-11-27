@@ -291,10 +291,12 @@ class SmallTreeRender:
         generations: dict[int, list[Person]],
         parents: list[Person],
     ) -> tuple[float, float]:
-        columns = 0
+
+        max_children = 0
         for rel in partner_relations:
-            columns += max(len(rel.children), 1)
-        columns = max(columns, len(parents))
+            max_children = max(len(rel.children), max_children)
+        
+        columns = max(len(parents), 1 + 1 if partner_relations else 0, max_children)
         logger.debug(f"Size of svg in scales {columns} {len(generations)}")
         return (
             (cls._PERSON_WIDTH + cls._X_SPACING) * columns,
