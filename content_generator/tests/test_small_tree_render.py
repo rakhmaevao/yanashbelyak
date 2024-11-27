@@ -8,7 +8,7 @@ from pathlib import Path
 
 import pytest
 from src.gramps_tree import GrampsTree
-from src.small_tree_render.small_tree_render import SmallTreeRender
+from src.small_tree_render import SmallTreeRender
 
 
 @pytest.fixture(scope="session")
