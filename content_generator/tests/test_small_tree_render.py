@@ -1,22 +1,24 @@
 import shutil
 import sys
+
 sys.path.append(".")
 
 import os
 from pathlib import Path
+
 import pytest
 from src.gramps_tree import GrampsTree
 from src.small_tree_render.small_tree_render import SmallTreeRender
 
 
-@pytest.fixture
-def tmp_dir():
+@pytest.fixture()
+def _tmp_dir():
     os.makedirs("tmp", exist_ok=True)
     yield
     shutil.rmtree("tmp")
 
 
-def test_main(tmp_dir) -> None:
+def test_main(_tmp_dir) -> None:
     tree = GrampsTree("tests/test_tree")
     render = SmallTreeRender()
     render.create_svg(

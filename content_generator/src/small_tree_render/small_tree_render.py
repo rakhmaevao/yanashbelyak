@@ -6,7 +6,6 @@ from xml.etree import ElementTree
 
 import drawsvg
 from loguru import logger
-
 from src.entities import (
     Gender,
     GrampsId,

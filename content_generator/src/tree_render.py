@@ -7,9 +7,10 @@ from typing import NamedTuple
 from xml.etree import ElementTree
 
 import drawsvg
+from loguru import logger
+
 from .entities import DateQuality, Family, Gender, GrampsId, Person, RelationType
 from .gramps_tree import GrampsTree
-from loguru import logger
 
 
 class UnknownDirectionError(Exception):
