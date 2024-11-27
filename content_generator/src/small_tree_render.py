@@ -304,7 +304,7 @@ class SmallTreeRender:
             ),
         )
         person_label = person.full_name
-        label_weight = self._FONT_SIZE * 0.7 * len(person_label)
+        label_weight = self._FONT_SIZE * 0.55 * len(person_label)
         draw_objects.append(
             drawsvg.Text(
                 text=person_label,
