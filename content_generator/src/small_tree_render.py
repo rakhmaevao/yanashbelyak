@@ -297,10 +297,15 @@ class SmallTreeRender:
             max_children = max(len(rel.children), max_children)
         
         columns = max(len(parents), 1 + 1 if partner_relations else 0, max_children)
-        logger.debug(f"Size of svg in scales {columns} {len(generations)}")
+
+        non_blank_generation = 0
+        for gen_i in generations:
+            if generations[gen_i]:
+                non_blank_generation += 1
+        logger.debug(f"Size of svg in scales {columns} {non_blank_generation}")
         return (
             (cls._PERSON_WIDTH + cls._X_SPACING) * columns,
-            (cls._PERSON_HEIGHT + cls._Y_SPACING) * len(generations),
+            (cls._PERSON_HEIGHT + cls._Y_SPACING) * non_blank_generation,
         )
 
     def __add_person(self, person: Person, generation: int, column: int) -> list:
