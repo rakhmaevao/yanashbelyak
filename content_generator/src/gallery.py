@@ -29,7 +29,6 @@ class Gallery:
         self._IMAGES_DIR.mkdir()
 
     def __copy_media_to_gallery(self, media: Media):
-        logger.info(f"rao --> {media.path} {self._IMAGES_DIR}")
         new_path = Path(shutil.copy(media.path, self._IMAGES_DIR)).absolute()
         self.__scale_image(new_path)
         media.path = new_path

@@ -53,7 +53,7 @@ devserver:
 	SITEURL=$(LOCAL_SITEURL) $(PELICAN) -t theme -lr "$(INPUTDIR)" -o "$(OUTPUTDIR)" -s "$(CONFFILE)" $(PELICANOPTS)
 
 publish:
-	SITEURL=$(GITHUB_PAGES_SITEURL) $(PY) content_generator/content_generator.py
+	SITEURL=$(GITHUB_PAGES_SITEURL) $(PY) content_generator/main.py
 	SITEURL=$(GITHUB_PAGES_SITEURL) $(PELICAN) -t theme "$(INPUTDIR)" -o "$(OUTPUTDIR)" -s "$(PUBLISHCONF)" $(PELICANOPTS)
 
 github: publish
