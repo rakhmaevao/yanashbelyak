@@ -1,11 +1,11 @@
 import os
 from pathlib import Path
 
-from biographer import Biographer
-from gallery import Gallery
-from gramps_tree import GrampsTree
+from src.biographer import Biographer
+from src.gallery import Gallery
+from src.gramps_tree import GrampsTree
 from loguru import logger
-from tree_render import TreeRender
+from src.tree_render import TreeRender
 
 if __name__ == "__main__":
     logger.info("Start")

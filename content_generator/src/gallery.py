@@ -1,8 +1,8 @@
 import shutil
 from pathlib import Path
 
-from entities import GrampsId, Media
-from gramps_tree import GrampsTree
+from .entities import GrampsId, Media
+from .gramps_tree import GrampsTree
 from loguru import logger
 from PIL import Image
 

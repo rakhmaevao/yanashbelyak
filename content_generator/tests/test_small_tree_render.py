@@ -1,9 +1,11 @@
+import sys
+sys.path.append(".")
+
 import os
 from pathlib import Path
-import shutil
 import pytest
-from content_generator.gramps_tree import GrampsTree
-from content_generator.small_tree_render.small_tree_render import SmallTreeRender
+from src.gramps_tree import GrampsTree
+from src.small_tree_render.small_tree_render import SmallTreeRender
 
 
 @pytest.fixture

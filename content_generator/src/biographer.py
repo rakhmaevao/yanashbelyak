@@ -1,8 +1,8 @@
 import datetime
 from pathlib import Path
 
-from entities import Person
-from gramps_tree import GrampsTree
+from .entities import Person
+from .gramps_tree import GrampsTree
 
 
 class Article:

@@ -61,7 +61,7 @@ github: publish
 	git push origin $(GITHUB_PAGES_BRANCH)
 
 local_content:
-	SITEURL=$(LOCAL_SITEURL) $(PY) content_generator/content_generator.py
+	SITEURL=$(LOCAL_SITEURL) $(PY) content_generator/main.py
 	SITEURL=$(LOCAL_SITEURL) $(PELICAN) content -t theme
 
 py_format:
@@ -77,6 +77,6 @@ lint:
 	poetry run ruff content_generator pelicanconf.py tasks.py publishconf.py publishconf.py
 
 pytest:
-	poetry run pytest -vv -s --disable-warnings tests
+	cd content_generator && poetry run pytest -vv -s --disable-warnings tests
 
 .PHONY: help clean devserver publish github local_content, dfg

@@ -5,9 +5,10 @@ import pickle
 import sqlite3
 from pathlib import Path
 
+from loguru import logger
 from singleton_decorator import singleton
 
-from entities import (
+from .entities import (
     Date,
     Event,
     EventType,
@@ -33,6 +34,7 @@ class GrampsTree:
 
     def __init__(self, gramps_tree_path: Path):
         self.__gramps_tree_path = gramps_tree_path
+        logger.info(f"gramps_tree_path: {self.__gramps_tree_path}")
         conn = sqlite3.connect(self.__gramps_tree_path / Path("sqlite.db"))
         self.__cur = conn.cursor()
 
