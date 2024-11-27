@@ -19,6 +19,9 @@ class UnknownDirectionError(Exception):
         super().__init__(f"Unknown direction: {direction}")
 
 
+class WithoutRelationsError(Exception): ...
+
+
 class _Coordinates(NamedTuple):
     """Класс, хранящий координаты svg элемента."""
 
@@ -56,6 +59,10 @@ class SmallTreeRender:
         panther_relations, parents = self.__create_relationships(
             base_person, gramps_tree
         )
+
+        if not panther_relations and not parents:
+            raise WithoutRelationsError
+        logger.info(f"rao FFFFF --> {panther_relations} {parents}")
 
         generations: dict[int, list[Person]] = self.__arrange_in_generation(
             base_person, gramps_tree
@@ -96,16 +103,36 @@ class SmallTreeRender:
         panther_relations: list[_PartnerRelation],
         parents: list[Person],
     ):
+        generation_index = 0
         draw_objects = []
-        for i, parent in enumerate(sorted(parents, key=attrgetter("gender.value"))):
-            draw_objects += self.__add_person(person=parent, generation=0, column=i)
-        draw_objects += self.__create_relationships_line(
-            generation=0, left_column=0, right_column=1
-        )
-
-        draw_objects += self.__add_person(base_person, generation=1, column=0)
-        draw_objects += self.__create_parents_line(
-            up_generation=0, down_generation=1, right_parent_column=1, child_column=0
+        if len(parents) == 1:
+            draw_objects += self.__add_person(
+                person=parents[0], generation=generation_index, column=0
+            )
+            generation_index += 1
+            draw_objects += self.__create_parents_line(
+                up_generation=0,
+                down_generation=generation_index,
+                left_parent_column=0,
+                child_column=0,
+            )
+        elif len(parents) == 2:
+            for i, parent in enumerate(sorted(parents, key=attrgetter("gender.value"))):
+                draw_objects += self.__add_person(
+                    person=parent, generation=generation_index, column=i
+                )
+            draw_objects += self.__create_relationships_line(
+                generation=generation_index, left_column=0, right_column=1
+            )
+            generation_index += 1
+            draw_objects += self.__create_parents_line(
+                up_generation=0,
+                down_generation=generation_index,
+                right_parent_column=1,
+                child_column=0,
+            )
+        draw_objects += self.__add_person(
+            base_person, generation=generation_index, column=0
         )
 
         relationship_column = 1
@@ -115,7 +142,9 @@ class SmallTreeRender:
             this_partner_column = relationship_column
             if panther_relation.partner is not None:
                 draw_objects += self.__add_person(
-                    panther_relation.partner, generation=1, column=relationship_column
+                    panther_relation.partner,
+                    generation=generation_index,
+                    column=relationship_column,
                 )
                 this_partner_column = relationship_column
                 draw_objects += self.__create_relationships_line(
@@ -142,13 +171,17 @@ class SmallTreeRender:
         self,
         up_generation: int,
         down_generation: int,
-        right_parent_column: int,
         child_column: int,
-    ):
+        left_parent_column: int | None = None,
+        right_parent_column: int | None = None,
+    ):  
+        if right_parent_column is not None:
+            x_up = right_parent_column * (self._PERSON_WIDTH + self._X_SPACING) - self._X_SPACING / 2
+        elif left_parent_column is not None:
+            x_up = left_parent_column * (self._PERSON_WIDTH + self._X_SPACING) + self._PERSON_WIDTH / 2
         return [
             drawsvg.Lines(
-                right_parent_column * (self._PERSON_WIDTH + self._X_SPACING)
-                - self._X_SPACING / 2,
+                x_up,
                 (
                     up_generation * (self._PERSON_HEIGHT + self._Y_SPACING)
                     + self._PERSON_HEIGHT / 2

@@ -77,6 +77,6 @@ lint:
 	poetry run ruff content_generator pelicanconf.py tasks.py publishconf.py publishconf.py
 
 pytest:
-	cd content_generator && poetry run pytest -vv -s --disable-warnings tests -k "test_without_relations"
+	cd content_generator && poetry run pytest -vv -s --disable-warnings tests -k "test_one_parent"
 
 .PHONY: help clean devserver publish github local_content, dfg

@@ -8,7 +8,7 @@ from pathlib import Path
 
 import pytest
 from src.gramps_tree import GrampsTree
-from src.small_tree_render import SmallTreeRender
+from src.small_tree_render import SmallTreeRender, WithoutRelationsError
 
 
 @pytest.fixture(scope="session")
@@ -18,7 +18,7 @@ def _tmp_dir():
     # shutil.rmtree("tmp")
 
 
-def test_main(_tmp_dir) -> None:
+def test_normal_family(_tmp_dir) -> None:
     tree = GrampsTree("tests/test_tree")
     render = SmallTreeRender()
     render.create_svg(
@@ -33,10 +33,18 @@ def test_main(_tmp_dir) -> None:
 def test_without_relations(_tmp_dir) -> None:
     tree = GrampsTree("tests/test_tree")
     render = SmallTreeRender()
+    with pytest.raises(WithoutRelationsError):
+        render.create_svg(
+            base_person_id="I0013", gramps_tree=tree, output_path=Path("tmp/I0013.svg")
+        )
+
+def test_one_parent(_tmp_dir) -> None:
+    tree = GrampsTree("tests/test_tree")
+    render = SmallTreeRender()
     render.create_svg(
-        base_person_id="I0013", gramps_tree=tree, output_path=Path("tmp/I0013.svg")
+        base_person_id="I0004", gramps_tree=tree, output_path=Path("tmp/I0004.svg")
     )
-    with Path("tmp/I0013.svg").open() as f:
+    with Path("tmp/I0004.svg").open() as f:
         assert (
             f.read()
             == ""
