@@ -1,20 +1,38 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink"
-     width="510" height="200" viewBox="0 0 510 200">
+     width="1530" height="200" viewBox="0 0 1530 200">
 <defs>
 </defs>
 <path d="M150,25.0 L170,25.0" stroke="black" stroke-width="0.8" fill="none" />
 <path d="M160.0,25.0 L75.0,100" stroke="gray" stroke-width="0.8" fill="none" />
 <path d="M160.0,25.0 L245.0,100" stroke="gray" stroke-width="0.8" fill="none" />
 <path d="M160.0,25.0 L415.0,100" stroke="gray" stroke-width="0.8" fill="none" />
+<path d="M160.0,25.0 L585.0,100" stroke="gray" stroke-width="0.8" fill="none" />
+<path d="M160.0,25.0 L755.0,100" stroke="gray" stroke-width="0.8" fill="none" />
+<path d="M160.0,25.0 L925.0,100" stroke="gray" stroke-width="0.8" fill="none" />
+<path d="M160.0,25.0 L1095.0,100" stroke="gray" stroke-width="0.8" fill="none" />
+<path d="M160.0,25.0 L1265.0,100" stroke="gray" stroke-width="0.8" fill="none" />
+<path d="M160.0,25.0 L1435.0,100" stroke="gray" stroke-width="0.8" fill="none" />
 <rect x="0" y="0" width="150" height="50" fill="lightblue" />
 <rect x="170" y="0" width="150" height="50" fill="pink" />
-<rect x="0" y="100" width="150" height="50" fill="lightblue" />
-<rect x="170" y="100" width="150" height="50" fill="lightblue" />
-<rect x="340" y="100" width="150" height="50" fill="lightblue" />
+<rect x="0" y="100" width="150" height="50" fill="pink" />
+<rect x="170" y="100" width="150" height="50" fill="pink" />
+<rect x="340" y="100" width="150" height="50" fill="pink" />
+<rect x="510" y="100" width="150" height="50" fill="lightblue" />
+<rect x="680" y="100" width="150" height="50" fill="lightblue" />
+<rect x="850" y="100" width="150" height="50" fill="lightblue" />
+<rect x="1020" y="100" width="150" height="50" fill="pink" />
+<rect x="1190" y="100" width="150" height="50" fill="lightblue" />
+<rect x="1360" y="100" width="150" height="50" fill="pink" />
 <a xlink:href="https://rakhmaevao.github.io/yanashbelyak/I0121.html" target="_parent">[...]><text x="32.64999999999999" y="25.0" font-size="14">Ефим Иванов</text>
 </a><a xlink:href="https://rakhmaevao.github.io/yanashbelyak/I0123.html" target="_parent">[...]><text x="179.55" y="25.0" font-size="14">Анастасия Иванова</text>
-</a><a xlink:href="https://rakhmaevao.github.io/yanashbelyak/I0052.html" target="_parent">[...]><text x="28.799999999999997" y="125.0" font-size="14">Петр Шульгин</text>
-</a><a xlink:href="https://rakhmaevao.github.io/yanashbelyak/I0182.html" target="_parent">[...]><text x="187.25" y="125.0" font-size="14">Григорий Иванов</text>
-</a><a xlink:href="https://rakhmaevao.github.io/yanashbelyak/I0122.html" target="_parent">[...]><text x="372.65" y="125.0" font-size="14">Илья Иванов</text>
+</a><a xlink:href="https://rakhmaevao.github.io/yanashbelyak/I0324.html" target="_parent">[...]><text x="17.249999999999993" y="125.0" font-size="14">Пелагея Иванова</text>
+</a><a xlink:href="https://rakhmaevao.github.io/yanashbelyak/I0323.html" target="_parent">[...]><text x="194.95" y="125.0" font-size="14">Дарья Иванова</text>
+</a><a xlink:href="https://rakhmaevao.github.io/yanashbelyak/I0322.html" target="_parent">[...]><text x="357.25" y="125.0" font-size="14">Наталия Иванова</text>
+</a><a xlink:href="https://rakhmaevao.github.io/yanashbelyak/I0321.html" target="_parent">[...]><text x="527.25" y="125.0" font-size="14">Владимир Иванов</text>
+</a><a xlink:href="https://rakhmaevao.github.io/yanashbelyak/I0052.html" target="_parent">[...]><text x="708.8" y="125.0" font-size="14">Петр Шульгин</text>
+</a><a xlink:href="https://rakhmaevao.github.io/yanashbelyak/I0182.html" target="_parent">[...]><text x="867.25" y="125.0" font-size="14">Григорий Иванов</text>
+</a><a xlink:href="https://rakhmaevao.github.io/yanashbelyak/I0320.html" target="_parent">[...]><text x="1048.8" y="125.0" font-size="14">Вера Иванова</text>
+</a><a xlink:href="https://rakhmaevao.github.io/yanashbelyak/I0122.html" target="_parent">[...]><text x="1222.65" y="125.0" font-size="14">Илья Иванов</text>
+</a><a xlink:href="https://rakhmaevao.github.io/yanashbelyak/I0319.html" target="_parent">[...]><text x="1388.8" y="125.0" font-size="14">Анна Иванова</text>
 </a></svg>
