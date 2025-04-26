@@ -1,5 +1,5 @@
-PY?=poetry run python
-PELICAN?=poetry run pelican
+PY?=uv run python
+PELICAN?=uv run pelican
 PELICANOPTS=
 
 BASEDIR=$(CURDIR)
@@ -57,7 +57,7 @@ publish:
 	SITEURL=$(GITHUB_PAGES_SITEURL) $(PELICAN) -t theme "$(INPUTDIR)" -o "$(OUTPUTDIR)" -s "$(PUBLISHCONF)" $(PELICANOPTS)
 
 github: publish
-	poetry run ghp-import -m "Generate Pelican site" -b $(GITHUB_PAGES_BRANCH) "$(OUTPUTDIR)"
+	uv run ghp-import -m "Generate Pelican site" -b $(GITHUB_PAGES_BRANCH) "$(OUTPUTDIR)"
 	git push origin $(GITHUB_PAGES_BRANCH)
 
 local_content:
@@ -65,8 +65,8 @@ local_content:
 	SITEURL=$(LOCAL_SITEURL) $(PELICAN) content -t theme
 
 py_format:
-	poetry run ruff format content_generator pelicanconf.py tasks.py publishconf.py publishconf.py
-	# poetry run ruff --fix content_generator/src pelicanconf.py tasks.py publishconf.py publishconf.py
+	uv run ruff format content_generator pelicanconf.py tasks.py publishconf.py publishconf.py
+	# uv run ruff --fix content_generator/src pelicanconf.py tasks.py publishconf.py publishconf.py
 
 all_format: py_format
 	npx prettier --write README.md
@@ -74,9 +74,9 @@ all_format: py_format
 
 lint:
 	@echo "Линтинг"
-	poetry run ruff content_generator pelicanconf.py tasks.py publishconf.py publishconf.py
+	uv run ruff content_generator pelicanconf.py tasks.py publishconf.py publishconf.py
 
 pytest:
-	cd content_generator && poetry run pytest -vv -s --disable-warnings --doctest-modules src tests
+	cd content_generator && uv run pytest -vv -s --disable-warnings --doctest-modules src tests
 
 .PHONY: help clean devserver publish github local_content, dfg
