@@ -10,7 +10,9 @@ from src.tree_render import TreeRender
 if __name__ == "__main__":
     logger.info("Start")
     gramps_tree = GrampsTree(
-        Path("/media/rakhmaevao/MAIN_VAULT/Storage/Genealogy/Yanashbeliak/Gramps/Project")
+        Path(
+            "/media/rakhmaevao/MAIN_VAULT/Storage/Genealogy/Yanashbeliak/Gramps/Project"
+        )
     )
     logger.info("The database has been read")
 

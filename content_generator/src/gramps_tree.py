@@ -28,7 +28,6 @@ locale.setlocale(locale.LC_TIME, "ru_RU.UTF-8")
 
 @singleton
 class GrampsTree:
-
     def __init__(self, gramps_tree_path: Path):
         self.__gramps_tree_path = gramps_tree_path
         logger.info(f"gramps_tree_path: {self.__gramps_tree_path}")

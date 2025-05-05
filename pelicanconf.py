@@ -20,7 +20,7 @@ AUTHOR_FEED_RSS = None
 DEFAULT_PAGINATION = False
 
 PLUGINS = [
-    'pelican_embed_svg',
+    "pelican_embed_svg",
 ]
 
 # Uncomment following line if you want document-relative URLs when developing
