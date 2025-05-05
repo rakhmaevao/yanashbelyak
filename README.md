@@ -3,10 +3,10 @@
 ## Подготовка к работе
 
 ```
-poetry install --no-root
+uv sync
 ```
 
-Пропиши путь до проекта gramps в content_generator/main.py
+Пропиши путь до проекта gramps в `content_generator/main.py`.
 
 ## Как разрабатывать?
 
