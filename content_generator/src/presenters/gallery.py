@@ -1,11 +1,10 @@
 import shutil
 from pathlib import Path
 
-from loguru import logger
 from PIL import Image
 
-from .entities import GrampsId, Media
-from .gramps_tree import GrampsTree
+from ..app.entities import GrampsId, Media
+from src.app.entities import GrampsTree
 
 
 class Gallery:

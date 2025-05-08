@@ -9,8 +9,15 @@ from xml.etree import ElementTree
 import drawsvg
 from loguru import logger
 
-from .entities import DateQuality, Family, Gender, GrampsId, Person, RelationType
-from .gramps_tree import GrampsTree
+from src.app.entities import (
+    DateQuality,
+    Family,
+    Gender,
+    GrampsId,
+    Person,
+    RelationType,
+    GrampsTree,
+)
 
 
 class UnknownDirectionError(Exception):

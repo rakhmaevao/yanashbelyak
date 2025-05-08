@@ -1,7 +1,7 @@
 from __future__ import annotations
 from pathlib import Path
 from src.app.interfaces.tee_loader import ITreeLoader
-from src.gramps_tree import GrampsTree
+from src.app.entities import GrampsTree
 
 import json
 import locale
@@ -10,7 +10,7 @@ from pathlib import Path
 
 from loguru import logger
 
-from src.entities import (
+from src.app.entities import (
     Date,
     Event,
     EventType,
@@ -216,7 +216,6 @@ class SQliteGrampsTreeLoader(ITreeLoader):
         )
         raw = self.__cur.fetchall()
         for gramps_id, mime, media_path, description in raw:
-            logger.info(f"FFFF {gramps_id, description, media_path}")
             if mime not in ("image/jpeg", "image/png"):
                 continue
             media_obj = Media(

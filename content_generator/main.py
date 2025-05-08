@@ -3,10 +3,9 @@ from pathlib import Path
 
 from loguru import logger
 from src.infra.tree_loader import SQliteGrampsTreeLoader
-from src.biographer import Biographer
-from src.gallery import Gallery
-from src.gramps_tree import GrampsTree
-from src.tree_render import TreeRender
+from src.presenters.biographer import Biographer
+from src.presenters.gallery import Gallery
+from src.presenters.tree_render import TreeRender
 
 if __name__ == "__main__":
     logger.info("Start")

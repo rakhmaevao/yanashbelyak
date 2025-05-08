@@ -7,12 +7,7 @@ from xml.etree import ElementTree
 import drawsvg
 from loguru import logger
 
-from .entities import (
-    Gender,
-    GrampsId,
-    Person,
-)
-from .gramps_tree import GrampsTree
+from src.app.entities import Gender, GrampsId, Person, GrampsTree
 
 
 class UnknownDirectionError(Exception):

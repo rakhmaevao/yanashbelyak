@@ -1,5 +1,5 @@
 from abc import ABC, abstractmethod
-from src.gramps_tree import GrampsTree
+from src.app.entities import GrampsTree
 
 
 class ITreeLoader(ABC):

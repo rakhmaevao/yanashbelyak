@@ -1,8 +1,8 @@
 import datetime
 from pathlib import Path
 
-from .entities import Person
-from .gramps_tree import GrampsTree
+from ..app.entities import Person
+from src.app.entities import GrampsTree
 from .small_tree_render import SmallTreeRender, WithoutRelationsError
 
 
