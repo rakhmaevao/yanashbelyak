@@ -1,0 +1,26 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink"
+     width="510" height="300" viewBox="0 0 510 300">
+<defs>
+</defs>
+<path d="M150,25.0 L170,25.0" stroke="black" stroke-width="0.8" fill="none" />
+<path d="M160.0,25.0 L75.0,100" stroke="gray" stroke-width="0.8" fill="none" />
+<path d="M150,125.0 L170,125.0" stroke="black" stroke-width="0.8" fill="none" />
+<path d="M160.0,125.0 L75.0,200" stroke="gray" stroke-width="0.8" fill="none" />
+<path d="M160.0,125.0 L245.0,200" stroke="gray" stroke-width="0.8" fill="none" />
+<path d="M160.0,125.0 L415.0,200" stroke="gray" stroke-width="0.8" fill="none" />
+<rect x="0" y="0" width="150" height="50" fill="pink" />
+<rect x="170" y="0" width="150" height="50" fill="lightblue" />
+<rect x="0" y="100" width="150" height="50" fill="lightblue" />
+<rect x="170" y="100" width="150" height="50" fill="pink" />
+<rect x="0" y="200" width="150" height="50" fill="pink" />
+<rect x="170" y="200" width="150" height="50" fill="lightblue" />
+<rect x="340" y="200" width="150" height="50" fill="pink" />
+<a xlink:href="https://rakhmaevao.github.io/yanashbelyak/I0326.html" target="_parent">[...]><text x="17.249999999999993" y="25.0" font-size="14">Татьяна Карпова</text>
+</a><a xlink:href="https://rakhmaevao.github.io/yanashbelyak/I0325.html" target="_parent">[...]><text x="183.39999999999998" y="25.0" font-size="14">Никифор Васильев</text>
+</a><a xlink:href="https://rakhmaevao.github.io/yanashbelyak/I0331.html" target="_parent">[...]><text x="21.099999999999994" y="125.0" font-size="14">Егор Никифоров</text>
+</a><a xlink:href="https://rakhmaevao.github.io/yanashbelyak/I0333.html" target="_parent">[...]><text x="179.55" y="125.0" font-size="14">Федосья Николаева</text>
+</a><a xlink:href="https://rakhmaevao.github.io/yanashbelyak/I0334.html" target="_parent">[...]><text x="24.949999999999996" y="225.0" font-size="14">Мария Егорова</text>
+</a><a xlink:href="https://rakhmaevao.github.io/yanashbelyak/I0332.html" target="_parent">[...]><text x="202.64999999999998" y="225.0" font-size="14">Иван Егоров</text>
+</a><a xlink:href="https://rakhmaevao.github.io/yanashbelyak/I0335.html" target="_parent">[...]><text x="372.65" y="225.0" font-size="14">Парасковья </text>
+</a></svg>
