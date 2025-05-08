@@ -5,12 +5,10 @@ from src.gramps_tree import GrampsTree
 
 import json
 import locale
-import pickle
 import sqlite3
 from pathlib import Path
 
 from loguru import logger
-from singleton_decorator import singleton
 
 from src.entities import (
     Date,
@@ -22,7 +20,6 @@ from src.entities import (
     Media,
     Note,
     Person,
-    PersonWithoutBirthdayError,
     Relation,
     RelationType,
 )
@@ -47,9 +44,7 @@ class SQliteGrampsTreeLoader(ITreeLoader):
 
         relations, families = self.__get_relationship()
         return GrampsTree(
-            events=self.__events,
             persons=self.__persons,
-            notes=self.__notes,
             media=self.__media,
             relations=relations,
             families=families,
