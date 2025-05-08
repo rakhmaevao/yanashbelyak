@@ -1,7 +1,6 @@
 from __future__ import annotations
 
 import datetime
-import pickle
 import random
 from datetime import date, timedelta
 from enum import Enum
@@ -25,30 +24,25 @@ class DateQuality(Enum):
 
 
 class Date:
-    __SHORT_DATETIME_LEN = 4
-    __FULL_DATETIME_LEN = 8
 
     def __init__(self, date: date, quality: DateQuality):
         self.__date = date
         self.__quality = quality
 
     @staticmethod
-    def from_gramps_db(raw_date: tuple) -> Date:
+    def from_gramps_json_date(raw_date: dict) -> Date:
         logger.debug(f"Parsing date: {raw_date}")
-
-        if len(raw_date[3]) == Date.__SHORT_DATETIME_LEN:
-            day, month, year, _ = raw_date[3]
-        elif len(raw_date[3]) == Date.__FULL_DATETIME_LEN:
-            day, month, year, _, _, _, _, _ = raw_date[3]
-        else:
-            raise ValueError(raw_date)
+        year = raw_date["dateval"][2]
+        month = raw_date["dateval"][1]
+        day = raw_date["dateval"][0]
         if day == 0:
             day = 1
         if month == 0:
             month = 1
-
         try:
-            return Date(date(year, month, day), DateQuality(raw_date[2]))
+            return Date(
+                date(year, month, day), quality=DateQuality(raw_date["quality"])
+            )
         except ValueError as message:
             logger.error(f"{message} for raw_date {raw_date}")
             raise ValueError(message) from message
@@ -74,29 +68,9 @@ class GrampsId(str):
 
 
 class Event:
-    def __init__(self, blob_data: bytes):
-        (
-            handle,
-            gramps_id,
-            (e_type, _),
-            date,
-            description,
-            _,
-            _,
-            _,
-            _,
-            _,
-            _,
-            _,
-            _,
-        ) = pickle.loads(blob_data)  # noqa: S301
-
+    def __init__(self, gramps_id: GrampsId, date: Date, description: str):
         self.__description = description
-        if date is not None:
-            self.__date = Date.from_gramps_db(date)
-        else:
-            self.__date = None
-        self.__type = EventType(e_type)
+        self.__date = date
         self.__id = GrampsId(gramps_id)
 
     @property
@@ -113,12 +87,9 @@ class Event:
 
 
 class Note:
-    def __init__(self, blob_data: bytes):
-        _, gramps_id, (content, _), _, _, _, _, _ = pickle.loads(  # noqa: S301
-            blob_data,
-        )
+    def __init__(self, gramps_id: GrampsId, content: str):
+        self.__id = gramps_id
         self.__content = content
-        self.__id = GrampsId(gramps_id)
 
     @property
     def gramps_id(self) -> GrampsId:
@@ -378,23 +349,10 @@ class EventType(Enum):
 
 
 class Media:
-    def __init__(self, blob):
+    def __init__(self, path: Path, description: str):
         self.__persons: list[Person] = []
-        (
-            _,
-            gramps_id,
-            self.__path,
-            mime_type,
-            self.__description,
-            checksum,
-            _,
-            _,
-            _,
-            _,
-            _,
-            _,
-            _,
-        ) = pickle.loads(blob)  # noqa: S301
+        self.__description = description
+        self.__path = path
 
     @property
     def path(self) -> Path:

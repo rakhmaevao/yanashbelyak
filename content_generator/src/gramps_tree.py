@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+import json
 import locale
 import pickle
 import sqlite3
@@ -78,7 +79,7 @@ class GrampsTree:
 
     def __parse_lifetime(self, _id: GrampsId) -> tuple[Date, Date | None]:
         self.__cur.execute(
-            f"SELECT event.blob_data "  # noqa: S608
+            f"SELECT event.json_data "  # noqa: S608
             f"FROM person "
             f"JOIN reference ON reference.obj_handle  = person.handle "
             f"JOIN event ON event.handle = reference.ref_handle "
@@ -86,35 +87,50 @@ class GrampsTree:
         )
         events = self.__cur.fetchall()
         birth_day, death_day = None, None
-        for (event,) in events:
-            _, _, _type, r_date, _, _, _, _, _, _, _, _, _ = pickle.loads(event)  # noqa: S301
-            _type = _type[0]
+        for (raw_event,) in events:
+            event = json.loads(raw_event)
+            event_type_id = event["type"]["value"]
+            raw_date = event["date"]
 
-            if _type == EventType.BIRTH.value:
-                if r_date is None:
-                    raise PersonWithoutBirthdayError(_id)
-                birth_day = Date.from_gramps_db(r_date)
+            if event_type_id == EventType.BIRTH.value:
+                # if raw_date is None:
+                #     raise PersonWithoutBirthdayError(_id)
+                birth_day = Date.from_gramps_json_date(raw_date)
 
-            if _type == EventType.DEATH.value:
-                death_day = Date.from_gramps_db(r_date)
+            if event_type_id == EventType.DEATH.value:
+                death_day = Date.from_gramps_json_date(raw_date)
 
         return birth_day, death_day
 
     def __get_notes(self) -> dict[GrampsId, Note]:
         notes = {}
-        self.__cur.execute("SELECT note.gramps_id, note.blob_data FROM note")
+        self.__cur.execute("SELECT note.gramps_id, note.json_data FROM note")
         notes_raw = self.__cur.fetchall()
-        for _id, blob_data in notes_raw:
-            note = Note(blob_data)
+        for _id, raw_data in notes_raw:
+            dict_data = json.loads(raw_data)
+            note = Note(
+                gramps_id=GrampsId(dict_data["gramps_id"]),
+                content=dict_data["text"]["string"],
+            )
             notes[_id] = note
         return notes
 
     def __get_events(self) -> dict[GrampsId, Event]:
         events = {}
-        self.__cur.execute("SELECT event.gramps_id, event.blob_data FROM event")
+        self.__cur.execute("SELECT event.gramps_id, event.json_data FROM event")
         event_raw = self.__cur.fetchall()
-        for _id, blob_data in event_raw:
-            event = Event(blob_data)
+        for _id, raw_data in event_raw:
+            dict_data = json.loads(raw_data)
+            try:
+                event = Event(
+                    date=Date.from_gramps_json_date(dict_data["date"]),
+                    description=dict_data["description"],
+                    gramps_id=dict_data["gramps_id"],
+                )
+            except ValueError as error:
+                logger.error(
+                    f"Error for event for {dict_data}"
+                )  # TODO: rao: Вроде тут баг
             events[GrampsId(_id)] = event
         return events
 
@@ -206,12 +222,19 @@ class GrampsTree:
 
     def __get_media(self) -> dict[GrampsId, Media]:
         media = {}
-        self.__cur.execute("SELECT media.gramps_id, media.blob_data FROM media")
+        self.__cur.execute(
+            "SELECT media.gramps_id, media.mime, media.path, media.desc FROM media"
+        )
         raw = self.__cur.fetchall()
-        for _id, blob_data in raw:
-            media_obj = Media(blob_data)
-            media_obj.path = self.__gramps_tree_path / Path("media") / media_obj.path
-            media[_id] = media_obj
+        for gramps_id, mime, media_path, description in raw:
+            logger.info(f"FFFF {gramps_id, description, media_path}")
+            if mime not in ("image/jpeg", "image/png"):
+                continue
+            media_obj = Media(
+                description=description,
+                path=self.__gramps_tree_path / Path("media") / media_path,
+            )
+            media[gramps_id] = media_obj
         return media
 
     def __map_media_to_person(self):

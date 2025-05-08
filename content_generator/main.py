@@ -11,7 +11,7 @@ if __name__ == "__main__":
     logger.info("Start")
     gramps_tree = GrampsTree(
         Path(
-            "/media/rakhmaevao/MAIN_VAULT/Storage/Genealogy/Yanashbeliak/Gramps/Project"
+            "/home/rakhmaevao/.var/app/org.gramps_project.Gramps/data/gramps/grampsdb/yanashbelyak"
         )
     )
     logger.info("The database has been read")
