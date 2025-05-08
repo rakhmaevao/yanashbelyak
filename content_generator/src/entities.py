@@ -24,7 +24,6 @@ class DateQuality(Enum):
 
 
 class Date:
-
     def __init__(self, date: date, quality: DateQuality):
         self.__date = date
         self.__quality = quality

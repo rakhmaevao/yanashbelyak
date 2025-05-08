@@ -2,6 +2,7 @@ import os
 from pathlib import Path
 
 from loguru import logger
+from src.infra.tree_loader import SQliteGrampsTreeLoader
 from src.biographer import Biographer
 from src.gallery import Gallery
 from src.gramps_tree import GrampsTree
@@ -9,11 +10,12 @@ from src.tree_render import TreeRender
 
 if __name__ == "__main__":
     logger.info("Start")
-    gramps_tree = GrampsTree(
+    gramps_tree = SQliteGrampsTreeLoader().load(
         Path(
             "/home/rakhmaevao/.var/app/org.gramps_project.Gramps/data/gramps/grampsdb/yanashbelyak"
         )
     )
+
     logger.info("The database has been read")
 
     content_dir = "content" if "content" in set(os.listdir()) else "../content"
